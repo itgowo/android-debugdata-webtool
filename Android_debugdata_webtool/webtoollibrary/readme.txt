@@ -1,0 +1,1 @@
+1.删除原PrefHelper中getAllPrefTableName方法，替换为了直接用list集合的addall()方法，简化代码
