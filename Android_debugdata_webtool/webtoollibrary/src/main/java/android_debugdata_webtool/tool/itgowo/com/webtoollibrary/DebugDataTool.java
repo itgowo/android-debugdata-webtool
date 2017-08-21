@@ -25,6 +25,7 @@ import android.util.Log;
 import java.io.File;
 import java.util.HashMap;
 
+import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.httpParser.HttpRequest;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.server.ClientServer;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.utils.NetworkUtils;
 
@@ -65,14 +66,14 @@ public class DebugDataTool {
         return null;
     }
 
-    public static void onRequest(String mS,String url) {
+    public static void onRequest(String mS, HttpRequest mHttpRequest) {
         if (mS == null || mS.equals("")) {
             return;
         }
         if (mToolListener == null) {
             new Throwable("initialize:onDebugToolListener = null").printStackTrace();
         } else {
-            mToolListener.onGetRequest(mS,url);
+            mToolListener.onGetRequest(mS, mHttpRequest);
         }
     }
 
@@ -95,7 +96,8 @@ public class DebugDataTool {
         clientServer = new ClientServer(context, portNumber);
         clientServer.start();
         addressLog = NetworkUtils.getAddressLog(context, portNumber);
-        Log.d(TAG, addressLog);
+        Log.d(TAG, "Open http://" + addressLog   + " in your browser");
+        Log.d(TAG, "请用浏览器打开 http://" + addressLog  );
     }
 
     public static String getAddressLog() {

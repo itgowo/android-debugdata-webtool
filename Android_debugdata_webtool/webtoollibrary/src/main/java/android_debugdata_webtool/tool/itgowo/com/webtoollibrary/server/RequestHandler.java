@@ -24,6 +24,7 @@ import android.content.res.AssetManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.text.TextUtils;
+import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -36,6 +37,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.DebugDataTool;
+import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.httpParser.HttpRequest;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.model.Request;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.model.Response;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.model.RowDataRequest;
@@ -65,14 +67,16 @@ public class RequestHandler {
     public RequestHandler(Context context) {
         mContext = context;
         mAssets = context.getResources().getAssets();
+        mDatabaseFiles = DatabaseFileProvider.getDatabaseFiles(mContext);
+        if (mCustomDatabaseFiles != null) {
+            mDatabaseFiles.putAll(mCustomDatabaseFiles);
+        }
     }
 
     public void handle(Socket socket) throws IOException {
         BufferedReader reader = null;
         PrintStream output = null;
         try {
-            String route = null;
-
             // Read HTTP headers and parse out the route.
             reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             String line;
@@ -81,42 +85,46 @@ public class RequestHandler {
                 if (line.startsWith("GET /")) {
                     int start = line.indexOf('/') + 1;
                     int end = line.indexOf(' ', start);
-                    route = line.substring(start, end);
                 }
                 mStringBuilder.append(line).append("\r\n");
             }
-
-
-
+            Log.d("1111", mStringBuilder.toString());
+            HttpRequest mHttpRequest = null;
+            try {
+                mHttpRequest = HttpRequest.parser(mStringBuilder.toString());
+            } catch (Exception mE) {
+                mE.printStackTrace();
+            }
+            if (mHttpRequest == null) {
+                return;
+            }
             // Output stream that we send the response to
             output = new PrintStream(socket.getOutputStream());
-            if (route == null || route.isEmpty()) {
-                route = "index.html";
-            }
+
             boolean isFile = false;
             byte[] bytes = new byte[0];
-            if (route.startsWith("getDbList")) {
+            if (mHttpRequest.getRequestURI().equalsIgnoreCase("getDbList")) {
                 final String response = getDBListResponse();
                 bytes = response.getBytes();
-            } else if (route.startsWith("getAllDataFromTheTable")) {
-                final String response = getAllDataFromTheTableResponse(route);
+            } else if (mHttpRequest.getRequestURI().equalsIgnoreCase("getAllDataFromTheTable")) {
+                final String response = getAllDataFromTheTableResponse(mHttpRequest.getParameter().get("tableName"));
                 bytes = response.getBytes();
-            } else if (route.startsWith("getTableList")) {
-                final String response = getTableListResponse(route);
+            } else if (mHttpRequest.getRequestURI().equalsIgnoreCase("getTableList")) {
+                final String response = getTableListResponse(mHttpRequest.getParameter().get("database"));
                 bytes = response.getBytes();
-            } else if (route.startsWith("addTableData")) {
-                final String response = addTableDataAndGetResponse(route);
+            } else if (mHttpRequest.getRequestURI().equalsIgnoreCase("addTableData")) {
+                final String response = addTableDataAndGetResponse(mHttpRequest.getRequestURI());
                 bytes = response.getBytes();
-            } else if (route.startsWith("updateTableData")) {
-                final String response = updateTableDataAndGetResponse(route);
+            } else if (mHttpRequest.getRequestURI().equalsIgnoreCase("updateTableData")) {
+                final String response = updateTableDataAndGetResponse(mHttpRequest.getRequestURI());
                 bytes = response.getBytes();
-            } else if (route.startsWith("deleteTableData")) {
-                final String response = deleteTableDataAndGetResponse(route);
+            } else if (mHttpRequest.getRequestURI().equalsIgnoreCase("deleteTableData")) {
+                final String response = deleteTableDataAndGetResponse(mHttpRequest.getRequestURI());
                 bytes = response.getBytes();
-            } else if (route.startsWith("query")) {
-                final String response = executeQueryAndGetResponse(route);
+            } else if (mHttpRequest.getRequestURI().equalsIgnoreCase("query")) {
+                final String response = executeQueryAndGetResponse(mHttpRequest.getRequestURI());
                 bytes = response.getBytes();
-            } else if (route.startsWith("downloadDb")) {
+            } else if (mHttpRequest.getRequestURI().equalsIgnoreCase("downloadDb")) {
                 isFile = true;
                 if (Constants.APP_SHARED_PREFERENCES.equals(mSelectedDatabase)) {
                     bytes = Utils.getSharedPreferences(mSelectedDatabase, PrefHelper.getSharedPreference(mContext));
@@ -125,15 +133,19 @@ public class RequestHandler {
 
 
                 }
+            } else if (mHttpRequest.getRequestURI().isEmpty()) {
+                isFile = true;
+                bytes = Utils.loadContent("index.html", mAssets);
             } else {
                 isFile = true;
-                bytes = Utils.loadContent(route, mAssets);
+                bytes = Utils.loadContent(mHttpRequest.getRequestURI(), mAssets);
             }
+
             if (!isFile) {
-                DebugDataTool.onRequest(mStringBuilder.toString(),route);
+                DebugDataTool.onRequest(mStringBuilder.toString(), mHttpRequest);
                 DebugDataTool.onResponse(new String(bytes));
             } else {
-                DebugDataTool.onRequest(route,route);
+                DebugDataTool.onRequest(mHttpRequest.getRequestURI(), mHttpRequest);
             }
             if (null == bytes) {
                 writeServerError(output);
@@ -142,9 +154,9 @@ public class RequestHandler {
 
             // Send out the content.
             output.println("HTTP/1.0 200 OK");
-            output.println("Content-Type: " + Utils.detectMimeType(route));
+            output.println("Content-Type: " + Utils.detectMimeType(mHttpRequest.getRequestURI()));
 
-            if (route.startsWith("downloadDb")) {
+            if (mHttpRequest.getRequestURI().equalsIgnoreCase("downloadDb")) {
                 output.println("Content-Disposition: attachment; filename=" + mSelectedDatabase);
             } else {
                 output.println("Content-Length: " + bytes.length);
@@ -152,7 +164,9 @@ public class RequestHandler {
             output.println();
             output.write(bytes);
             output.flush();
-        } finally {
+        } finally
+
+        {
             try {
                 if (null != output) {
                     output.close();
@@ -164,6 +178,7 @@ public class RequestHandler {
                 e.printStackTrace();
             }
         }
+
     }
 
     public void setCustomDatabaseFiles(HashMap<String, File> customDatabaseFiles) {
@@ -206,16 +221,8 @@ public class RequestHandler {
         return DebugDataTool.ObjectToJson(response);
     }
 
-    private String getAllDataFromTheTableResponse(String route) {
-
-        String tableName = null;
-
-        if (route.contains("?tableName=")) {
-            tableName = route.substring(route.indexOf("=") + 1, route.length());
-        }
-
+    private String getAllDataFromTheTableResponse(String tableName) {
         TableDataResponse response;
-
         if (isDbOpened) {
             String sql = "SELECT * FROM " + tableName;
             response = DatabaseHelper.getTableData(mDatabase, sql, tableName);
@@ -264,11 +271,7 @@ public class RequestHandler {
         return data;
     }
 
-    private String getTableListResponse(String route) {
-        String database = null;
-        if (route.contains("?database=")) {
-            database = route.substring(route.indexOf("=") + 1, route.length());
-        }
+    private String getTableListResponse(String database) {
 
         Response response = new Response();
 

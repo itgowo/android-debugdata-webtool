@@ -23,6 +23,11 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.net.wifi.WifiManager;
 
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.Enumeration;
+
 /**
  * Created by amitshekhar on 15/11/16.
  */
@@ -33,6 +38,13 @@ public final class NetworkUtils {
         // This class in not publicly instantiable
     }
 
+    /**
+     * 获取WIFI网络地址，局域网
+     *
+     * @param context
+     * @param port
+     * @return
+     */
     public static String getAddressLog(Context context, int port) {
         WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
         int ipAddress = wifiManager.getConnectionInfo().getIpAddress();
@@ -42,7 +54,28 @@ public final class NetworkUtils {
                 (ipAddress >> 8 & 0xff),
                 (ipAddress >> 16 & 0xff),
                 (ipAddress >> 24 & 0xff));
-        return "Open http://" + formattedIpAddress + ":" + port + " in your browser";
+        return formattedIpAddress + ":" + port;
     }
 
+    /**
+     * 获取数据的网址
+     *
+     * @return
+     */
+    public static String getLocalIpAddress() {
+        try {
+            for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements(); ) {
+                NetworkInterface intf = en.nextElement();
+                for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements(); ) {
+                    InetAddress inetAddress = enumIpAddr.nextElement();
+                    if (!inetAddress.isLoopbackAddress()) {
+                        return inetAddress.getHostAddress().toString();
+                    }
+                }
+            }
+        } catch (SocketException ex) {
+            ex.printStackTrace();
+        }
+        return null;
+    }
 }

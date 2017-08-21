@@ -61,7 +61,7 @@ function downloadDb() {
 
 function getDBList() {
 
-   $.ajax({url: "getDbList", success: function(result){
+   $.ajax({type:"POST",url: "getDbList", success: function(result){
 
            result = JSON.parse(result);
            var dbList = result.rows;
