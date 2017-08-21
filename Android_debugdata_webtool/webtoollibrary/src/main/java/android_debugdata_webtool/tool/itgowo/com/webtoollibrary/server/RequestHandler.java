@@ -23,13 +23,11 @@ import android.content.Context;
 import android.content.res.AssetManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
-import android.text.TextUtils;
 import android.util.Log;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.Socket;
 import java.net.URLDecoder;
@@ -73,25 +71,41 @@ public class RequestHandler {
         }
     }
 
+    public void asynchronousHandle(final Socket mSocket) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    handle(mSocket);
+                } catch (IOException mE) {
+                    mE.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
     public void handle(Socket socket) throws IOException {
-        BufferedReader reader = null;
+        InputStream mInputStream = null;
         PrintStream output = null;
         try {
             // Read HTTP headers and parse out the route.
-            reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+//            reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             String line;
+            int count = 0;
             StringBuilder mStringBuilder = new StringBuilder();
-            while (!TextUtils.isEmpty(line = reader.readLine())) {
-                if (line.startsWith("GET /")) {
-                    int start = line.indexOf('/') + 1;
-                    int end = line.indexOf(' ', start);
+            mInputStream = socket.getInputStream();
+            byte[] mBytes = new byte[4096];
+            while (true) {
+                count = mInputStream.read(mBytes)   ;
+                mStringBuilder.append(new String(mBytes, 0, count)).append("\r\n");
+                if (count<4096){
+                    break;
                 }
-                mStringBuilder.append(line).append("\r\n");
             }
             Log.d("1111", mStringBuilder.toString());
             HttpRequest mHttpRequest = null;
             try {
-                mHttpRequest = HttpRequest.parser(mStringBuilder.toString());
+                mHttpRequest = HttpRequest.parser(mStringBuilder.toString().trim());
             } catch (Exception mE) {
                 mE.printStackTrace();
             }
@@ -164,6 +178,8 @@ public class RequestHandler {
             output.println();
             output.write(bytes);
             output.flush();
+            output.close();
+            socket.close();
         } finally
 
         {
@@ -171,8 +187,11 @@ public class RequestHandler {
                 if (null != output) {
                     output.close();
                 }
-                if (null != reader) {
-                    reader.close();
+                if (null != mInputStream) {
+                    mInputStream.close();
+                }
+                if (socket != null) {
+                    socket.close();
                 }
             } catch (Exception e) {
                 e.printStackTrace();

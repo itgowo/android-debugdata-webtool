@@ -74,8 +74,8 @@ public class ClientServer implements Runnable {
             mServerSocket = new ServerSocket(mPort);
             while (mIsRunning) {
                 Socket socket = mServerSocket.accept();
-                mRequestHandler.handle(socket);
-                socket.close();
+                mRequestHandler.asynchronousHandle(socket);
+
             }
         } catch (SocketException e) {
             // The server was stopped; ignore.
