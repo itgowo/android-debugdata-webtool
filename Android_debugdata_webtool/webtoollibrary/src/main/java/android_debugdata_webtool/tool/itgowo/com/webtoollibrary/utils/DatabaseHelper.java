@@ -29,7 +29,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.model.Response;
-import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.model.RowDataRequest;
+import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.model.Request.RowDataRequest;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.model.TableDataResponse;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.model.UpdateRowResponse;
 

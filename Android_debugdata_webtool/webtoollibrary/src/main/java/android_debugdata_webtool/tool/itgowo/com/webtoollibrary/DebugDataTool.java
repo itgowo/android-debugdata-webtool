@@ -26,7 +26,6 @@ import java.io.File;
 import java.util.HashMap;
 
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.httpParser.HttpRequest;
-import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.server.ClientServer;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.utils.NetworkUtils;
 
 /**
@@ -41,10 +40,11 @@ public class DebugDataTool {
     private static String addressLog = "not available";
     private static onDebugToolListener mToolListener;
 
+
     private DebugDataTool() {
     }
 
-    public static String ObjectToJson(Object mO) {
+    protected static String ObjectToJson(Object mO) {
         if (mO != null) {
             if (mToolListener == null) {
                 new Throwable("initialize:onDebugToolListener = null").printStackTrace();
@@ -55,7 +55,7 @@ public class DebugDataTool {
         return "";
     }
 
-    public static <T> T JsonToObject(String mJsonString, Class<T> mClass) {
+    protected static <T> T JsonToObject(String mJsonString, Class<T> mClass) {
         if (mJsonString != null && mClass != null) {
             if (mToolListener == null) {
                 new Throwable("initialize:onDebugToolListener = null").printStackTrace();
@@ -66,7 +66,7 @@ public class DebugDataTool {
         return null;
     }
 
-    public static void onRequest(String mS, HttpRequest mHttpRequest) {
+    protected static void onRequest(String mS, HttpRequest mHttpRequest) {
         if (mS == null || mS.equals("")) {
             return;
         }
@@ -77,7 +77,8 @@ public class DebugDataTool {
         }
     }
 
-    public static void onResponse(String mS) {
+
+    protected static void onResponse(String mS) {
         if (mToolListener == null) {
             new Throwable("initialize:onDebugToolListener = null").printStackTrace();
         } else {
@@ -85,7 +86,7 @@ public class DebugDataTool {
         }
     }
 
-    public static void initialize(Context context, int mPortNumber, onDebugToolListener mOnDebugToolListener) {
+    public static void initialize(Context context, int mPortNumber, boolean isMultMode, onDebugToolListener mOnDebugToolListener) {
         mToolListener = mOnDebugToolListener;
         int portNumber;
         if (mPortNumber < 10) {
@@ -93,11 +94,19 @@ public class DebugDataTool {
         } else {
             portNumber = mPortNumber;
         }
-        clientServer = new ClientServer(context, portNumber);
+        clientServer = new ClientServer(context, portNumber, isMultMode);
         clientServer.start();
         addressLog = NetworkUtils.getAddressLog(context, portNumber);
-        Log.d(TAG, "Open http://" + addressLog   + " in your browser");
-        Log.d(TAG, "请用浏览器打开 http://" + addressLog  );
+        Log.d(TAG, "Open http://" + addressLog + " in your browser");
+        Log.d(TAG, "请用浏览器打开 http://" + addressLog);
+    }
+
+    protected static void onError(String mTip, Throwable mThrowable) {
+        if (mToolListener == null) {
+            new Throwable("initialize:onDebugToolListener = null").printStackTrace();
+        } else {
+            mToolListener.onError(mTip, mThrowable);
+        }
     }
 
     public static String getAddressLog() {
@@ -112,6 +121,11 @@ public class DebugDataTool {
         }
     }
 
+    /**
+     * 指定appdata之外的可读数据库文件
+     *
+     * @param customDatabaseFiles
+     */
     public static void setCustomDatabaseFiles(HashMap<String, File> customDatabaseFiles) {
         if (clientServer != null) {
             clientServer.setCustomDatabaseFiles(customDatabaseFiles);

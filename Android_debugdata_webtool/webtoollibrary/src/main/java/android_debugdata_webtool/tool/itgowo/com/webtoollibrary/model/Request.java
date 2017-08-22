@@ -17,4 +17,12 @@ public class Request {
         this.mRowDataRequests = mRowDataRequests;
         return this;
     }
+    public static class RowDataRequest {
+
+        public String title;
+        public boolean isPrimary;
+        public String dataType;
+        public String value;
+
+    }
 }

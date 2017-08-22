@@ -33,7 +33,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.model.RowDataRequest;
+import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.model.Request.RowDataRequest;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.model.TableDataResponse;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.model.UpdateRowResponse;
 

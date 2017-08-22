@@ -16,7 +16,7 @@ public interface onDebugToolListener {
      *
      * @param mRequest
      */
-    void onGetRequest(String mRequest,HttpRequest mHttpRequest);
+    void onGetRequest(String mRequest, HttpRequest mHttpRequest);
 
     /**
      * 只返回请求操作数据，不返回文件
@@ -24,4 +24,12 @@ public interface onDebugToolListener {
      * @param mResponse
      */
     void onResponse(String mResponse);
+
+    /**
+     * 异常
+     *
+     * @param mTip
+     * @param mThrowable
+     */
+    void onError(String mTip, Throwable mThrowable);
 }

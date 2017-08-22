@@ -13,7 +13,8 @@ public class HttpRequest {
     private static final String TAG = "HttpRequest";
     private String method;// 请求方法
     private String protocol;// 协议版本
-    private String requestURI="";//请求的URI地址  在HTTP请求的第一行的请求方法后面
+    private String requestURI = "";//请求的URI地址  在HTTP请求的第一行的请求方法后面
+    private String path = "";//path地址
     private String host;//请求的主机信息
     private String Connection;//Http请求连接状态信息 对应HTTP请求中的Connection
     private String agent;// 代理，用来标识代理的浏览器信息 ,对应HTTP请求中的User-Agent:
@@ -49,7 +50,8 @@ public class HttpRequest {
             mHttpRequest.setProtocol(mRequestLine[2]);
             String[] mP = mRequestLine[1].split("\\?");
             if (mP != null && mP.length > 0) {
-                mHttpRequest.setRequestURI(mP[0].isEmpty()?"":mP[0].substring(1));
+                mHttpRequest.setRequestURI(mRequestLine[1]);
+                mHttpRequest.setPath(mP[0].isEmpty() ? "" : mP[0].substring(1));
                 if (mP.length > 1) {
                     String[] mParameter1 = mP[1].split("&");
                     if (mParameter1 != null) {
@@ -103,6 +105,15 @@ public class HttpRequest {
 
     public HttpRequest setParameter(Map<String, String> mParameter) {
         this.mParameter = mParameter;
+        return this;
+    }
+
+    public String getPath() {
+        return path;
+    }
+
+    public HttpRequest setPath(String mPath) {
+        path = mPath;
         return this;
     }
 

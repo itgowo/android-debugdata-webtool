@@ -17,7 +17,7 @@
  *
  */
 
-package android_debugdata_webtool.tool.itgowo.com.webtoollibrary.server;
+package android_debugdata_webtool.tool.itgowo.com.webtoollibrary;
 
 /**
  * Created by amitshekhar on 15/11/16.
@@ -28,10 +28,8 @@ import android.content.Context;
 import android.util.Log;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketException;
 import java.util.HashMap;
 
 public class ClientServer implements Runnable {
@@ -41,12 +39,17 @@ public class ClientServer implements Runnable {
     private final int mPort;
 
     private boolean mIsRunning;
+    /**
+     * 是否使用多线程模式
+     */
+    private boolean isMultMode;
 
     private ServerSocket mServerSocket;
 
     private final RequestHandler mRequestHandler;
 
-    public ClientServer(Context context, int port) {
+    public ClientServer(Context context, int port, boolean isMultMode) {
+        this.isMultMode = isMultMode;
         mRequestHandler = new RequestHandler(context);
         mPort = port;
     }
@@ -64,7 +67,7 @@ public class ClientServer implements Runnable {
                 mServerSocket = null;
             }
         } catch (Exception e) {
-            Log.e(TAG, "Error closing the server socket.", e);
+            DebugDataTool.onError("web server error,服务器关闭异常", e);
         }
     }
 
@@ -74,17 +77,15 @@ public class ClientServer implements Runnable {
             mServerSocket = new ServerSocket(mPort);
             while (mIsRunning) {
                 Socket socket = mServerSocket.accept();
-                mRequestHandler.asynchronousHandle(socket);
+                if (isMultMode) {
+                    mRequestHandler.asynchronousHandle(socket);
+                } else {
+                    mRequestHandler.syncHandle(socket);
+                }
 
             }
-        } catch (SocketException e) {
-            // The server was stopped; ignore.
-            e.printStackTrace();
-        } catch (IOException e) {
-            Log.e(TAG, "Web server error.", e);
-            e.printStackTrace();
-        } catch (Exception ignore) {
-            ignore.printStackTrace();
+        } catch (Exception e) {
+            DebugDataTool.onError("web server error,请重新启动服务器", e);
         }
     }
 

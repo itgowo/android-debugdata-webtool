@@ -18,14 +18,14 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         DBManager.init(getApplication());
 
-        DBManager.addCache(""+System.currentTimeMillis(), "aaaaaaaaaaaaaaaa");
-        DBManager.addCache(""+System.currentTimeMillis(), "bbbbbbbb");
+        DBManager.addCache("" + System.currentTimeMillis(), "aaaaaaaaaaaaaaaa");
+        DBManager.addCache("" + System.currentTimeMillis(), "bbbbbbbb");
         DBManager.updateCache(DBManager.HistoryCache.getSportItemListByParams, "234324");
         getSharedPreferences("appinfo", MODE_PRIVATE).edit().putString("aaaaa", "test").commit();
         getSharedPreferences("appinfo", MODE_PRIVATE).edit().putString("adfs", System.currentTimeMillis() + "").commit();
         getSharedPreferences("appinfo", MODE_PRIVATE).edit().putString("ggg", "teddddst").commit();
         getSharedPreferences("appinfo", MODE_PRIVATE).edit().putString("aaaasdfsafee3aa", "tadsfsadfest").commit();
-        DebugDataTool.initialize(this, 8088, new onDebugToolListener() {
+        DebugDataTool.initialize(this, 8088, true, new onDebugToolListener() {
 
             @Override
             public String onObjectToJson(Object mObject) {
@@ -39,13 +39,18 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onGetRequest(String mRequest, HttpRequest mHttpRequest) {
-                Log.d("onGetRequest",mHttpRequest.getRequestURI());
+                Log.d("onGetRequest", mHttpRequest.getRequestURI().toString());
             }
 
 
             @Override
             public void onResponse(String mResponse) {
-               Log.d("onResponse",mResponse);
+                Log.d("onResponse", mResponse);
+            }
+
+            @Override
+            public void onError(String mTip, Throwable mThrowable) {
+                Log.e("DebugDataWebTool",mTip,mThrowable);
             }
         });
     }

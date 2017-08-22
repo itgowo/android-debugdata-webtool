@@ -17,13 +17,12 @@
  *
  */
 
-package android_debugdata_webtool.tool.itgowo.com.webtoollibrary.server;
+package android_debugdata_webtool.tool.itgowo.com.webtoollibrary;
 
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
-import android.util.Log;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,11 +33,10 @@ import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.List;
 
-import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.DebugDataTool;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.httpParser.HttpRequest;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.model.Request;
+import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.model.Request.RowDataRequest;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.model.Response;
-import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.model.RowDataRequest;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.model.TableDataResponse;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.model.UpdateRowResponse;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.utils.Constants;
@@ -71,43 +69,44 @@ public class RequestHandler {
         }
     }
 
+    /**
+     * 多线程处理
+     *
+     * @param mSocket
+     */
     public void asynchronousHandle(final Socket mSocket) {
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    handle(mSocket);
+                    syncHandle(mSocket);
                 } catch (IOException mE) {
-                    mE.printStackTrace();
+                    DebugDataTool.onError("web server:boot error,分配并处理数据异常", mE);
                 }
             }
         }).start();
     }
 
-    public void handle(Socket socket) throws IOException {
+    public void syncHandle(Socket socket) throws IOException {
         InputStream mInputStream = null;
         PrintStream output = null;
         try {
-            // Read HTTP headers and parse out the route.
-//            reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            String line;
             int count = 0;
             StringBuilder mStringBuilder = new StringBuilder();
             mInputStream = socket.getInputStream();
             byte[] mBytes = new byte[4096];
             while (true) {
-                count = mInputStream.read(mBytes)   ;
+                count = mInputStream.read(mBytes);
                 mStringBuilder.append(new String(mBytes, 0, count)).append("\r\n");
-                if (count<4096){
+                if (count < 4096) {
                     break;
                 }
             }
-            Log.d("1111", mStringBuilder.toString());
             HttpRequest mHttpRequest = null;
             try {
                 mHttpRequest = HttpRequest.parser(mStringBuilder.toString().trim());
             } catch (Exception mE) {
-                mE.printStackTrace();
+                DebugDataTool.onError("web server:RequestHandler error,http请求解析异常", mE);
             }
             if (mHttpRequest == null) {
                 return;
@@ -117,60 +116,61 @@ public class RequestHandler {
 
             boolean isFile = false;
             byte[] bytes = new byte[0];
-            if (mHttpRequest.getRequestURI().equalsIgnoreCase("getDbList")) {
-                final String response = getDBListResponse();
-                bytes = response.getBytes();
-            } else if (mHttpRequest.getRequestURI().equalsIgnoreCase("getAllDataFromTheTable")) {
-                final String response = getAllDataFromTheTableResponse(mHttpRequest.getParameter().get("tableName"));
-                bytes = response.getBytes();
-            } else if (mHttpRequest.getRequestURI().equalsIgnoreCase("getTableList")) {
-                final String response = getTableListResponse(mHttpRequest.getParameter().get("database"));
-                bytes = response.getBytes();
-            } else if (mHttpRequest.getRequestURI().equalsIgnoreCase("addTableData")) {
-                final String response = addTableDataAndGetResponse(mHttpRequest.getRequestURI());
-                bytes = response.getBytes();
-            } else if (mHttpRequest.getRequestURI().equalsIgnoreCase("updateTableData")) {
-                final String response = updateTableDataAndGetResponse(mHttpRequest.getRequestURI());
-                bytes = response.getBytes();
-            } else if (mHttpRequest.getRequestURI().equalsIgnoreCase("deleteTableData")) {
-                final String response = deleteTableDataAndGetResponse(mHttpRequest.getRequestURI());
-                bytes = response.getBytes();
-            } else if (mHttpRequest.getRequestURI().equalsIgnoreCase("query")) {
-                final String response = executeQueryAndGetResponse(mHttpRequest.getRequestURI());
-                bytes = response.getBytes();
-            } else if (mHttpRequest.getRequestURI().equalsIgnoreCase("downloadDb")) {
-                isFile = true;
-                if (Constants.APP_SHARED_PREFERENCES.equals(mSelectedDatabase)) {
-                    bytes = Utils.getSharedPreferences(mSelectedDatabase, PrefHelper.getSharedPreference(mContext));
+            if (mHttpRequest.getPath() != null) {
+                if (mHttpRequest.getPath().equalsIgnoreCase("getDbList")) {
+                    final String response = getDBListResponse();
+                    bytes = response.getBytes();
+                } else if (mHttpRequest.getPath().equalsIgnoreCase("getAllDataFromTheTable")) {
+                    final String response = getAllDataFromTheTableResponse(mHttpRequest.getParameter().get("tableName"));
+                    bytes = response.getBytes();
+                } else if (mHttpRequest.getPath().equalsIgnoreCase("getTableList")) {
+                    final String response = getTableListResponse(mHttpRequest.getParameter().get("database"));
+                    bytes = response.getBytes();
+                } else if (mHttpRequest.getPath().equalsIgnoreCase("addTableData")) {
+                    final String response = addTableDataAndGetResponse(mHttpRequest.getPath());
+                    bytes = response.getBytes();
+                } else if (mHttpRequest.getPath().equalsIgnoreCase("updateTableData")) {
+                    final String response = updateTableDataAndGetResponse(mHttpRequest.getPath());
+                    bytes = response.getBytes();
+                } else if (mHttpRequest.getPath().equalsIgnoreCase("deleteTableData")) {
+                    final String response = deleteTableDataAndGetResponse(mHttpRequest.getPath());
+                    bytes = response.getBytes();
+                } else if (mHttpRequest.getPath().equalsIgnoreCase("query")) {
+                    final String response = executeQueryAndGetResponse(mHttpRequest.getPath());
+                    bytes = response.getBytes();
+                } else if (mHttpRequest.getPath().equalsIgnoreCase("downloadDb")) {
+                    isFile = true;
+                    if (Constants.APP_SHARED_PREFERENCES.equals(mSelectedDatabase)) {
+                        bytes = Utils.getSharedPreferences(mSelectedDatabase, PrefHelper.getSharedPreference(mContext));
+                    } else {
+                        bytes = Utils.getDatabase(mSelectedDatabase, mDatabaseFiles);
+                    }
+                } else if (mHttpRequest.getPath().isEmpty()) {
+                    isFile = true;
+                    bytes = Utils.loadContent("index.html", mAssets);
                 } else {
-                    bytes = Utils.getDatabase(mSelectedDatabase, mDatabaseFiles);
-
-
+                    isFile = true;
+                    bytes = Utils.loadContent(mHttpRequest.getPath(), mAssets);
                 }
-            } else if (mHttpRequest.getRequestURI().isEmpty()) {
-                isFile = true;
-                bytes = Utils.loadContent("index.html", mAssets);
-            } else {
-                isFile = true;
-                bytes = Utils.loadContent(mHttpRequest.getRequestURI(), mAssets);
-            }
 
+
+            }
             if (!isFile) {
                 DebugDataTool.onRequest(mStringBuilder.toString(), mHttpRequest);
                 DebugDataTool.onResponse(new String(bytes));
             } else {
-                DebugDataTool.onRequest(mHttpRequest.getRequestURI(), mHttpRequest);
+                DebugDataTool.onRequest(mHttpRequest.getPath(), mHttpRequest);
             }
             if (null == bytes) {
                 writeServerError(output);
                 return;
             }
 
-            // Send out the content.
             output.println("HTTP/1.0 200 OK");
-            output.println("Content-Type: " + Utils.detectMimeType(mHttpRequest.getRequestURI()));
 
-            if (mHttpRequest.getRequestURI().equalsIgnoreCase("downloadDb")) {
+                output.println("Content-Type: " + Utils.detectMimeType(mHttpRequest.getPath()));
+
+            if (  mHttpRequest.getPath().equalsIgnoreCase("downloadDb")) {
                 output.println("Content-Disposition: attachment; filename=" + mSelectedDatabase);
             } else {
                 output.println("Content-Length: " + bytes.length);
@@ -180,9 +180,7 @@ public class RequestHandler {
             output.flush();
             output.close();
             socket.close();
-        } finally
-
-        {
+        } finally {
             try {
                 if (null != output) {
                     output.close();
@@ -194,7 +192,7 @@ public class RequestHandler {
                     socket.close();
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                DebugDataTool.onError("web server:close request error,http请求解析结束处理异常", e);
             }
         }
 
@@ -264,7 +262,7 @@ public class RequestHandler {
             try {
                 query = URLDecoder.decode(query, "UTF-8");
             } catch (Exception e) {
-                e.printStackTrace();
+                DebugDataTool.onError("web server:executeQueryAndGetResponse error,参数处理异常，不是utf-8编码", e);
             }
 
             if (query != null) {
@@ -278,7 +276,7 @@ public class RequestHandler {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            DebugDataTool.onError("web server:executeQueryAndGetResponse error,参数处理异常", e);
         }
 
         if (data == null) {
@@ -291,9 +289,7 @@ public class RequestHandler {
     }
 
     private String getTableListResponse(String database) {
-
         Response response = new Response();
-
         if (Constants.APP_SHARED_PREFERENCES.equals(database)) {
             response.getRows().addAll(PrefHelper.getSharedPreferenceTags(mContext));
             response.setSuccessful(true);
@@ -322,7 +318,7 @@ public class RequestHandler {
             }
             return DebugDataTool.ObjectToJson(response);
         } catch (Exception e) {
-            e.printStackTrace();
+            DebugDataTool.onError("web server:addTableDataAndGetResponse error,参数处理异常", e);
             response = new UpdateRowResponse();
             response.isSuccessful = false;
             return DebugDataTool.ObjectToJson(response);
@@ -343,7 +339,7 @@ public class RequestHandler {
             }
             return DebugDataTool.ObjectToJson(response);
         } catch (Exception e) {
-            e.printStackTrace();
+            DebugDataTool.onError("web server:updateTableDataAndGetResponse error,参数处理异常", e);
             response = new UpdateRowResponse();
             response.isSuccessful = false;
             return DebugDataTool.ObjectToJson(response);
@@ -365,7 +361,7 @@ public class RequestHandler {
             }
             return DebugDataTool.ObjectToJson(response);
         } catch (Exception e) {
-            e.printStackTrace();
+            DebugDataTool.onError("web server:deleteTableDataAndGetResponse error,参数处理异常", e);
             response = new UpdateRowResponse();
             response.isSuccessful = false;
             return DebugDataTool.ObjectToJson(response);
