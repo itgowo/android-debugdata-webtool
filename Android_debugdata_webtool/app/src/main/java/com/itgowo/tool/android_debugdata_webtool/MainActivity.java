@@ -18,13 +18,13 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         DBManager.init(getApplication());
 
-        DBManager.addCache("" + System.currentTimeMillis(), "aaaaaaaaaaaaaaaa");
-        DBManager.addCache("" + System.currentTimeMillis(), "bbbbbbbb");
-        DBManager.updateCache(DBManager.HistoryCache.getSportItemListByParams, "234324");
-        getSharedPreferences("appinfo", MODE_PRIVATE).edit().putString("aaaaa", "test").commit();
-        getSharedPreferences("appinfo", MODE_PRIVATE).edit().putString("adfs", System.currentTimeMillis() + "").commit();
-        getSharedPreferences("appinfo", MODE_PRIVATE).edit().putString("ggg", "teddddst").commit();
-        getSharedPreferences("appinfo", MODE_PRIVATE).edit().putString("aaaasdfsafee3aa", "tadsfsadfest").commit();
+//        DBManager.addCache("" + System.currentTimeMillis(), "aaaaaaaaaaaaaaaa");
+//        DBManager.addCache("" + System.currentTimeMillis(), "bbbbbbbb");
+//        DBManager.updateCache(DBManager.HistoryCache.getSportItemListByParams, "234324");
+//        getSharedPreferences("appinfo", MODE_PRIVATE).edit().putString("aaaaa", "test").commit();
+//        getSharedPreferences("appinfo", MODE_PRIVATE).edit().putString("adfs", System.currentTimeMillis() + "").commit();
+//        getSharedPreferences("appinfo", MODE_PRIVATE).edit().putString("ggg", "teddddst").commit();
+//        getSharedPreferences("appinfo", MODE_PRIVATE).edit().putString("aaaasdfsafee3aa", "tadsfsadfest").commit();
         DebugDataTool.initialize(this, 8088, true, new onDebugToolListener() {
 
             @Override

@@ -33,8 +33,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.Response;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.model.Request.RowDataRequest;
-import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.model.TableDataResponse;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.model.UpdateRowResponse;
 
 /**
@@ -86,38 +86,44 @@ public class PrefHelper {
         return tags;
     }
 
-    public static TableDataResponse getAllPrefData(Context context, String tag) {
+    /**
+     * 获取共享参数list
+     *
+     * @param context
+     * @param tag
+     * @return
+     */
+    public static Response getAllPrefData(Context context, String tag) {
 
-        TableDataResponse response = new TableDataResponse();
-        response.isEditable = true;
-        response.isSuccessful = true;
-        response.isSelectQuery = true;
+        Response response = new Response();
+        response.setEditable(true);
 
-        TableDataResponse.TableInfo keyInfo = new TableDataResponse.TableInfo();
+        /**
+         * 设置表结构
+         */
+        Response.TableInfo keyInfo = new Response.TableInfo();
         keyInfo.isPrimary = true;
         keyInfo.title = "Key";
-
-        TableDataResponse.TableInfo valueInfo = new TableDataResponse.TableInfo();
+        Response.TableInfo valueInfo = new Response.TableInfo();
         valueInfo.isPrimary = false;
         valueInfo.title = "Value";
+        response.setTableColumns(new ArrayList<Response.TableInfo>());
+        response.getTableColumns().add(keyInfo);
+        response.getTableColumns().add(valueInfo);
 
-        response.tableInfos = new ArrayList<>();
-        response.tableInfos.add(keyInfo);
-        response.tableInfos.add(valueInfo);
 
-        response.rows = new ArrayList<>();
-
+        response.setTableDatas(new ArrayList<Response.TableData>());
         SharedPreferences preferences = context.getSharedPreferences(tag, Context.MODE_PRIVATE);
         Map<String, ?> allEntries = preferences.getAll();
         for (Map.Entry<String, ?> entry : allEntries.entrySet()) {
-            List<TableDataResponse.ColumnData> row = new ArrayList<>();
-            TableDataResponse.ColumnData keyColumnData = new TableDataResponse.ColumnData();
+            List<Response.TableData> row = new ArrayList<>();
+            Response.TableData keyColumnData = new Response.TableData();
             keyColumnData.dataType = DataType.TEXT;
             keyColumnData.value = entry.getKey();
 
             row.add(keyColumnData);
 
-            TableDataResponse.ColumnData valueColumnData = new TableDataResponse.ColumnData();
+            Response.TableData valueColumnData = new Response.TableData();
             valueColumnData.value = entry.getValue().toString();
             if (entry.getValue() != null) {
                 if (entry.getValue() instanceof String) {
@@ -137,7 +143,7 @@ public class PrefHelper {
                 valueColumnData.dataType = DataType.TEXT;
             }
             row.add(valueColumnData);
-            response.rows.add(row);
+            response.getTableDatas().addAll(row);
         }
 
         return response;

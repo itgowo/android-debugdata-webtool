@@ -30,13 +30,13 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.Socket;
 import java.net.URLDecoder;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.httpParser.HttpRequest;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.model.Request;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.model.Request.RowDataRequest;
-import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.model.Response;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.model.TableDataResponse;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.model.UpdateRowResponse;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.utils.Constants;
@@ -118,14 +118,11 @@ public class RequestHandler {
             byte[] bytes = new byte[0];
             if (mHttpRequest.getPath() != null) {
                 if (mHttpRequest.getPath().equalsIgnoreCase("getDbList")) {
-                    final String response = getDBListResponse();
-                    bytes = response.getBytes();
+                    bytes = DebugDataTool.ObjectToJson(getDBList()).getBytes();
                 } else if (mHttpRequest.getPath().equalsIgnoreCase("getAllDataFromTheTable")) {
-                    final String response = getAllDataFromTheTableResponse(mHttpRequest.getParameter().get("tableName"));
-                    bytes = response.getBytes();
+                    bytes = DebugDataTool.ObjectToJson(getAllDataFromTheTableResponse(mHttpRequest.getParameter().get("tableName"))).getBytes();
                 } else if (mHttpRequest.getPath().equalsIgnoreCase("getTableList")) {
-                    final String response = getTableListResponse(mHttpRequest.getParameter().get("database"));
-                    bytes = response.getBytes();
+                    bytes = DebugDataTool.ObjectToJson(getTableList(mHttpRequest.getParameter().get("database"))).getBytes();
                 } else if (mHttpRequest.getPath().equalsIgnoreCase("addTableData")) {
                     final String response = addTableDataAndGetResponse(mHttpRequest.getPath());
                     bytes = response.getBytes();
@@ -136,7 +133,7 @@ public class RequestHandler {
                     final String response = deleteTableDataAndGetResponse(mHttpRequest.getPath());
                     bytes = response.getBytes();
                 } else if (mHttpRequest.getPath().equalsIgnoreCase("query")) {
-                    final String response = executeQueryAndGetResponse(mHttpRequest.getPath());
+                    final String response = executeQueryAndGetResponse(mHttpRequest.getRequestURI());
                     bytes = response.getBytes();
                 } else if (mHttpRequest.getPath().equalsIgnoreCase("downloadDb")) {
                     isFile = true;
@@ -168,9 +165,9 @@ public class RequestHandler {
 
             output.println("HTTP/1.0 200 OK");
 
-                output.println("Content-Type: " + Utils.detectMimeType(mHttpRequest.getPath()));
+            output.println("Content-Type: " + Utils.detectMimeType(mHttpRequest.getPath()));
 
-            if (  mHttpRequest.getPath().equalsIgnoreCase("downloadDb")) {
+            if (mHttpRequest.getPath().equalsIgnoreCase("downloadDb")) {
                 output.println("Content-Disposition: attachment; filename=" + mSelectedDatabase);
             } else {
                 output.println("Content-Length: " + bytes.length);
@@ -222,24 +219,40 @@ public class RequestHandler {
         isDbOpened = false;
     }
 
-    private String getDBListResponse() {
+    /**
+     * 获取数据库列表
+     *
+     * @return
+     */
+    private Response getDBList() {
         mDatabaseFiles = DatabaseFileProvider.getDatabaseFiles(mContext);
         if (mCustomDatabaseFiles != null) {
             mDatabaseFiles.putAll(mCustomDatabaseFiles);
         }
         Response response = new Response();
         if (mDatabaseFiles != null) {
-            for (HashMap.Entry<String, File> entry : mDatabaseFiles.entrySet()) {
-                response.rows.add(entry.getKey());
-            }
+            List<String> dblist = new ArrayList<>(mDatabaseFiles.keySet());
+            dblist.add(Constants.APP_SHARED_PREFERENCES);
+            response.setDbList(dblist);
         }
-        response.rows.add(Constants.APP_SHARED_PREFERENCES);
-        response.isSuccessful = true;
-        return DebugDataTool.ObjectToJson(response);
+        return response;
     }
 
-    private String getAllDataFromTheTableResponse(String tableName) {
-        TableDataResponse response;
+    /**
+     * 获取共享参数列表
+     *
+     * @return
+     */
+    private Response getSPList() {
+        Response response = new Response();
+        List<String> dblist = new ArrayList<>();
+        dblist.add(Constants.APP_SHARED_PREFERENCES);
+        response.setDbList(dblist);
+        return response;
+    }
+
+    private Response getAllDataFromTheTableResponse(String tableName) {
+        Response response;
         if (isDbOpened) {
             String sql = "SELECT * FROM " + tableName;
             response = DatabaseHelper.getTableData(mDatabase, sql, tableName);
@@ -247,7 +260,7 @@ public class RequestHandler {
             response = PrefHelper.getAllPrefData(mContext, tableName);
         }
 
-        return DebugDataTool.ObjectToJson(response);
+        return response;
 
     }
 
@@ -268,7 +281,7 @@ public class RequestHandler {
             if (query != null) {
                 first = query.split(" ")[0].toLowerCase();
                 if (first.equals("select") || first.equals("pragma")) {
-                    TableDataResponse response = DatabaseHelper.getTableData(mDatabase, query, null);
+                    Response response = DatabaseHelper.getTableData(mDatabase, query, null);
                     data = DebugDataTool.ObjectToJson(response);
                 } else {
                     TableDataResponse response = DatabaseHelper.exec(mDatabase, query);
@@ -281,18 +294,19 @@ public class RequestHandler {
 
         if (data == null) {
             Response response = new Response();
-            response.isSuccessful = false;
+            response.setCode(Response.code_SQLNODATA);
+            response.setMsg("找不到数据");
             data = DebugDataTool.ObjectToJson(response);
         }
 
         return data;
     }
 
-    private String getTableListResponse(String database) {
+    private Response getTableList(String database) {
         Response response = new Response();
         if (Constants.APP_SHARED_PREFERENCES.equals(database)) {
-            response.getRows().addAll(PrefHelper.getSharedPreferenceTags(mContext));
-            response.setSuccessful(true);
+            response.setSpList(PrefHelper.getSharedPreferenceTags(mContext));
+
             closeDatabase();
             mSelectedDatabase = Constants.APP_SHARED_PREFERENCES;
         } else {
@@ -300,7 +314,7 @@ public class RequestHandler {
             response = DatabaseHelper.getAllTableName(mDatabase);
             mSelectedDatabase = database;
         }
-        return DebugDataTool.ObjectToJson(response);
+        return response;
     }
 
 

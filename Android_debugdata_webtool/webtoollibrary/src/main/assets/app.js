@@ -62,19 +62,25 @@ function downloadDb() {
 function getDBList() {
 
    $.ajax({type:"POST",url: "getDbList", success: function(result){
-
+            console.info(result);
            result = JSON.parse(result);
-           var dbList = result.rows;
-           $('#db-list').empty();
-           var isSelectionDone = false;
-           for(var count = 0; count < dbList.length; count++){
-             if(dbList[count].indexOf("journal") == -1){
-                $("#db-list").append("<a href='#' id=" +dbList[count] + " class='list-group-item' onClick='openDatabaseAndGetTableList(\""+ dbList[count] + "\");'>" +dbList[count] + "</a>");
-                if(!isSelectionDone){
-                    isSelectionDone = true;
-                      $('#db-list').find('a').trigger('click');
-                }
-             }
+            console.info(result);
+           if(result.code==200){
+               var dbList = result.dbList;
+
+               $('#db-list').empty();
+               var isSelectionDone = false;
+               for(var count = 0; count < dbList.length; count++){
+                 if(dbList[count].indexOf("journal") == -1){
+                    $("#db-list").append("<a href='#' id=" +dbList[count] + " class='list-group-item' onClick='openDatabaseAndGetTableList(\""+ dbList[count] + "\");'>" +dbList[count] + "</a>");
+                    if(!isSelectionDone){
+                        isSelectionDone = true;
+                          $('#db-list').find('a').trigger('click');
+                    }
+                 }
+               }
+           }else{
+              showErrorInfo(result.msg);
            }
 
    }});

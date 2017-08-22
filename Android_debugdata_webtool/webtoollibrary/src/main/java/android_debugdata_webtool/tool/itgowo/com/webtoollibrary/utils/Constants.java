@@ -10,7 +10,13 @@ public final class Constants {
     }
 
     public static final String APP_SHARED_PREFERENCES = "Shared_Preferences";
+    /**
+     * 数据库表结构常量
+     */
     public static final String PK = "pk";
+    /**
+     *
+     */
     public static final String NAME = "name";
     public static final String NULL = "null";
 
