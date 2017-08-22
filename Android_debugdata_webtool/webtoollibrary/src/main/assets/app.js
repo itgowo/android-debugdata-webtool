@@ -62,7 +62,6 @@ function downloadDb() {
 function getDBList() {
 
    $.ajax({type:"POST",url: "getDbList", success: function(result){
-            console.info(result);
            result = JSON.parse(result);
             console.info(result);
            if(result.code==200){
@@ -109,15 +108,20 @@ function openDatabaseAndGetTableList(db) {
    $.ajax({url: "getTableList?database="+db, success: function(result){
 
            result = JSON.parse(result);
-           var tableList = result.rows;
-           var dbVersion = result.dbVersion;
-           if("APP_SHARED_PREFERENCES" != db) {
-              $("#selected-db-info").text("点击数据库名称下载 : "+db +" Version : "+dbVersion);
-           }
-           $('#table-list').empty()
-           for(var count = 0; count < tableList.length; count++){
-             var tableName = tableList[count];
-             $("#table-list").append("<a href='#' data-db-name='"+db+"' data-table-name='"+tableName+"' class='list-group-item' onClick='getData(\""+ tableName + "\");'>" +tableName + "</a>");
+             console.info(result);
+             if(result.code==200){
+               var tableList = result.tableList;
+               var dbVersion = result.dbVersion;
+               if("APP_SHARED_PREFERENCES" != db) {
+                  $("#selected-db-info").text("点击数据库名称下载 : "+db +" Version : "+dbVersion);
+               }
+               $('#table-list').empty()
+               for(var count = 0; count < tableList.length; count++){
+                 var tableName = tableList[count];
+                 $("#table-list").append("<a href='#' data-db-name='"+db+"' data-table-name='"+tableName+"' class='list-group-item' onClick='getData(\""+ tableName + "\");'>" +tableName + "</a>");
+               }
+           }else{
+             showErrorInfo(result.msg);
            }
 
    }});
