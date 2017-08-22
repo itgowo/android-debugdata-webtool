@@ -117,10 +117,9 @@ public class DatabaseHelper {
                 }
                 tableData.setTableColumns(mTableDatas);
             }
-
+            tableData.setTableDatas(new ArrayList<Response.TableData>());
             List<Response.TableData> mTableDatas = new ArrayList<>();
             if (cursor.getCount() > 0) {
-
                 do {
                     List<Response.TableData> row = new ArrayList<>();
                     for (int i = 0; i < cursor.getColumnCount(); i++) {
@@ -185,7 +184,7 @@ public class DatabaseHelper {
         if (cursor != null) {
             cursor.moveToFirst();
             if (cursor.getCount() > 0) {
-                while (cursor.moveToNext()) {
+                do {
                     Response.TableInfo tableInfo = new Response.TableInfo();
                     for (int i = 0; i < cursor.getColumnCount(); i++) {
                         final String columnName = cursor.getColumnName(i);
@@ -202,7 +201,7 @@ public class DatabaseHelper {
 
                     }
                     tableInfoList.add(tableInfo);
-                }
+                } while (cursor.moveToNext());
             }
             cursor.close();
             return tableInfoList;

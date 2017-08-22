@@ -29,10 +29,8 @@ var isDatabaseSelected = true;
 function getData(tableName) {
 
    $.ajax({url: "getAllDataFromTheTable?tableName="+tableName, success: function(result){
-
            result = JSON.parse(result);
            inflateData(result);
-
    }});
 
 }
@@ -63,7 +61,7 @@ function getDBList() {
 
    $.ajax({type:"POST",url: "getDbList", success: function(result){
            result = JSON.parse(result);
-            console.info(result);
+//            console.info(result);
            if(result.code==200){
                var dbList = result.dbList;
 
@@ -108,7 +106,7 @@ function openDatabaseAndGetTableList(db) {
    $.ajax({url: "getTableList?database="+db, success: function(result){
 
            result = JSON.parse(result);
-             console.info(result);
+//             console.info(result);
              if(result.code==200){
                var tableList = result.tableList;
                var dbVersion = result.dbVersion;
@@ -130,27 +128,22 @@ function openDatabaseAndGetTableList(db) {
 
 function inflateData(result){
 
-   if(result.isSuccessful){
-
-      if(!result.isSelectQuery){
+   if(result.code==200){
+//      if(!result.isSelectQuery){
          showSuccessInfo("查询成功");
-         return;
-      }
-
-      var columnHeader = result.tableInfos;
-
+//         return;
+//      }
+        console.info(result)
+      var columnHeader = result.tableColumns;
+     var columnData = result.tableDatas;
       // set function to return cell data for different usages like set, display, filter, search etc..
       for(var i = 0; i < columnHeader.length; i++) {
         columnHeader[i]['targets'] = i;
         columnHeader[i]['data'] = function(row, type, val, meta) {
-            var dataType = row[meta.col].dataType;
-            if (type == "sort" && dataType == "boolean") {
-                return row[meta.col].value ? 1 : 0;
-            }
-            return row[meta.col].value;
+            return   columnData[ meta.col].value  ;
         }
       }
-      var columnData = result.rows;
+
        var tableId = "#db-data";
         if ($.fn.DataTable.isDataTable(tableId) ) {
           $(tableId).DataTable().destroy();
@@ -251,11 +244,12 @@ function inflateData(result){
        $(".dataTables_scrollHeadInner").css({"width":"100%"});
        $(".table ").css({"width":"100%"});
    }else{
-      if(!result.isSelectQuery){
-         showErrorInfo("查询失败");
-      }else {
-         showErrorInfo("发生未知错误");
-      }
+//      if(!result.isSelectQuery){
+//         showErrorInfo("查询失败");
+//      }else {
+//         showErrorInfo("发生未知错误");
+//      }
+    showErrorInfo(result.msg);
    }
 
 }
