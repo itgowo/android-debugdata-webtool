@@ -23,6 +23,7 @@ import android.content.Context;
 import android.content.res.AssetManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.text.TextUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,9 +35,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.httpParser.HttpRequest;
-import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.model.Request;
-import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.model.Request.RowDataRequest;
+import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.model.RowDataRequest;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.model.TableDataResponse;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.model.UpdateRowResponse;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.utils.Constants;
@@ -74,14 +73,14 @@ public class RequestHandler {
      *
      * @param mSocket
      */
-    public void asynchronousHandle(final Socket mSocket) {
+    public void asynHandle(final Socket mSocket) {
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
                     syncHandle(mSocket);
                 } catch (IOException mE) {
-                    DebugDataTool.onError("web server:boot error,分配并处理数据异常", mE);
+                    DebugDataTool.onError("web server:received request error,分配并处理数据异常", mE);
                 }
             }
         }).start();
@@ -97,7 +96,9 @@ public class RequestHandler {
             byte[] mBytes = new byte[4096];
             while (true) {
                 count = mInputStream.read(mBytes);
-                mStringBuilder.append(new String(mBytes, 0, count)).append("\r\n");
+                if (count > 0) {
+                    mStringBuilder.append(new String(mBytes, 0, count)).append("\r\n");
+                }
                 if (count < 4096) {
                     break;
                 }
@@ -116,41 +117,60 @@ public class RequestHandler {
 
             boolean isFile = false;
             byte[] bytes = new byte[0];
-            if (mHttpRequest.getPath() != null) {
-                if (mHttpRequest.getPath().equalsIgnoreCase("getDbList")) {
-                    bytes = DebugDataTool.ObjectToJson(getDBList()).getBytes();
-                } else if (mHttpRequest.getPath().equalsIgnoreCase("getAllDataFromTheTable")) {
-                    bytes = DebugDataTool.ObjectToJson(getAllDataFromTheTableResponse(mHttpRequest.getParameter().get("tableName"))).getBytes();
-                } else if (mHttpRequest.getPath().equalsIgnoreCase("getTableList")) {
-                    bytes = DebugDataTool.ObjectToJson(getTableList(mHttpRequest.getParameter().get("database"))).getBytes();
-                } else if (mHttpRequest.getPath().equalsIgnoreCase("addTableData")) {
-                    final String response = addTableDataAndGetResponse(mHttpRequest.getPath());
-                    bytes = response.getBytes();
-                } else if (mHttpRequest.getPath().equalsIgnoreCase("updateTableData")) {
-                    final String response = updateTableDataAndGetResponse(mHttpRequest.getPath());
-                    bytes = response.getBytes();
-                } else if (mHttpRequest.getPath().equalsIgnoreCase("deleteTableData")) {
-                    final String response = deleteTableDataAndGetResponse(mHttpRequest.getPath());
-                    bytes = response.getBytes();
-                } else if (mHttpRequest.getPath().equalsIgnoreCase("query")) {
-                    final String response = executeQueryAndGetResponse(mHttpRequest.getRequestURI());
-                    bytes = response.getBytes();
-                } else if (mHttpRequest.getPath().equalsIgnoreCase("downloadDb")) {
-                    isFile = true;
-                    if (Constants.APP_SHARED_PREFERENCES.equals(mSelectedDatabase)) {
-                        bytes = Utils.getSharedPreferences(mSelectedDatabase, PrefHelper.getSharedPreference(mContext));
-                    } else {
-                        bytes = Utils.getDatabase(mSelectedDatabase, mDatabaseFiles);
-                    }
-                } else if (mHttpRequest.getPath().isEmpty()) {
+            String mAction = null;
+            if (TextUtils.isEmpty(mHttpRequest.getPath())) {
+                if (TextUtils.isEmpty(mHttpRequest.getBody())) {//index.html
                     isFile = true;
                     bytes = Utils.loadContent("index.html", mAssets);
                 } else {
-                    isFile = true;
-                    bytes = Utils.loadContent(mHttpRequest.getPath(), mAssets);
+                    //post请求数据
+                    Request mRequest = null;
+                    try {
+                        mRequest = DebugDataTool.JsonToObject(mHttpRequest.getBody(), Request.class);
+                    } catch (Exception mE) {
+                        DebugDataTool.onError("web server:Request error,http请求解析异常", mE);
+                    }
+                    if (mRequest == null || TextUtils.isEmpty(mRequest.getAction())) {
+                        DebugDataTool.onError("web server:Request data is null or action is null,http请求没有action，无法解析操作", new Throwable("action is null"));
+                        return;
+                    }
+                    mAction = mRequest.getAction();
+                    switch (mRequest.getAction()) {
+                        case "getDbList":
+                            bytes = DebugDataTool.ObjectToJson(getDBList()).getBytes();
+                            break;
+                        case "getTableList":
+                            bytes = DebugDataTool.ObjectToJson(getTableList(mHttpRequest.getParameter().get("database"))).getBytes();
+                            break;
+                        case "getAllDataFromTheTable":
+                            bytes = DebugDataTool.ObjectToJson(getAllDataFromTheTableResponse(mHttpRequest.getParameter().get("tableName"))).getBytes();
+                            break;
+                        case "addTableData":
+                            bytes = addTableDataAndGetResponse(mHttpRequest.getPath()).getBytes();
+                            break;
+                        case "updateTableData":
+                            bytes = updateTableDataAndGetResponse(mHttpRequest.getPath()).getBytes();
+                            break;
+                        case "deleteTableData":
+                            bytes = deleteTableDataAndGetResponse(mHttpRequest.getPath()).getBytes();
+                            break;
+                        case "query":
+                            bytes = executeQueryAndGetResponse(mHttpRequest.getRequestURI()).getBytes();
+                            break;
+                        case "downloadDb":
+                            isFile = true;
+                            bytes = Utils.getDatabase(mSelectedDatabase, mDatabaseFiles);
+                            break;
+                        case "downloadSp":
+                            isFile = true;
+                            bytes = Utils.getSharedPreferences(mSelectedDatabase, PrefHelper.getSharedPreference(mContext));
+                            break;
+                    }
                 }
-
-
+            } else {
+                //文件请求
+                isFile = true;
+                bytes = Utils.loadContent(mHttpRequest.getPath(), mAssets);
             }
             if (!isFile) {
                 DebugDataTool.onRequest(mStringBuilder.toString(), mHttpRequest);
@@ -164,10 +184,8 @@ public class RequestHandler {
             }
 
             output.println("HTTP/1.0 200 OK");
-
             output.println("Content-Type: " + Utils.detectMimeType(mHttpRequest.getPath()));
-
-            if (mHttpRequest.getPath().equalsIgnoreCase("downloadDb")) {
+            if (!TextUtils.isEmpty(mAction) && (mAction.equalsIgnoreCase("downloadDb") || mAction.equalsIgnoreCase("downloadSp"))) {
                 output.println("Content-Disposition: attachment; filename=" + mSelectedDatabase);
             } else {
                 output.println("Content-Length: " + bytes.length);

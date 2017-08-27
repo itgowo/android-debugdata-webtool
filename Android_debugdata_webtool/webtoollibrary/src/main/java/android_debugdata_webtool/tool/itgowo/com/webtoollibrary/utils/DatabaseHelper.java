@@ -29,7 +29,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.Response;
-import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.model.Request.RowDataRequest;
+import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.model.RowDataRequest;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.model.TableDataResponse;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.model.UpdateRowResponse;
 
@@ -210,8 +210,7 @@ public class DatabaseHelper {
     }
 
 
-    public static UpdateRowResponse addRow(SQLiteDatabase db, String tableName,
-                                           List<RowDataRequest> rowDataRequests) {
+    public static UpdateRowResponse addRow(SQLiteDatabase db, String tableName, List<RowDataRequest> rowDataRequests) {
         UpdateRowResponse updateRowResponse = new UpdateRowResponse();
 
         if (rowDataRequests == null || tableName == null) {

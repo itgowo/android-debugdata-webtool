@@ -14,7 +14,7 @@ public class Response {
     private int code = code_OK;
     private String msg = "success";
     private String action;
-    private int dbVersion;
+    private Integer dbVersion;
     /**
      * 数据库列表
      */
@@ -38,7 +38,7 @@ public class Response {
     /**
      * 是否可编辑数据
      */
-    private boolean isEditable;
+    private Boolean isEditable ;
 
 
     public static class TableInfo {
@@ -51,11 +51,11 @@ public class Response {
         public Object value;
     }
 
-    public boolean isEditable() {
+    public Boolean isEditable() {
         return isEditable;
     }
 
-    public Response setEditable(boolean mEditable) {
+    public Response setEditable(Boolean mEditable) {
         isEditable = mEditable;
         return this;
     }
@@ -114,11 +114,11 @@ public class Response {
         return this;
     }
 
-    public int getDbVersion() {
+    public Integer getDbVersion() {
         return dbVersion;
     }
 
-    public Response setDbVersion(int mDbVersion) {
+    public Response setDbVersion(Integer mDbVersion) {
         dbVersion = mDbVersion;
         return this;
     }

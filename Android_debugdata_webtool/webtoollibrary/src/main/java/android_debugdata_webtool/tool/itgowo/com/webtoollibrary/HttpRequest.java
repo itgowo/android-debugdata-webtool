@@ -1,6 +1,4 @@
-package android_debugdata_webtool.tool.itgowo.com.webtoollibrary.httpParser;
-
-import android.util.Log;
+package android_debugdata_webtool.tool.itgowo.com.webtoollibrary;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,12 +28,10 @@ public class HttpRequest {
 
     public static HttpRequest parser(String mHttp) throws Exception {
         if (mHttp == null || mHttp.isEmpty() || mHttp.length() < 5) {
-            Log.e(TAG, "parser: 数据不对，http报文不对", null);
+            DebugDataTool.onError(TAG,new Throwable("http parser: 数据不对，http报文不对"));
             return null;
         }
         HttpRequest mHttpRequest = new HttpRequest();
-
-
         String[] mStrings = mHttp.split("\r\n\r\n");
         String[] heads = new String[0];
         if (mStrings != null && mStrings.length > 0) {

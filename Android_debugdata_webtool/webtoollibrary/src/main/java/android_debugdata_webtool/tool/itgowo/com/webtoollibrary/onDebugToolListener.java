@@ -1,7 +1,5 @@
 package android_debugdata_webtool.tool.itgowo.com.webtoollibrary;
 
-import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.httpParser.HttpRequest;
-
 /**
  * Created by hnvfh on 2017/8/17.
  */

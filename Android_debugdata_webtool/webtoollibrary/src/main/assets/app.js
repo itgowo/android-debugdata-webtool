@@ -103,7 +103,7 @@ function openDatabaseAndGetTableList(db) {
     }
 
 
-   $.ajax({url: "getTableList?database="+db, success: function(result){
+   $.ajax({type:"POST",url: "getTableList?database="+db, success: function(result){
 
            result = JSON.parse(result);
 //             console.info(result);
@@ -133,14 +133,16 @@ function inflateData(result){
          showSuccessInfo("查询成功");
 //         return;
 //      }
-        console.info(result)
+        
       var columnHeader = result.tableColumns;
      var columnData = result.tableDatas;
+	   console.info(columnHeader)
       // set function to return cell data for different usages like set, display, filter, search etc..
       for(var i = 0; i < columnHeader.length; i++) {
         columnHeader[i]['targets'] = i;
         columnHeader[i]['data'] = function(row, type, val, meta) {
-            return   columnData[ meta.col].value  ;
+			 console.info(row);
+            return  row.value;
         }
       }
 
@@ -276,7 +278,7 @@ function updateTableData(updatedData, callback) {
     //execute request
     $.ajax({
         url: "updateTableData",
-        type: 'GET',
+        type: 'POST',
         data: requestParameters,
         success: function(response) {
             response = JSON.parse(response);
@@ -314,7 +316,7 @@ function deleteTableData(deleteData, callback) {
         //execute request
         $.ajax({
             url: "deleteTableData",
-            type: 'GET',
+            type: 'POST',
             data: requestParameters,
             success: function(response) {
                 response = JSON.parse(response);
@@ -355,7 +357,7 @@ function addTableData(deleteData, callback) {
     //execute request
     $.ajax({
         url: "addTableData",
-        type: 'GET',
+        type: 'POST',
         data: requestParameters,
         success: function(response) {
             response = JSON.parse(response);

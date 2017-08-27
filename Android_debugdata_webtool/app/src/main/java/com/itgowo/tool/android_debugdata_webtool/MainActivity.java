@@ -7,7 +7,7 @@ import android.util.Log;
 import com.alibaba.fastjson.JSON;
 
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.DebugDataTool;
-import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.httpParser.HttpRequest;
+import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.HttpRequest;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.onDebugToolListener;
 
 public class MainActivity extends AppCompatActivity {
@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onError(String mTip, Throwable mThrowable) {
-                Log.e("DebugDataWebTool",mTip,mThrowable);
+                Log.e("DebugDataWebTool", mTip + "  " + mThrowable.getMessage());
             }
         });
     }

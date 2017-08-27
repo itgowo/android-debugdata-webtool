@@ -25,7 +25,6 @@ import android.util.Log;
 import java.io.File;
 import java.util.HashMap;
 
-import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.httpParser.HttpRequest;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.utils.NetworkUtils;
 
 /**

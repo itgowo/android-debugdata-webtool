@@ -78,7 +78,7 @@ public class ClientServer implements Runnable {
             while (mIsRunning) {
                 Socket socket = mServerSocket.accept();
                 if (isMultMode) {
-                    mRequestHandler.asynchronousHandle(socket);
+                    mRequestHandler.asynHandle(socket);
                 } else {
                     mRequestHandler.syncHandle(socket);
                 }
