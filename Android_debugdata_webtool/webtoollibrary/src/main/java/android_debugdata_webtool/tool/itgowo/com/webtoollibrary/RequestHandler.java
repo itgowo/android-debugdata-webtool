@@ -198,8 +198,6 @@ public class RequestHandler {
                     return;
                 }
             }
-
-
             output.println("HTTP/1.0 200 OK");
             output.println("Content-Type: " + Utils.detectMimeType(mHttpRequest.getPath()));
             if (!TextUtils.isEmpty(mAction) && (mAction.equalsIgnoreCase("downloadDb") || mAction.equalsIgnoreCase("downloadSp"))) {
@@ -281,10 +279,7 @@ public class RequestHandler {
      */
     private Response getSPList() {
         Response response = new Response();
-        List<String> dblist = new ArrayList<>();
-        dblist.add(Constants.APP_SHARED_PREFERENCES);
-//        PrefHelper.getAllPrefData(mContext, tableName);
-        response.setSpList(dblist);
+        response.setSpList(PrefHelper.getSharedPreferenceTags(mContext));
         return response;
     }
 
