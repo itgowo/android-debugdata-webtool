@@ -33,6 +33,7 @@ import java.net.Socket;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.model.RowDataRequest;
@@ -139,11 +140,14 @@ public class RequestHandler {
                         case "getDbList":
                             bytes = DebugDataTool.ObjectToJson(getDBList()).getBytes();
                             break;
-                        case "getTableList":
-                            bytes = DebugDataTool.ObjectToJson(getTableList(mHttpRequest.getParameter().get("database"))).getBytes();
+                        case "getSpList":
+                            bytes = DebugDataTool.ObjectToJson(getSPList()).getBytes();
                             break;
-                        case "getAllDataFromTheTable":
-                            bytes = DebugDataTool.ObjectToJson(getAllDataFromTheTableResponse(mHttpRequest.getParameter().get("tableName"))).getBytes();
+                        case "getTableList":
+                            bytes = DebugDataTool.ObjectToJson(getTableList(mRequest.getDatabase())).getBytes();
+                            break;
+                        case "getDataFromDbTable":
+                            bytes = DebugDataTool.ObjectToJson(getAllDataFromTheTableResponse(mRequest.getTableName(), mRequest.getPageIndex(), mRequest.getPageSize())).getBytes();
                             break;
                         case "addTableData":
                             bytes = addTableDataAndGetResponse(mHttpRequest.getPath()).getBytes();
@@ -175,13 +179,26 @@ public class RequestHandler {
             if (!isFile) {
                 DebugDataTool.onRequest(mStringBuilder.toString(), mHttpRequest);
                 DebugDataTool.onResponse(new String(bytes));
+                if (null == bytes) {
+                    output.println("HTTP/1.0 500 Internal Server Error");
+                    output.println();
+                    output.println(new Response().setCode(Response.code_Error).setMsg("服务器异常").toJson());
+                    output.println();
+                    output.flush();
+                    return;
+                }
             } else {
                 DebugDataTool.onRequest(mHttpRequest.getPath(), mHttpRequest);
+                if (null == bytes) {
+                    output.println("HTTP/1.0 404 Not Found");
+                    output.println();
+                    output.println(new Response().setCode(Response.code_FileNotFound).setMsg("请求的资源不存在").toJson());
+                    output.println();
+                    output.flush();
+                    return;
+                }
             }
-            if (null == bytes) {
-                writeServerError(output);
-                return;
-            }
+
 
             output.println("HTTP/1.0 200 OK");
             output.println("Content-Type: " + Utils.detectMimeType(mHttpRequest.getPath()));
@@ -217,10 +234,6 @@ public class RequestHandler {
         mCustomDatabaseFiles = customDatabaseFiles;
     }
 
-    private void writeServerError(PrintStream output) {
-        output.println("HTTP/1.0 500 Internal Server Error");
-        output.flush();
-    }
 
     private void openDatabase(String database) {
         closeDatabase();
@@ -250,7 +263,12 @@ public class RequestHandler {
         Response response = new Response();
         if (mDatabaseFiles != null) {
             List<String> dblist = new ArrayList<>(mDatabaseFiles.keySet());
-            dblist.add(Constants.APP_SHARED_PREFERENCES);
+            Iterator<String> mIterator = dblist.iterator();
+            while (mIterator.hasNext()) {
+                if (mIterator.next().contains("-journal")) {
+                    mIterator.remove();
+                }
+            }
             response.setDbList(dblist);
         }
         return response;
@@ -265,17 +283,27 @@ public class RequestHandler {
         Response response = new Response();
         List<String> dblist = new ArrayList<>();
         dblist.add(Constants.APP_SHARED_PREFERENCES);
-        response.setDbList(dblist);
+//        PrefHelper.getAllPrefData(mContext, tableName);
+        response.setSpList(dblist);
         return response;
     }
 
-    private Response getAllDataFromTheTableResponse(String tableName) {
-        Response response;
+    private Response getAllDataFromTheTableResponse(String tableName, Integer pageindex, Integer pagesize) {
+        if (tableName == null || tableName.length() < 1) {
+            return null;
+        }
+        if (pageindex == null || pageindex < 1) {
+            pageindex = 1;
+        }
+        if (pagesize == null || pagesize < 1) {
+            pagesize = 10;
+        }
+        Response response = null;
         if (isDbOpened) {
-            String sql = "SELECT * FROM " + tableName;
+            String sql = "SELECT * FROM " + tableName + " limit " + (pageindex - 1) * pagesize + "," + pagesize;
             response = DatabaseHelper.getTableData(mDatabase, sql, tableName);
         } else {
-            response = PrefHelper.getAllPrefData(mContext, tableName);
+//            response = PrefHelper.getAllPrefData(mContext, tableName);
         }
 
         return response;
@@ -321,6 +349,9 @@ public class RequestHandler {
     }
 
     private Response getTableList(String database) {
+        if (database == null || database.length() < 1) {
+            return null;
+        }
         Response response = new Response();
         if (Constants.APP_SHARED_PREFERENCES.equals(database)) {
             response.setSpList(PrefHelper.getSharedPreferenceTags(mContext));

@@ -17,6 +17,11 @@ public class Request {
      * 数据库名
      */
     private String database;
+
+    /**
+     * 数据表明
+     */
+    private String tableName;
     /**
      * 携带的数据
      */
@@ -25,6 +30,36 @@ public class Request {
      *
      */
     private List<RowDataRequest> RowDataRequests;
+    private Integer pageIndex;
+    private Integer pageSize;
+
+
+    public Integer getPageIndex() {
+        return pageIndex;
+    }
+
+    public Request setPageIndex(Integer mPageIndex) {
+        pageIndex = mPageIndex;
+        return this;
+    }
+
+    public Integer getPageSize() {
+        return pageSize;
+    }
+
+    public Request setPageSize(Integer mPageSize) {
+        pageSize = mPageSize;
+        return this;
+    }
+
+    public String getTableName() {
+        return tableName;
+    }
+
+    public Request setTableName(String mTableName) {
+        tableName = mTableName;
+        return this;
+    }
 
     public List<RowDataRequest> getRowDataRequests() {
         return RowDataRequests;

@@ -62,6 +62,8 @@ public class DatabaseHelper {
     public static Response getTableData(SQLiteDatabase db, String selectQuery, String tableName) {
 
         Response tableData = new Response();
+        Response.TableData mTableData = new Response.TableData();
+        tableData.setTableData(mTableData);
         if (tableName == null) {
             tableName = getTableName(selectQuery);
         }
@@ -70,13 +72,14 @@ public class DatabaseHelper {
 
         if (tableName != null) {
             final String pragmaQuery = "PRAGMA table_info(" + quotedTableName + ")";
-            tableData.setTableColumns(getTableInfo(db, pragmaQuery));
+            mTableData.setTableColumns(getTableInfo(db, pragmaQuery));
         }
         Cursor cursor = null;
+
+        //检查是否是view视图，如果是不能当做数据表编辑
         boolean isView = false;
         try {
-            cursor = db.rawQuery("SELECT type FROM sqlite_master WHERE name=?",
-                    new String[]{quotedTableName});
+            cursor = db.rawQuery("SELECT type FROM sqlite_master WHERE name=?", new String[]{quotedTableName});
             if (cursor.moveToFirst()) {
                 isView = "view".equalsIgnoreCase(cursor.getString(0));
             }
@@ -87,14 +90,16 @@ public class DatabaseHelper {
                 cursor.close();
             }
         }
-        tableData.setEditable(tableName != null && tableData.getTableColumns() != null && !isView);
-
+        tableData.setEditable(tableName != null && mTableData.getTableColumns() != null && !isView);
 
         if (!TextUtils.isEmpty(tableName)) {
             selectQuery = selectQuery.replace(tableName, quotedTableName);
         }
-
         try {
+            cursor = db.rawQuery("SELECT COUNT(*) FROM " + quotedTableName, null);
+            cursor.moveToFirst();
+            mTableData.setDataCount(cursor.getLong(0));
+            cursor.close();
             cursor = db.rawQuery(selectQuery, null);
         } catch (Exception e) {
             e.printStackTrace();
@@ -102,59 +107,67 @@ public class DatabaseHelper {
             tableData.setMsg("database error 数据库异常");
             return tableData;
         }
-
         if (cursor != null) {
             cursor.moveToFirst();
             // setting tableInfo when tableName is not known and making
             // it non-editable also by making isPrimary true for all
-            if (tableData.getTableColumns() == null) {
-                List<Response.TableInfo> mTableDatas = new ArrayList<>();
-                for (int i = 0; i < cursor.getColumnCount(); i++) {
-                    Response.TableInfo tableInfo = new Response.TableInfo();
-                    tableInfo.title = cursor.getColumnName(i);
-                    tableInfo.isPrimary = true;
-
-                }
-                tableData.setTableColumns(mTableDatas);
-            }
-            tableData.setTableDatas(new ArrayList<Response.TableData>());
-            List<Response.TableData> mTableDatas = new ArrayList<>();
+//            if (mTableData.getTableColumns() == null) {
+//                List<Response.TableInfo> mTableDatas = new ArrayList<>();
+//                for (int i = 0; i < cursor.getColumnCount(); i++) {
+//                    Response.TableInfo tableInfo = new Response.TableInfo();
+//                    tableInfo.setTitle(cursor.getColumnName(i));
+//                    tableInfo.setPrimary(true);
+//                    switch (cursor.getType(i)) {
+//                        case Cursor.FIELD_TYPE_BLOB:
+//                            tableInfo.setDataType(DataType.TEXT);
+//                            break;
+//                        case Cursor.FIELD_TYPE_FLOAT:
+//                            tableInfo.setDataType(DataType.REAL);
+//                            break;
+//                        case Cursor.FIELD_TYPE_INTEGER:
+//                            tableInfo.setDataType(DataType.INTEGER);
+//                            break;
+//                        case Cursor.FIELD_TYPE_STRING:
+//                            tableInfo.setDataType(DataType.TEXT);
+//                            break;
+//                        default:
+//                            tableInfo.setDataType(DataType.TEXT);
+//                    }
+//                }
+//                mTableData.setTableColumns(mTableDatas);
+//            }
+            List<List<Object>> mTableDatas = new ArrayList<>();
+            mTableData.setTableDatas(mTableDatas);
             if (cursor.getCount() > 0) {
                 do {
-                    List<Response.TableData> row = new ArrayList<>();
+                    List<Object> row = new ArrayList<>();
                     for (int i = 0; i < cursor.getColumnCount(); i++) {
-                        Response.TableData columnData = new Response.TableData();
+                        Object mValue = null;
                         switch (cursor.getType(i)) {
                             case Cursor.FIELD_TYPE_BLOB:
-                                columnData.dataType = DataType.TEXT;
-                                columnData.value = ConverterUtils.blobToString(cursor.getBlob(i));
+                                mValue = ConverterUtils.blobToString(cursor.getBlob(i));
                                 break;
                             case Cursor.FIELD_TYPE_FLOAT:
-                                columnData.dataType = DataType.REAL;
-                                columnData.value = cursor.getDouble(i);
+                                mValue = cursor.getDouble(i);
                                 break;
                             case Cursor.FIELD_TYPE_INTEGER:
-                                columnData.dataType = DataType.INTEGER;
-                                columnData.value = cursor.getLong(i);
+                                mValue = cursor.getLong(i);
                                 break;
                             case Cursor.FIELD_TYPE_STRING:
-                                columnData.dataType = DataType.TEXT;
-                                columnData.value = cursor.getString(i);
-                                if (columnData.value == null) {
-                                    columnData.value = "";
+                                mValue = cursor.getString(i);
+                                if (mValue == null) {
+                                    mValue = "";
                                 }
                                 break;
                             default:
-                                columnData.dataType = DataType.TEXT;
-                                columnData.value = cursor.getString(i);
-                                if (columnData.value == null) {
-                                    columnData.value = "";
+                                mValue = cursor.getString(i);
+                                if (mValue == null) {
+                                    mValue = "";
                                 }
                         }
-                        row.add(columnData);
+                        row.add(mValue);
                     }
-                    tableData.getTableDatas().addAll(row);
-
+                    mTableDatas.add(row);
                 } while (cursor.moveToNext());
             }
             cursor.close();
@@ -172,9 +185,9 @@ public class DatabaseHelper {
         return String.format("[%s]", tableName);
     }
 
-    private static List<Response.TableInfo> getTableInfo(SQLiteDatabase db, String pragmaQuery) {
+    private static List<Response.TableData.TableInfo> getTableInfo(SQLiteDatabase db, String pragmaQuery) {
         Cursor cursor;
-        List<Response.TableInfo> tableInfoList = new ArrayList<>();
+        List<Response.TableData.TableInfo> tableInfoList = new ArrayList<>();
         try {
             cursor = db.rawQuery(pragmaQuery, null);
         } catch (Exception e) {
@@ -185,15 +198,24 @@ public class DatabaseHelper {
             cursor.moveToFirst();
             if (cursor.getCount() > 0) {
                 do {
-                    Response.TableInfo tableInfo = new Response.TableInfo();
+                    Response.TableData.TableInfo tableInfo = new Response.TableData.TableInfo();
                     for (int i = 0; i < cursor.getColumnCount(); i++) {
                         final String columnName = cursor.getColumnName(i);
                         switch (columnName) {
-                            case Constants.PK:
-                                tableInfo.isPrimary = cursor.getInt(i) == 1;
+                            case Constants.PrimaryKey:
+                                tableInfo.setPrimary(cursor.getInt(i) == 1);
+                                break;
+                            case Constants.TYPE:
+                                tableInfo.setDataType(cursor.getString(i));
                                 break;
                             case Constants.NAME:
-                                tableInfo.title = cursor.getString(i);
+                                tableInfo.setTitle(cursor.getString(i));
+                                break;
+                            case Constants.NotNull:
+                                tableInfo.setNotNull(cursor.getInt(i) == 1);
+                                break;
+                            case Constants.DefaultValue:
+                                tableInfo.setDefaultValue(cursor.getString(i));
                                 break;
                             default:
 

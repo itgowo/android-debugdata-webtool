@@ -97,7 +97,7 @@ public class DebugDataTool {
         clientServer.start();
         addressLog = NetworkUtils.getAddressLog(context, portNumber);
         Log.d(TAG, "Open http://" + addressLog + " in your browser");
-        Log.d(TAG, "请用浏览器打开 http://" + addressLog);
+        System.out.println(TAG + "   请用浏览器打开 http://" + addressLog);
     }
 
     protected static void onError(String mTip, Throwable mThrowable) {

@@ -34,7 +34,6 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.Response;
-
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.model.RowDataRequest;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.model.UpdateRowResponse;
 
@@ -94,62 +93,63 @@ public class PrefHelper {
      * @param tag
      * @return
      */
-    public static Response getAllPrefData(Context context, String tag) {
-
-        Response response = new Response();
-        response.setEditable(true);
-
-        /**
-         * 设置表结构
-         */
-        Response.TableInfo keyInfo = new Response.TableInfo();
-        keyInfo.isPrimary = true;
-        keyInfo.title = "Key";
-        Response.TableInfo valueInfo = new Response.TableInfo();
-        valueInfo.isPrimary = false;
-        valueInfo.title = "Value";
-        response.setTableColumns(new ArrayList<Response.TableInfo>());
-        response.getTableColumns().add(keyInfo);
-        response.getTableColumns().add(valueInfo);
-
-
-        response.setTableDatas(new ArrayList<Response.TableData>());
-        SharedPreferences preferences = context.getSharedPreferences(tag, Context.MODE_PRIVATE);
-        Map<String, ?> allEntries = preferences.getAll();
-        for (Map.Entry<String, ?> entry : allEntries.entrySet()) {
-            List<Response.TableData> row = new ArrayList<>();
-            Response.TableData keyColumnData = new Response.TableData();
-            keyColumnData.dataType = DataType.TEXT;
-            keyColumnData.value = entry.getKey();
-
-            row.add(keyColumnData);
-
-            Response.TableData valueColumnData = new Response.TableData();
-            valueColumnData.value = entry.getValue().toString();
-            if (entry.getValue() != null) {
-                if (entry.getValue() instanceof String) {
-                    valueColumnData.dataType = DataType.TEXT;
-                } else if (entry.getValue() instanceof Integer) {
-                    valueColumnData.dataType = DataType.INTEGER;
-                } else if (entry.getValue() instanceof Long) {
-                    valueColumnData.dataType = DataType.LONG;
-                } else if (entry.getValue() instanceof Float) {
-                    valueColumnData.dataType = DataType.FLOAT;
-                } else if (entry.getValue() instanceof Boolean) {
-                    valueColumnData.dataType = DataType.BOOLEAN;
-                } else if (entry.getValue() instanceof Set) {
-                    valueColumnData.dataType = DataType.STRING_SET;
-                }
-            } else {
-                valueColumnData.dataType = DataType.TEXT;
-            }
-            row.add(valueColumnData);
-            response.getTableDatas().addAll(row);
-        }
-
-        return response;
-
-    }
+//    public static Response getAllPrefData(Context context, String tag) {
+//
+//        Response response = new Response();
+//        response.setEditable(true);
+//
+//        /**
+//         * 设置表结构
+//         */
+//        Response.TableInfo keyInfo = new Response.TableInfo();
+//        keyInfo.isPrimary = true;
+//        keyInfo.title = "Key";
+//        Response.TableInfo valueInfo = new Response.TableInfo();
+//        valueInfo.isPrimary = false;
+//        valueInfo.title = "Value";
+//        response.setTableColumns(new ArrayList<Response.TableInfo>());
+//        response.getTableColumns().add(keyInfo);
+//        response.getTableColumns().add(valueInfo);
+//
+//
+//        response.setTableDatas(new ArrayList<Response.TableData>());
+//        SharedPreferences preferences = context.getSharedPreferences(tag, Context.MODE_PRIVATE);
+//        Map<String, ?> allEntries = preferences.getAll();
+//
+//        for (Map.Entry<String, ?> entry : allEntries.entrySet()) {
+//            List<Response.TableData.TableItemData> row = new ArrayList<>();
+//            Response.TableData.TableItemData keyColumnData = new Response.TableData.TableItemData();
+//            keyColumnData.setDataType(DataType.TEXT);
+//            keyColumnData.setValue(entry.getKey());
+//
+//            row.add(keyColumnData);
+//
+//            Response.TableData.TableItemData valueColumnData = new Response.TableData.TableItemData();
+//            valueColumnData.setValue(entry.getValue().toString());
+//            if (entry.getValue() != null) {
+//                if (entry.getValue() instanceof String) {
+//                    valueColumnData.setDataType(DataType.TEXT);
+//                } else if (entry.getValue() instanceof Integer) {
+//                    valueColumnData.setDataType( DataType.INTEGER);
+//                } else if (entry.getValue() instanceof Long) {
+//                    valueColumnData.setDataType( DataType.LONG);
+//                } else if (entry.getValue() instanceof Float) {
+//                    valueColumnData.setDataType(DataType.FLOAT);
+//                } else if (entry.getValue() instanceof Boolean) {
+//                    valueColumnData.setDataType( DataType.BOOLEAN);
+//                } else if (entry.getValue() instanceof Set) {
+//                    valueColumnData.setDataType( DataType.STRING_SET);
+//                }
+//            } else {
+//                valueColumnData.setDataType(DataType.TEXT);
+//            }
+//            row.add(valueColumnData);
+//            response.getTableDatas().add(new Response.TableData().setTableitemdatas(row));
+//        }
+//
+//        return response;
+//
+//    }
 
     public static UpdateRowResponse addOrUpdateRow(Context context, String tableName, List<RowDataRequest> rowDataRequests) {
         UpdateRowResponse updateRowResponse = new UpdateRowResponse();

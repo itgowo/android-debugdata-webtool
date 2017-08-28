@@ -1,5 +1,7 @@
 package android_debugdata_webtool.tool.itgowo.com.webtoollibrary;
 
+import org.json.JSONArray;
+
 import java.util.List;
 
 /**
@@ -11,6 +13,7 @@ public class Response {
     public static final int code_Error = 201;
     public static final int code_SQLERROR = 202;
     public static final int code_SQLNODATA = 203;
+    public static final int code_FileNotFound = 204;
     private int code = code_OK;
     private String msg = "success";
     private String action;
@@ -27,28 +30,127 @@ public class Response {
      * 数据库中所有表
      */
     private List<String> tableList;
-    /**
-     * 表结构信息
-     */
-    private List<TableInfo> tableColumns;
-    /**
-     * 表数据
-     */
-    private List<TableData> tableDatas;
+
+
+    private TableData tableData;
+
+
+
+
     /**
      * 是否可编辑数据
      */
-    private Boolean isEditable ;
+    private Boolean isEditable;
 
 
-    public static class TableInfo {
-        public String title;
-        public boolean isPrimary;
+
+    public static class TableData{
+        /**
+         * 表结构信息
+         */
+        private List<TableInfo> tableColumns;
+        /**
+         * 表数据
+         */
+        private List<List<Object>> tableDatas;
+
+        private Long dataCount;
+
+        public List<TableInfo> getTableColumns() {
+            return tableColumns;
+        }
+
+        public TableData setTableColumns(List<TableInfo> mTableColumns) {
+            tableColumns = mTableColumns;
+            return this;
+        }
+
+        public List<List<Object>> getTableDatas() {
+            return tableDatas;
+        }
+
+        public TableData setTableDatas(List<List<Object>> mTableDatas) {
+            tableDatas = mTableDatas;
+            return this;
+        }
+
+        public Long getDataCount() {
+            return dataCount;
+        }
+
+        public TableData setDataCount(Long mDataCount) {
+            dataCount = mDataCount;
+            return this;
+        }
+
+        public static class TableInfo {
+            private String title;
+            private boolean isPrimary;
+            private Boolean isNotNull;
+            private String defaultValue;
+            private String dataType;
+
+            public Boolean isNotNull() {
+                return isNotNull;
+            }
+
+            public TableInfo setNotNull(Boolean mNotNull) {
+                isNotNull = mNotNull;
+                return this;
+            }
+
+            public String getDefaultValue() {
+                return defaultValue;
+            }
+
+            public TableInfo setDefaultValue(String mDefaultValue) {
+                defaultValue = mDefaultValue;
+                return this;
+            }
+
+            public String getTitle() {
+                return title;
+            }
+
+            public TableInfo setTitle(String mTitle) {
+                title = mTitle;
+                return this;
+            }
+
+            public boolean isPrimary() {
+                return isPrimary;
+            }
+
+            public TableInfo setPrimary(boolean mPrimary) {
+                isPrimary = mPrimary;
+                return this;
+            }
+
+            public String getDataType() {
+                return dataType;
+            }
+
+            public TableInfo setDataType(String mDataType) {
+                dataType = mDataType;
+                return this;
+            }
+
+
+        }
     }
 
-    public static class TableData {
-        public String dataType;
-        public Object value;
+
+    public TableData getTableData() {
+        return tableData;
+    }
+
+    public Response setTableData(TableData mTableData) {
+        tableData = mTableData;
+        return this;
+    }
+
+    public Boolean getEditable() {
+        return isEditable;
     }
 
     public Boolean isEditable() {
@@ -60,23 +162,7 @@ public class Response {
         return this;
     }
 
-    public List<TableInfo> getTableColumns() {
-        return tableColumns;
-    }
 
-    public Response setTableColumns(List<TableInfo> mTableColumns) {
-        tableColumns = mTableColumns;
-        return this;
-    }
-
-    public List<TableData> getTableDatas() {
-        return tableDatas;
-    }
-
-    public Response setTableDatas(List<TableData> mTableDatas) {
-        tableDatas = mTableDatas;
-        return this;
-    }
 
     public List<String> getTableList() {
         return tableList;
@@ -139,5 +225,9 @@ public class Response {
     public Response setSpList(List<String> mSpList) {
         spList = mSpList;
         return this;
+    }
+
+    public String toJson(){
+        return DebugDataTool.ObjectToJson(this);
     }
 }
