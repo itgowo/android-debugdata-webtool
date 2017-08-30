@@ -6,6 +6,8 @@ import android.util.Log;
 
 import com.alibaba.fastjson.JSON;
 
+import java.util.Arrays;
+
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.DebugDataTool;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.HttpRequest;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.onDebugToolListener;
@@ -53,5 +55,8 @@ public class MainActivity extends AppCompatActivity {
                 Log.e("DebugDataWebTool", mTip + "  " + mThrowable.getMessage());
             }
         });
+    }
+    public void test(){
+
     }
 }

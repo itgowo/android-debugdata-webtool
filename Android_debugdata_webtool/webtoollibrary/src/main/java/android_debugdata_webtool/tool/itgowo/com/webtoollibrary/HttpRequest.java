@@ -13,33 +13,48 @@ public class HttpRequest {
     private String protocol;// 协议版本
     private String requestURI = "";//请求的URI地址  在HTTP请求的第一行的请求方法后面
     private String path = "";//path地址
-    private String host;//请求的主机信息
-    private String Connection;//Http请求连接状态信息 对应HTTP请求中的Connection
-    private String agent;// 代理，用来标识代理的浏览器信息 ,对应HTTP请求中的User-Agent:
-    private String language;//对应Accept-Language
-    private String encoding;//请求的编码方式  对应HTTP请求中的Accept-Encoding
-    private String charset;//请求的字符编码  对应HTTP请求中的Accept-Charset
     private String body;//body信息
-    private Map<String, String> mParameter = new HashMap<>();
+
+    public static String Accept_Charset = "Accept-Charset";//请求的字符编码  对应HTTP请求中的Accept-Charset
+    public static String Connection = "Connection";//Http请求连接状态信息 对应HTTP请求中的Connection
+    public static String Host = "Host";//请求的主机信息
+    public static String User_Agent = "User-Agent";// 代理，用来标识代理的浏览器信息 ,对应HTTP请求中的User-Agent:
+    public static String Accept_Language = "Accept-Language";//对应Accept-Language
+    public static String Accept_Encoding = "Accept-Encoding";//请求的编码方式  对应HTTP请求中的Accept-Encoding
+
+    private Map<String, String> mParameter = new HashMap<>();//get请求附加参数
+    private Map<String, String> mHeaders = new HashMap<>();//head信息
 
 
     private HttpRequest() {
     }
 
+
     public static HttpRequest parser(String mHttp) throws Exception {
         if (mHttp == null || mHttp.isEmpty() || mHttp.length() < 5) {
-            DebugDataTool.onError(TAG,new Throwable("http parser: 数据不对，http报文不对"));
+            DebugDataTool.onError(TAG, new Throwable("http parser: 数据不对，http报文不对"));
             return null;
         }
         HttpRequest mHttpRequest = new HttpRequest();
-        String[] mStrings = mHttp.split("\r\n\r\n");
-        String[] heads = new String[0];
-        if (mStrings != null && mStrings.length > 0) {
-            if (mStrings.length == 2) {
-                mHttpRequest.setBody(mStrings[1]);
+        int position = mHttp.indexOf("\r\n\r\n");//查找是否有连续两个换行
+        if (position > -1) {
+            parserHeader(mHttp, mHttpRequest, position);
+            mHttpRequest.setBody(mHttp.substring(position,mHttp.length()));
+        } else {
+            String[] mStrings = mHttp.split("\r\n");
+            if (mStrings != null && mStrings.length > 0 && mStrings[0].contains("HTTP/1.1")) {
+                parserHeader(mHttp, mHttpRequest, mHttp.trim().length());
+            } else {
+                mHttpRequest.setBody(mHttp);
             }
-            heads = mStrings[0].split("\r\n");
         }
+
+
+        return mHttpRequest;
+    }
+
+    private static void parserHeader(String mHttp, HttpRequest mHttpRequest, int position) {
+        String[] heads = mHttp.substring(0, position).trim().split("\r\n");
         if (heads != null && heads.length > 1) {
             String[] mRequestLine = heads[0].split(" ");
             mHttpRequest.setMethod(mRequestLine[0]);
@@ -60,30 +75,15 @@ public class HttpRequest {
                     }
                 }
             }
-        }
-        for (int mI = 0; mI < (heads.length - 1); mI++) {
-            String[] head = heads[mI + 1].split(":");
-            if (head == null || head.length != 2) {
-                continue;
-            }
-            if (head[0].equalsIgnoreCase("User-Agent")) {
-                mHttpRequest.setAgent(head[1]);
-            } else if (head[0].equalsIgnoreCase("Host")) {
-                mHttpRequest.setHost(head[1]);
-            } else if (head[0].equalsIgnoreCase("Accept-Charset")) {
-                mHttpRequest.setCharset(head[1]);
-            } else if (head[0].equalsIgnoreCase("Accept-Encoding")) {
-                mHttpRequest.setEncoding(head[1]);
-            } else if (head[0].equalsIgnoreCase("Connection")) {
-                mHttpRequest.setConnection(head[1]);
-            } else if (head[0].equalsIgnoreCase("Accept-Language")) {
-                mHttpRequest.setLanguage(head[1]);
 
+            for (int mI = 0; mI < (heads.length - 1); mI++) {
+                String[] head = heads[mI + 1].split(":");
+                if (head == null || head.length != 2) {
+                    continue;
+                }
+                mHttpRequest.mHeaders.put(head[0], head[1]);
             }
         }
-
-
-        return mHttpRequest;
     }
 
     public String getMethod() {
@@ -92,6 +92,15 @@ public class HttpRequest {
 
     public HttpRequest setMethod(String mMethod) {
         method = mMethod;
+        return this;
+    }
+
+    public Map<String, String> getHeaders() {
+        return mHeaders;
+    }
+
+    public HttpRequest setHeaders(Map<String, String> mHeaders) {
+        this.mHeaders = mHeaders;
         return this;
     }
 
@@ -138,60 +147,6 @@ public class HttpRequest {
 
     public HttpRequest setRequestURI(String mRequestURI) {
         requestURI = mRequestURI;
-        return this;
-    }
-
-    public String getHost() {
-        return host;
-    }
-
-    public HttpRequest setHost(String mHost) {
-        host = mHost;
-        return this;
-    }
-
-    public String getConnection() {
-        return Connection;
-    }
-
-    public HttpRequest setConnection(String mConnection) {
-        Connection = mConnection;
-        return this;
-    }
-
-    public String getAgent() {
-        return agent;
-    }
-
-    public HttpRequest setAgent(String mAgent) {
-        agent = mAgent;
-        return this;
-    }
-
-    public String getLanguage() {
-        return language;
-    }
-
-    public HttpRequest setLanguage(String mLanguage) {
-        language = mLanguage;
-        return this;
-    }
-
-    public String getEncoding() {
-        return encoding;
-    }
-
-    public HttpRequest setEncoding(String mEncoding) {
-        encoding = mEncoding;
-        return this;
-    }
-
-    public String getCharset() {
-        return charset;
-    }
-
-    public HttpRequest setCharset(String mCharset) {
-        charset = mCharset;
         return this;
     }
 
