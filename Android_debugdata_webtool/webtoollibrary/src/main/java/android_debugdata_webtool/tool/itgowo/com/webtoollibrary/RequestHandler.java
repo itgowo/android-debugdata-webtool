@@ -119,91 +119,107 @@ public class RequestHandler {
             boolean isFile = false;
             byte[] bytes = new byte[0];
             String mAction = null;
-            if (TextUtils.isEmpty(mHttpRequest.getPath())) {
-                if (TextUtils.isEmpty(mHttpRequest.getBody())) {//index.html
-                    isFile = true;
-                    bytes = Utils.loadContent("index.html", mAssets);
-                } else {
-                    //post请求数据
-                    Request mRequest = null;
-                    try {
-                        mRequest = DebugDataTool.JsonToObject(mHttpRequest.getBody(), Request.class);
-                    } catch (Exception mE) {
-                        DebugDataTool.onError("web server:Request error,http请求解析异常", mE);
+            if (mHttpRequest.getMethod().equalsIgnoreCase("OPTIONS")) {
+                output.println("HTTP/1.0 200 OK");
+                output.println("Access-Control-Allow-Origin: *");
+                output.println("Access-Control-Allow-Methods: *");
+                output.println("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept");
+                output.println("Access-Control-Max-Age: Origin, 3600");
+
+            } else {
+                if (TextUtils.isEmpty(mHttpRequest.getPath())) {
+                    if (TextUtils.isEmpty(mHttpRequest.getBody())) {//index.html
+                        isFile = true;
+                        mHttpRequest.setPath("index.html");
+                        bytes = Utils.loadContent("index.html", mAssets);
+                    } else {
+                        //post请求数据
+                        Request mRequest = null;
+                        try {
+                            mRequest = DebugDataTool.JsonToObject(mHttpRequest.getBody(), Request.class);
+                        } catch (Exception mE) {
+                            DebugDataTool.onError("web server:Request error,http请求解析异常", mE);
+                            onServerError(output, "web server:Request error,http请求解析异常 " + mE.getMessage());
+                            output.flush();
+                            return;
+                        }
+                        if (mRequest == null || TextUtils.isEmpty(mRequest.getAction())) {
+                            DebugDataTool.onError("web server:Request data is null or action is null,http请求没有action，无法解析操作", new Throwable("action is null"));
+                            onServerError(output, "web server:Request data is null or action is null,http请求没有action，无法解析操作");
+                            output.flush();
+                            return;
+                        }
+                        mAction = mRequest.getAction();
+                        switch (mRequest.getAction()) {
+                            case "getDbList":
+                                bytes = DebugDataTool.ObjectToJson(getDBList()).getBytes();
+                                break;
+                            case "getSpList":
+                                bytes = DebugDataTool.ObjectToJson(getSPList()).getBytes();
+                                break;
+                            case "getTableList":
+                                bytes = DebugDataTool.ObjectToJson(getTableList(mRequest.getDatabase())).getBytes();
+                                break;
+                            case "getDataFromDbTable":
+                                bytes = DebugDataTool.ObjectToJson(getAllDataFromTheTableResponse(mRequest.getTableName(), mRequest.getPageIndex(), mRequest.getPageSize())).getBytes();
+                                break;
+                            case "addTableData":
+                                bytes = addTableDataAndGetResponse(mHttpRequest.getPath()).getBytes();
+                                break;
+                            case "updateTableData":
+                                bytes = updateTableDataAndGetResponse(mHttpRequest.getPath()).getBytes();
+                                break;
+                            case "deleteTableData":
+                                bytes = deleteTableDataAndGetResponse(mHttpRequest.getPath()).getBytes();
+                                break;
+                            case "query":
+                                bytes = executeQueryAndGetResponse(mHttpRequest.getRequestURI()).getBytes();
+                                break;
+                            case "downloadDb":
+                                isFile = true;
+                                bytes = Utils.getDatabase(mSelectedDatabase, mDatabaseFiles);
+                                break;
+                            case "downloadSp":
+                                isFile = true;
+                                bytes = Utils.getSharedPreferences(mSelectedDatabase, PrefHelper.getSharedPreference(mContext));
+                                break;
+                        }
                     }
-                    if (mRequest == null || TextUtils.isEmpty(mRequest.getAction())) {
-                        DebugDataTool.onError("web server:Request data is null or action is null,http请求没有action，无法解析操作", new Throwable("action is null"));
+                } else {
+                    //文件请求
+                    isFile = true;
+                    bytes = Utils.loadContent(mHttpRequest.getPath(), mAssets);
+                }
+                if (!isFile) {
+                    DebugDataTool.onRequest(mStringBuilder.toString(), mHttpRequest);
+                    DebugDataTool.onResponse(new String(bytes));
+                    if (null == bytes) {
+                        onServerError(output, "");
+                        output.flush();
                         return;
                     }
-                    mAction = mRequest.getAction();
-                    switch (mRequest.getAction()) {
-                        case "getDbList":
-                            bytes = DebugDataTool.ObjectToJson(getDBList()).getBytes();
-                            break;
-                        case "getSpList":
-                            bytes = DebugDataTool.ObjectToJson(getSPList()).getBytes();
-                            break;
-                        case "getTableList":
-                            bytes = DebugDataTool.ObjectToJson(getTableList(mRequest.getDatabase())).getBytes();
-                            break;
-                        case "getDataFromDbTable":
-                            bytes = DebugDataTool.ObjectToJson(getAllDataFromTheTableResponse(mRequest.getTableName(), mRequest.getPageIndex(), mRequest.getPageSize())).getBytes();
-                            break;
-                        case "addTableData":
-                            bytes = addTableDataAndGetResponse(mHttpRequest.getPath()).getBytes();
-                            break;
-                        case "updateTableData":
-                            bytes = updateTableDataAndGetResponse(mHttpRequest.getPath()).getBytes();
-                            break;
-                        case "deleteTableData":
-                            bytes = deleteTableDataAndGetResponse(mHttpRequest.getPath()).getBytes();
-                            break;
-                        case "query":
-                            bytes = executeQueryAndGetResponse(mHttpRequest.getRequestURI()).getBytes();
-                            break;
-                        case "downloadDb":
-                            isFile = true;
-                            bytes = Utils.getDatabase(mSelectedDatabase, mDatabaseFiles);
-                            break;
-                        case "downloadSp":
-                            isFile = true;
-                            bytes = Utils.getSharedPreferences(mSelectedDatabase, PrefHelper.getSharedPreference(mContext));
-                            break;
+                } else {
+                    DebugDataTool.onRequest(mHttpRequest.getPath(), mHttpRequest);
+                    if (null == bytes) {
+                        output.println("HTTP/1.0 404 Not Found");
+                        output.println("Content-Type: application/json");
+                        output.println("access-control-allow-origin: *");
+                        output.println();
+                        output.println(new Response().setCode(Response.code_FileNotFound).setMsg("请求的资源不存在").toJson());
+                        output.println();
+                        output.flush();
+                        return;
                     }
                 }
-            } else {
-                //文件请求
-                isFile = true;
-                bytes = Utils.loadContent(mHttpRequest.getPath(), mAssets);
-            }
-            if (!isFile) {
-                DebugDataTool.onRequest(mStringBuilder.toString(), mHttpRequest);
-                DebugDataTool.onResponse(new String(bytes));
-                if (null == bytes) {
-                    output.println("HTTP/1.0 500 Internal Server Error");
-                    output.println();
-                    output.println(new Response().setCode(Response.code_Error).setMsg("服务器异常").toJson());
-                    output.println();
-                    output.flush();
-                    return;
+                output.println("HTTP/1.0 200 OK");
+                output.println("Content-Type: " + Utils.detectMimeType(mHttpRequest.getPath()));
+                output.println("access-control-allow-origin: *");
+
+                if (!TextUtils.isEmpty(mAction) && (mAction.equalsIgnoreCase("downloadDb") || mAction.equalsIgnoreCase("downloadSp"))) {
+                    output.println("Content-Disposition: attachment; filename=" + mSelectedDatabase);
+                } else {
+                    output.println("Content-Length: " + bytes.length);
                 }
-            } else {
-                DebugDataTool.onRequest(mHttpRequest.getPath(), mHttpRequest);
-                if (null == bytes) {
-                    output.println("HTTP/1.0 404 Not Found");
-                    output.println();
-                    output.println(new Response().setCode(Response.code_FileNotFound).setMsg("请求的资源不存在").toJson());
-                    output.println();
-                    output.flush();
-                    return;
-                }
-            }
-            output.println("HTTP/1.0 200 OK");
-            output.println("Content-Type: " + Utils.detectMimeType(mHttpRequest.getPath()));
-            if (!TextUtils.isEmpty(mAction) && (mAction.equalsIgnoreCase("downloadDb") || mAction.equalsIgnoreCase("downloadSp"))) {
-                output.println("Content-Disposition: attachment; filename=" + mSelectedDatabase);
-            } else {
-                output.println("Content-Length: " + bytes.length);
             }
             output.println();
             output.write(bytes);
@@ -226,6 +242,15 @@ public class RequestHandler {
             }
         }
 
+    }
+
+    private void onServerError(PrintStream output, String msg) {
+        output.println("HTTP/1.0 500 Internal Server Error");
+        output.println("Content-Type: application/json");
+        output.println("access-control-allow-origin: *");
+        output.println();
+        output.println(new Response().setCode(Response.code_Error).setMsg("服务器异常  " + msg).toJson());
+        output.println();
     }
 
     public void setCustomDatabaseFiles(HashMap<String, File> customDatabaseFiles) {

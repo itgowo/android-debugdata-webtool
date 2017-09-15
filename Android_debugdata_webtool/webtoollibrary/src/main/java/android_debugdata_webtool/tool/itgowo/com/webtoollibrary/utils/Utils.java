@@ -46,7 +46,7 @@ public class Utils {
 
     public static String detectMimeType(String fileName) {
         if (TextUtils.isEmpty(fileName)) {
-            return null;
+            return "application/json;charset=utf-8";
         } else if (fileName.endsWith(".html")) {
             return "text/html";
         } else if (fileName.endsWith(".js")) {

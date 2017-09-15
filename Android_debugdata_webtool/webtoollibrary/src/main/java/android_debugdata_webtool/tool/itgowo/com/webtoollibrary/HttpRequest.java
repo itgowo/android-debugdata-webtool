@@ -39,7 +39,7 @@ public class HttpRequest {
         int position = mHttp.indexOf("\r\n\r\n");//查找是否有连续两个换行
         if (position > -1) {
             parserHeader(mHttp, mHttpRequest, position);
-            mHttpRequest.setBody(mHttp.substring(position,mHttp.length()));
+            mHttpRequest.setBody(mHttp.substring(position+4,mHttp.length()));
         } else {
             String[] mStrings = mHttp.split("\r\n");
             if (mStrings != null && mStrings.length > 0 && mStrings[0].contains("HTTP/1.1")) {

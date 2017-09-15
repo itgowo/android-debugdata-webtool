@@ -2,22 +2,25 @@ package com.itgowo.tool.android_debugdata_webtool;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
+import android.widget.TextView;
 
 import com.alibaba.fastjson.JSON;
-
-import java.util.Arrays;
 
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.DebugDataTool;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.HttpRequest;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.onDebugToolListener;
 
 public class MainActivity extends AppCompatActivity {
+    private TextView mTextView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        mTextView = (TextView) findViewById(R.id.msg);
+        mTextView.setMovementMethod(ScrollingMovementMethod.getInstance());
         DBManager.init(getApplication());
 
 //        DBManager.addCache("" + System.currentTimeMillis(), "aaaaaaaaaaaaaaaa");
@@ -40,23 +43,43 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onGetRequest(String mRequest, HttpRequest mHttpRequest) {
+            public void onGetRequest(String mRequest, final HttpRequest mHttpRequest) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mTextView.append("onGetRequest:" + mHttpRequest.getRequestURI().toString() + "\r\n");
+                    }
+                });
+
                 Log.d("onGetRequest", mHttpRequest.getRequestURI().toString());
             }
 
 
             @Override
-            public void onResponse(String mResponse) {
+            public void onResponse(final String mResponse) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mTextView.append("onResponse:" + mResponse + "\r\n");
+                    }
+                });
                 Log.d("onResponse", mResponse);
             }
 
             @Override
-            public void onError(String mTip, Throwable mThrowable) {
+            public void onError(final String mTip, final Throwable mThrowable) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mTextView.append("onError:" + mTip + "   " + mThrowable.getMessage() + "\r\n");
+                    }
+                });
                 Log.e("DebugDataWebTool", mTip + "  " + mThrowable.getMessage());
             }
         });
     }
-    public void test(){
+
+    public void test() {
 
     }
 }
