@@ -30,8 +30,6 @@ import java.util.List;
 
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.Response;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.model.RowDataRequest;
-import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.model.TableDataResponse;
-import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.model.UpdateRowResponse;
 
 /**
  * Created by amitshekhar on 06/02/17.
@@ -232,11 +230,11 @@ public class DatabaseHelper {
     }
 
 
-    public static UpdateRowResponse addRow(SQLiteDatabase db, String tableName, List<RowDataRequest> rowDataRequests) {
-        UpdateRowResponse updateRowResponse = new UpdateRowResponse();
+    public static Response addRow(SQLiteDatabase db, String tableName, List<RowDataRequest> rowDataRequests) {
+        Response updateRowResponse = new Response();
 
         if (rowDataRequests == null || tableName == null) {
-            updateRowResponse.isSuccessful = false;
+            updateRowResponse.setCode(Response.code_Error);
             return updateRowResponse;
         }
 
@@ -248,7 +246,6 @@ public class DatabaseHelper {
             if (Constants.NULL.equals(rowDataRequest.value)) {
                 rowDataRequest.value = null;
             }
-
             switch (rowDataRequest.dataType) {
                 case DataType.INTEGER:
                     contentValues.put(rowDataRequest.title, Long.valueOf(rowDataRequest.value));
@@ -264,31 +261,24 @@ public class DatabaseHelper {
                     break;
             }
         }
-
         long result = db.insert(tableName, null, contentValues);
-        updateRowResponse.isSuccessful = result > 0;
-
+        if (result <= 0) {
+            updateRowResponse.setCode(Response.code_Error).setMsg("db addRow  记录插入失败");
+        }
         return updateRowResponse;
-
     }
 
 
-    public static UpdateRowResponse updateRow(SQLiteDatabase db, String tableName, List<RowDataRequest> rowDataRequests) {
-
-        UpdateRowResponse updateRowResponse = new UpdateRowResponse();
-
+    public static Response updateRow(SQLiteDatabase db, String tableName, List<RowDataRequest> rowDataRequests) {
+        Response updateRowResponse = new Response();
         if (rowDataRequests == null || tableName == null) {
-            updateRowResponse.isSuccessful = false;
+            updateRowResponse.setCode(Response.code_Error).setMsg("更新语句参数错误  tablename=" + tableName + "  rowDataRequests=" + rowDataRequests);
             return updateRowResponse;
         }
-
         tableName = getQuotedTableName(tableName);
-
         ContentValues contentValues = new ContentValues();
-
         String whereClause = null;
         List<String> whereArgsList = new ArrayList<>();
-
         for (RowDataRequest rowDataRequest : rowDataRequests) {
             if (Constants.NULL.equals(rowDataRequest.value)) {
                 rowDataRequest.value = null;
@@ -323,24 +313,20 @@ public class DatabaseHelper {
         }
 
         db.update(tableName, contentValues, whereClause, whereArgs);
-        updateRowResponse.isSuccessful = true;
         return updateRowResponse;
     }
 
 
-    public static UpdateRowResponse deleteRow(SQLiteDatabase db, String tableName,
-                                              List<RowDataRequest> rowDataRequests) {
+    public static Response deleteRow(SQLiteDatabase db, String tableName, List<RowDataRequest> rowDataRequests) {
 
-        UpdateRowResponse updateRowResponse = new UpdateRowResponse();
+        Response updateRowResponse = new Response();
 
         if (rowDataRequests == null || tableName == null) {
-            updateRowResponse.isSuccessful = false;
+            updateRowResponse.setCode(Response.code_Error).setMsg("查询参数有误  tableName=" + tableName + "  rowDataRequests=" + rowDataRequests);
             return updateRowResponse;
         }
 
         tableName = getQuotedTableName(tableName);
-
-
         String whereClause = null;
         List<String> whereArgsList = new ArrayList<>();
 
@@ -357,9 +343,7 @@ public class DatabaseHelper {
                 whereArgsList.add(rowDataRequest.value);
             }
         }
-
         if (whereArgsList.size() == 0) {
-            updateRowResponse.isSuccessful = true;
             return updateRowResponse;
         }
 
@@ -368,33 +352,25 @@ public class DatabaseHelper {
         for (int i = 0; i < whereArgsList.size(); i++) {
             whereArgs[i] = whereArgsList.get(i);
         }
-
         db.delete(tableName, whereClause, whereArgs);
-        updateRowResponse.isSuccessful = true;
         return updateRowResponse;
     }
 
 
-    public static TableDataResponse exec(SQLiteDatabase database, String sql) {
-        TableDataResponse tableDataResponse = new TableDataResponse();
-        tableDataResponse.isSelectQuery = false;
+    public static Response exec(SQLiteDatabase database, String sql) {
+        Response tableDataResponse = new Response();
         try {
-
             String tableName = getTableName(sql);
-
             if (!TextUtils.isEmpty(tableName)) {
                 String quotedTableName = getQuotedTableName(tableName);
                 sql = sql.replace(tableName, quotedTableName);
             }
-
             database.execSQL(sql);
         } catch (Exception e) {
             e.printStackTrace();
-            tableDataResponse.isSuccessful = false;
-            tableDataResponse.errorMessage = e.getMessage();
+            tableDataResponse.setCode(Response.code_Error).setMsg("数据库Sql执行错误：" + e.getMessage());
             return tableDataResponse;
         }
-        tableDataResponse.isSuccessful = true;
         return tableDataResponse;
     }
 

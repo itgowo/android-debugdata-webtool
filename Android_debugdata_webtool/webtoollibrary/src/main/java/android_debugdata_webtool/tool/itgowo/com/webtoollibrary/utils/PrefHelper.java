@@ -29,13 +29,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.Response;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.model.RowDataRequest;
-import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.model.UpdateRowResponse;
 
 /**
  * Created by amitshekhar on 06/02/17.
@@ -90,7 +88,6 @@ public class PrefHelper {
      * 获取共享参数list
      *
      * @param context
-     * @param tag
      * @return
      */
 //    public static Response getAllPrefData(Context context, String tag) {
@@ -150,9 +147,8 @@ public class PrefHelper {
 //        return response;
 //
 //    }
-
-    public static UpdateRowResponse addOrUpdateRow(Context context, String tableName, List<RowDataRequest> rowDataRequests) {
-        UpdateRowResponse updateRowResponse = new UpdateRowResponse();
+    public static Response addOrUpdateRow(Context context, String tableName, List<RowDataRequest> rowDataRequests) {
+        Response updateRowResponse = new Response();
 
         if (tableName == null) {
             return updateRowResponse;
@@ -175,23 +171,18 @@ public class PrefHelper {
             switch (dataType) {
                 case DataType.TEXT:
                     preferences.edit().putString(key, value).apply();
-                    updateRowResponse.isSuccessful = true;
                     break;
                 case DataType.INTEGER:
                     preferences.edit().putInt(key, Integer.valueOf(value)).apply();
-                    updateRowResponse.isSuccessful = true;
                     break;
                 case DataType.LONG:
                     preferences.edit().putLong(key, Long.valueOf(value)).apply();
-                    updateRowResponse.isSuccessful = true;
                     break;
                 case DataType.FLOAT:
                     preferences.edit().putFloat(key, Float.valueOf(value)).apply();
-                    updateRowResponse.isSuccessful = true;
                     break;
                 case DataType.BOOLEAN:
                     preferences.edit().putBoolean(key, Boolean.valueOf(value)).apply();
-                    updateRowResponse.isSuccessful = true;
                     break;
                 case DataType.STRING_SET:
                     JSONArray jsonArray = new JSONArray(value);
@@ -200,43 +191,35 @@ public class PrefHelper {
                         stringSet.add(jsonArray.getString(i));
                     }
                     preferences.edit().putStringSet(key, stringSet).apply();
-                    updateRowResponse.isSuccessful = true;
                     break;
                 default:
                     preferences.edit().putString(key, value).apply();
-                    updateRowResponse.isSuccessful = true;
             }
         } catch (Exception e) {
             e.printStackTrace();
+            updateRowResponse.setCode(Response.code_Error).setMsg("web server:SP addOrUpdateRow error,参数处理异常  " + e.getMessage());
         }
 
         return updateRowResponse;
     }
 
 
-    public static UpdateRowResponse deleteRow(Context context, String tableName,
-                                              List<RowDataRequest> rowDataRequests) {
-        UpdateRowResponse updateRowResponse = new UpdateRowResponse();
+    public static Response deleteRow(Context context, String tableName, List<RowDataRequest> rowDataRequests) {
+        Response updateRowResponse = new Response();
 
         if (tableName == null) {
+            updateRowResponse.setCode(Response.code_Error).setMsg("删除参数错误  tablename=" + tableName);
             return updateRowResponse;
         }
 
         RowDataRequest rowDataKey = rowDataRequests.get(0);
-
         String key = rowDataKey.value;
-
-
         SharedPreferences preferences = context.getSharedPreferences(tableName, Context.MODE_PRIVATE);
-
         try {
-            preferences.edit()
-                    .remove(key).apply();
-            updateRowResponse.isSuccessful = true;
+            preferences.edit().remove(key).apply();
         } catch (Exception ex) {
-            updateRowResponse.isSuccessful = false;
+            updateRowResponse.setCode(Response.code_Error).setMsg("共享参数删除错误  " + ex.getMessage());
         }
-
         return updateRowResponse;
     }
 }

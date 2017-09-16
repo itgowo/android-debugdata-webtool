@@ -65,6 +65,7 @@ public class ClientServer implements Runnable {
             if (null != mServerSocket) {
                 mServerSocket.close();
                 mServerSocket = null;
+                DebugDataTool.onSystemMsg("服务器已关闭");
             }
         } catch (Exception e) {
             DebugDataTool.onError("web server error,服务器关闭异常", e);
