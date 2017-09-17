@@ -11,8 +11,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.Response;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.Request.RowDataRequest;
+import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.Response;
 
 /**
  * Created by lujianchao on 2017/8/22.
@@ -26,7 +26,6 @@ public class DatabaseHelper {
     public static final String LONG = "long";
     public static final String FLOAT = "float";
     public static final String STRING_SET = "string_set";
-
 
 
     private static final int MAX_BLOB_LENGTH = 512;
@@ -76,7 +75,6 @@ public class DatabaseHelper {
     }
 
     public static Response getTableData(SQLiteDatabase db, String selectQuery, String tableName) {
-
         Response tableData = new Response();
         Response.TableData mTableData = new Response.TableData();
         tableData.setTableData(mTableData);
@@ -224,16 +222,17 @@ public class DatabaseHelper {
 
     public static Response addRow(SQLiteDatabase db, String tableName, List<RowDataRequest> rowDataRequests) {
         Response updateRowResponse = new Response();
-
-        if (rowDataRequests == null || tableName == null) {
-            updateRowResponse.setCode(Response.code_Error);
-            return updateRowResponse;
+        if (db == null) {
+            return updateRowResponse.setCode(Response.code_Error).setMsg("数据库打开失败，文件可能被删除或者权限不足");
         }
-
+        if (tableName == null) {
+            return updateRowResponse.setCode(Response.code_Error).setMsg("表名称为null，请确认参数是否正确");
+        }
+        if (rowDataRequests == null || rowDataRequests.size() == 0) {
+            return updateRowResponse.setCode(Response.code_Error).setMsg("rowDataRequests操作数据不存在，请确认参数是否正确");
+        }
         tableName = getQuotedTableName(tableName);
-
         ContentValues contentValues = new ContentValues();
-
         for (RowDataRequest rowDataRequest : rowDataRequests) {
             if (Constants.NULL.equals(rowDataRequest.value)) {
                 rowDataRequest.value = null;
@@ -263,9 +262,14 @@ public class DatabaseHelper {
 
     public static Response updateRow(SQLiteDatabase db, String tableName, List<RowDataRequest> rowDataRequests) {
         Response updateRowResponse = new Response();
-        if (rowDataRequests == null || tableName == null) {
-            updateRowResponse.setCode(Response.code_Error).setMsg("更新语句参数错误  tablename=" + tableName + "  rowDataRequests=" + rowDataRequests);
-            return updateRowResponse;
+        if (db == null) {
+            return updateRowResponse.setCode(Response.code_Error).setMsg("数据库打开失败，文件可能被删除或者权限不足");
+        }
+        if (tableName == null) {
+            return updateRowResponse.setCode(Response.code_Error).setMsg("表名称为null，请确认参数是否正确");
+        }
+        if (rowDataRequests == null || rowDataRequests.size() == 0) {
+            return updateRowResponse.setCode(Response.code_Error).setMsg("rowDataRequests操作数据不存在，请确认参数是否正确");
         }
         tableName = getQuotedTableName(tableName);
         ContentValues contentValues = new ContentValues();
@@ -297,31 +301,26 @@ public class DatabaseHelper {
                 }
             }
         }
-
-        String[] whereArgs = new String[whereArgsList.size()];
-
-        for (int i = 0; i < whereArgsList.size(); i++) {
-            whereArgs[i] = whereArgsList.get(i);
-        }
-
+        String[] whereArgs =  whereArgsList.toArray(new String[whereArgsList.size()]);
         db.update(tableName, contentValues, whereClause, whereArgs);
         return updateRowResponse;
     }
 
 
     public static Response deleteRow(SQLiteDatabase db, String tableName, List<RowDataRequest> rowDataRequests) {
-
         Response updateRowResponse = new Response();
-
-        if (rowDataRequests == null || tableName == null) {
-            updateRowResponse.setCode(Response.code_Error).setMsg("查询参数有误  tableName=" + tableName + "  rowDataRequests=" + rowDataRequests);
-            return updateRowResponse;
+        if (db == null) {
+            return updateRowResponse.setCode(Response.code_Error).setMsg("数据库打开失败，文件可能被删除或者权限不足");
         }
-
+        if (tableName == null) {
+            return updateRowResponse.setCode(Response.code_Error).setMsg("表名称为null，请确认参数是否正确");
+        }
+        if (rowDataRequests == null || rowDataRequests.size() == 0) {
+            return updateRowResponse.setCode(Response.code_Error).setMsg("rowDataRequests操作数据不存在，请确认参数是否正确");
+        }
         tableName = getQuotedTableName(tableName);
         String whereClause = null;
         List<String> whereArgsList = new ArrayList<>();
-
         for (RowDataRequest rowDataRequest : rowDataRequests) {
             if (Constants.NULL.equals(rowDataRequest.value)) {
                 rowDataRequest.value = null;
@@ -339,8 +338,7 @@ public class DatabaseHelper {
             return updateRowResponse;
         }
 
-        String[] whereArgs = new String[whereArgsList.size()];
-
+        String[] whereArgs =whereArgsList.toArray( new String[whereArgsList.size()]);
         for (int i = 0; i < whereArgsList.size(); i++) {
             whereArgs[i] = whereArgsList.get(i);
         }

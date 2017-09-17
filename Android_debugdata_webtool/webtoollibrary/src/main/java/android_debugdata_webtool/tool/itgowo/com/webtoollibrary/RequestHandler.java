@@ -5,7 +5,6 @@ package android_debugdata_webtool.tool.itgowo.com.webtoollibrary;
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.database.sqlite.SQLiteDatabase;
-import android.net.Uri;
 import android.text.TextUtils;
 
 import java.io.File;
@@ -13,13 +12,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.Socket;
-import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
-import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.Request.RowDataRequest;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.utils.Constants;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.utils.DatabaseHelper;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.utils.PrefHelper;
@@ -207,14 +204,20 @@ public class RequestHandler {
                 return getAllDataFromDbTable(mRequest.getDatabase(), mRequest.getTableName(), mRequest.getPageIndex(), mRequest.getPageSize());
             case "getDataFromSpFile":
                 return getAllDataFromSpFile(mRequest.getSpFileName());
-            case "addTableData":
-                return addTableDataAndGetResponse(mHttpRequest.getPath());
-            case "updateTableData":
-                return updateTableDataAndGetResponse(mHttpRequest.getPath());
-            case "deleteTableData":
-                return deleteTableDataAndGetResponse(mHttpRequest.getPath());
+            case "addDataToDb":
+                return addData(mRequest, true);
+            case "addDataToSp":
+                return addData(mRequest, false);
+            case "updateDataToDb":
+                return updateData(mRequest, true);
+            case "updateDataToSp":
+                return updateData(mRequest, false);
+            case "deleteDataFromDb":
+                return deleteData(mRequest, true);
+            case "deleteDataFromSp":
+                return deleteData(mRequest, false);
             case "query":
-                return executeQueryAndGetResponse(mHttpRequest.getRequestURI());
+                return executeQuery(mRequest);
         }
         return null;
     }
@@ -245,15 +248,23 @@ public class RequestHandler {
     }
 
 
-    private void openDatabase(String database) {
-        closeDatabase();
-        File databaseFile = mDatabaseFiles.get(database);
-        if (databaseFile == null || !databaseFile.exists()) {
+    private synchronized void openDatabase(String database) {
+        if (mSelectedDatabase != null && mSelectedDatabase.equals(database) && mDatabase != null && mDatabase.isOpen()) {
             isDbOpened = true;
-            return;
+        } else {
+            if (database == null) {
+                return;
+            }
+            closeDatabase();
+            File databaseFile = mDatabaseFiles.get(database);
+            if (databaseFile == null || !databaseFile.exists()) {
+                isDbOpened = false;
+                return;
+            }
+            mDatabase = SQLiteDatabase.openOrCreateDatabase(databaseFile.getAbsolutePath(), null);
+            mSelectedDatabase = database;
+            isDbOpened = true;
         }
-        mDatabase = SQLiteDatabase.openOrCreateDatabase(databaseFile.getAbsolutePath(), null);
-        isDbOpened = true;
     }
 
     private void closeDatabase() {
@@ -341,40 +352,25 @@ public class RequestHandler {
         return response;
     }
 
-    private Response executeQueryAndGetResponse(String route) {
-        String query = null;
+    private Response executeQuery(Request mRequest) {
         Response response = null;
         String first;
         try {
-            if (route.contains("?query=")) {
-                query = route.substring(route.indexOf("=") + 1, route.length());
-            }
-            try {
-                query = URLDecoder.decode(query, "UTF-8");
-            } catch (Exception e) {
-                DebugDataTool.onError("web server:executeQueryAndGetResponse error,参数处理异常，不是utf-8编码", e);
-            }
-
-            if (query != null) {
-                first = query.split(" ")[0].toLowerCase();
+            if (mRequest.getData() != null) {
+                openDatabase(mRequest.getDatabase());
+                first = mRequest.getData().split(" ")[0].toLowerCase();
                 if (first.equals("select") || first.equals("pragma")) {
-                    response = DatabaseHelper.getTableData(mDatabase, query, null);
-
+                    response = DatabaseHelper.getTableData(mDatabase, mRequest.getData(), null);
                 } else {
-                    response = DatabaseHelper.exec(mDatabase, query);
+                    response = DatabaseHelper.exec(mDatabase, mRequest.getData());
                 }
             }
         } catch (Exception e) {
             DebugDataTool.onError("web server:executeQueryAndGetResponse error,参数处理异常", e);
         }
-
         if (response == null) {
-            response = new Response();
-            response.setCode(Response.code_SQLNODATA);
-            response.setMsg("找不到数据");
-
+            response = new Response().setCode(Response.code_SQLNODATA).setMsg("找不到数据或者SQL语句错误");
         }
-
         return response;
     }
 
@@ -385,72 +381,86 @@ public class RequestHandler {
         Response response = new Response();
         openDatabase(database);
         response = DatabaseHelper.getAllTableName(mDatabase);
-        mSelectedDatabase = database;
+
         return response;
     }
 
+    /**
+     * 添加数据
+     *
+     * @param mRequest
+     * @param isDatabase
+     * @return
+     */
+    private Response addData(Request mRequest, boolean isDatabase) {
+        Response response = null;
+        try {
+            if (isDatabase) {
+                openDatabase(mRequest.getDatabase());
+                response = DatabaseHelper.addRow(mDatabase, mRequest.getTableName(), mRequest.getRowDataRequests());
+            } else {
+                response = PrefHelper.addOrUpdateRow(mContext, mRequest.getSpFileName(), mRequest.getRowDataRequests());
+            }
+            return response;
+        } catch (Exception e) {
+            DebugDataTool.onError("web server:addData error,参数处理异常", e);
+            if (response == null) {
+                response = new Response();
+            }
+            response.setCode(Response.code_Error).setMsg("web server:addData error,参数处理异常  " + e.getMessage());
+            return response;
+        }
+    }
 
-    private Response addTableDataAndGetResponse(String route) {
+    /**
+     * 更新数据
+     *
+     * @param mRequest
+     * @param isDatabase
+     * @return
+     */
+    private Response updateData(Request mRequest, boolean isDatabase) {
         Response response = new Response();
         try {
-            Uri uri = Uri.parse(URLDecoder.decode(route, "UTF-8"));
-            String tableName = uri.getQueryParameter("tableName");
-            String updatedData = uri.getQueryParameter("addData");
-            List<RowDataRequest> rowDataRequests = DebugDataTool.JsonToObject(updatedData, Request.class).getRowDataRequests();
-            if (Constants.APP_SHARED_PREFERENCES.equals(mSelectedDatabase)) {
-                response = PrefHelper.addOrUpdateRow(mContext, tableName, rowDataRequests);
+            if (isDatabase) {
+                response = DatabaseHelper.updateRow(mDatabase, mRequest.getTableName(), mRequest.getRowDataRequests());
             } else {
-                response = DatabaseHelper.addRow(mDatabase, tableName, rowDataRequests);
+                response = PrefHelper.addOrUpdateRow(mContext, mRequest.getSpFileName(), mRequest.getRowDataRequests());
             }
             return response;
         } catch (Exception e) {
-            DebugDataTool.onError("web server:addTableDataAndGetResponse error,参数处理异常", e);
-            response.setCode(Response.code_Error).setMsg("web server:addTableDataAndGetResponse error,参数处理异常  " + e.getMessage());
+            DebugDataTool.onError("web server:updateData error,参数处理异常", e);
+            if (response == null) {
+                response = new Response();
+            }
+            response.setCode(Response.code_Error).setMsg("web server:updateData error,参数处理异常  " + e.getMessage());
             return response;
         }
     }
 
-    private Response updateTableDataAndGetResponse(String route) {
-        Response response;
+    /**
+     * 删除数据
+     *
+     * @param mRequest
+     * @return
+     */
+    private Response deleteData(Request mRequest, boolean isDatabase) {
+        Response response = null;
         try {
-            Uri uri = Uri.parse(URLDecoder.decode(route, "UTF-8"));
-            String tableName = uri.getQueryParameter("tableName");
-            String updatedData = uri.getQueryParameter("updatedData");
-            List<RowDataRequest> rowDataRequests = DebugDataTool.JsonToObject(updatedData, Request.class).getRowDataRequests();
-            if (Constants.APP_SHARED_PREFERENCES.equals(mSelectedDatabase)) {
-                response = PrefHelper.addOrUpdateRow(mContext, tableName, rowDataRequests);
+            if (isDatabase) {
+                openDatabase(mRequest.getDatabase());
+                response = DatabaseHelper.deleteRow(mDatabase, mRequest.getTableName(), mRequest.getRowDataRequests());
             } else {
-                response = DatabaseHelper.updateRow(mDatabase, tableName, rowDataRequests);
+                response = PrefHelper.deleteRow(mContext, mRequest.getSpFileName(), mRequest.getRowDataRequests());
             }
             return response;
         } catch (Exception e) {
-            DebugDataTool.onError("web server:updateTableDataAndGetResponse error,参数处理异常", e);
-            response = new Response();
-            response.setCode(Response.code_Error).setMsg("web server:updateTableDataAndGetResponse error,参数处理异常  " + e.getMessage());
-            return response;
-        }
-    }
-
-
-    private Response deleteTableDataAndGetResponse(String route) {
-        Response response;
-        try {
-            Uri uri = Uri.parse(URLDecoder.decode(route, "UTF-8"));
-            String tableName = uri.getQueryParameter("tableName");
-            String updatedData = uri.getQueryParameter("deleteData");
-            List<RowDataRequest> rowDataRequests = DebugDataTool.JsonToObject(updatedData, Request.class).getRowDataRequests();
-            if (Constants.APP_SHARED_PREFERENCES.equals(mSelectedDatabase)) {
-                response = PrefHelper.deleteRow(mContext, tableName, rowDataRequests);
-            } else {
-                response = DatabaseHelper.deleteRow(mDatabase, tableName, rowDataRequests);
+            DebugDataTool.onError("web server:deleteData error,参数处理异常", e);
+            if (response == null) {
+                response = new Response();
             }
-            return response;
-        } catch (Exception e) {
-            DebugDataTool.onError("web server:deleteTableDataAndGetResponse error,参数处理异常", e);
-            response = new Response();
-            response.setCode(Response.code_Error).setMsg("web server:deleteTableDataAndGetResponse error,参数处理异常  " + e);
+            response.setCode(Response.code_Error).setMsg("web server:deleteData error,参数处理异常  " + e);
             return response;
         }
     }
-
 }

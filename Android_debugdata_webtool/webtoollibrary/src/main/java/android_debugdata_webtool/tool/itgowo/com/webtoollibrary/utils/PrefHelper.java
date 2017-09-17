@@ -151,13 +151,14 @@ public class PrefHelper {
 
     }
 
-    public static Response addOrUpdateRow(Context context, String tableName, List<RowDataRequest> rowDataRequests) {
+    public static Response addOrUpdateRow(Context context, String fileName, List<RowDataRequest> rowDataRequests) {
         Response updateRowResponse = new Response();
-
-        if (tableName == null) {
-            return updateRowResponse;
+        if (fileName == null) {
+            return updateRowResponse.setCode(Response.code_Error).setMsg("共享参数文件名未指定");
         }
-
+        if (rowDataRequests == null || rowDataRequests.size() == 0) {
+            return updateRowResponse.setCode(Response.code_Error).setMsg("rowDataRequests操作数据不存在，请确认参数是否正确");
+        }
         RowDataRequest rowDataKey = rowDataRequests.get(0);
         RowDataRequest rowDataValue = rowDataRequests.get(1);
 
@@ -168,9 +169,7 @@ public class PrefHelper {
         if (Constants.NULL.equals(value)) {
             value = null;
         }
-
-        SharedPreferences preferences = context.getSharedPreferences(tableName, Context.MODE_PRIVATE);
-
+        SharedPreferences preferences = context.getSharedPreferences(fileName, Context.MODE_PRIVATE);
         try {
             switch (dataType) {
                 case TEXT:
@@ -208,17 +207,18 @@ public class PrefHelper {
     }
 
 
-    public static Response deleteRow(Context context, String tableName, List<RowDataRequest> rowDataRequests) {
+    public static Response deleteRow(Context context, String fileName, List<RowDataRequest> rowDataRequests) {
         Response updateRowResponse = new Response();
 
-        if (tableName == null) {
-            updateRowResponse.setCode(Response.code_Error).setMsg("删除参数错误  tablename=" + tableName);
-            return updateRowResponse;
+        if (fileName == null) {
+            return updateRowResponse.setCode(Response.code_Error).setMsg("共享参数文件名未指定");
         }
-
+        if (rowDataRequests == null || rowDataRequests.size() == 0) {
+            return updateRowResponse.setCode(Response.code_Error).setMsg("rowDataRequests操作数据不存在，请确认参数是否正确");
+        }
         RowDataRequest rowDataKey = rowDataRequests.get(0);
         String key = rowDataKey.value;
-        SharedPreferences preferences = context.getSharedPreferences(tableName, Context.MODE_PRIVATE);
+        SharedPreferences preferences = context.getSharedPreferences(fileName, Context.MODE_PRIVATE);
         try {
             preferences.edit().remove(key).apply();
         } catch (Exception ex) {
