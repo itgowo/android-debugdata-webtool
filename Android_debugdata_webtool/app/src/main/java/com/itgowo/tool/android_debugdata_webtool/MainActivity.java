@@ -37,10 +37,11 @@ public class MainActivity extends AppCompatActivity {
 //        DBManager.addCache("" + System.currentTimeMillis(), "aaaaaaaaaaaaaaaa");
 //        DBManager.addCache("" + System.currentTimeMillis(), "bbbbbbbb");
 //        DBManager.updateCache(DBManager.HistoryCache.getSportItemListByParams, "234324");
-//        getSharedPreferences("appinfo", MODE_PRIVATE).edit().putString("aaaaa", "test").commit();
-//        getSharedPreferences("appinfo", MODE_PRIVATE).edit().putString("adfs", System.currentTimeMillis() + "").commit();
-//        getSharedPreferences("appinfo", MODE_PRIVATE).edit().putString("ggg", "teddddst").commit();
-//        getSharedPreferences("appinfo", MODE_PRIVATE).edit().putString("aaaasdfsafee3aa", "tadsfsadfest").commit();
+//        getSharedPreferences("appinfo", MODE_PRIVATE).edit().putBoolean("Booblean",true).commit();
+//        getSharedPreferences("appinfo", MODE_PRIVATE).edit().putFloat("Float", 1.5f).commit();
+//        getSharedPreferences("appinfo", MODE_PRIVATE).edit().putLong("Long", 1232131231).commit();
+//        getSharedPreferences("appinfo", MODE_PRIVATE).edit().putString("String", "tadsfsadfest").commit();
+//        getSharedPreferences("appinfo", MODE_PRIVATE).edit().putInt("Int", 1234).commit();
         DebugDataTool.initialize(this, 8088, true, new onDebugToolListener() {
 
 
@@ -98,7 +99,6 @@ public class MainActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        mTextView.append("onError:" + mTip + "   " + mThrowable.getMessage() + "\r\n\r\n");
                         SpannableStringBuilder mBuilder=new SpannableStringBuilder("onError:" + mTip + "   "  + mThrowable.getMessage() + "\r\n\r\n");
                         mBuilder.setSpan(new ForegroundColorSpan(Color.RED),0,7, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                         mTextView.append(mBuilder);

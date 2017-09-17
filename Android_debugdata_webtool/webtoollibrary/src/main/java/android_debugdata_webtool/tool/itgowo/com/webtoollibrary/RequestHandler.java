@@ -38,7 +38,6 @@ import java.util.List;
 
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.model.RowDataRequest;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.utils.Constants;
-import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.utils.DatabaseFileProvider;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.utils.DatabaseHelper;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.utils.PrefHelper;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.utils.Utils;
@@ -61,10 +60,22 @@ public class RequestHandler {
     public RequestHandler(Context context) {
         mContext = context;
         mAssets = context.getResources().getAssets();
-        mDatabaseFiles = DatabaseFileProvider.getDatabaseFiles(mContext);
-        if (mCustomDatabaseFiles != null) {
-            mDatabaseFiles.putAll(mCustomDatabaseFiles);
+        getDatabaseFiles(context);
+    }
+
+    public HashMap<String, File> getDatabaseFiles(Context context) {
+        mDatabaseFiles = new HashMap<>();
+        try {
+            for (String databaseName : context.databaseList()) {
+                mDatabaseFiles.put(databaseName, context.getDatabasePath(databaseName));
+            }
+            if (mCustomDatabaseFiles != null) {
+                mDatabaseFiles.putAll(mCustomDatabaseFiles);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+        return mDatabaseFiles;
     }
 
     /**
@@ -88,6 +99,9 @@ public class RequestHandler {
     public void syncHandle(Socket socket) throws IOException {
         InputStream mInputStream = null;
         PrintStream output = null;
+        if (mDatabaseFiles == null) {
+            getDatabaseFiles(mContext);
+        }
         try {
             int count = 0;
             StringBuilder mStringBuilder = new StringBuilder();
@@ -139,7 +153,7 @@ public class RequestHandler {
                     bytes = Utils.loadContent(mHttpRequest.getPath(), mAssets);
                     DebugDataTool.onRequest(mHttpRequest.getPath(), mHttpRequest);
                     if (null == bytes) {
-                        output.println("HTTP/1.0 404 Not Found");
+                        output.println("HTTP/1.1 404 Not Found");
                         output.println("Content-Type: application/json");
                         output.println("access-control-allow-origin: *");
                         output.println();
@@ -150,7 +164,7 @@ public class RequestHandler {
                     }
                 }
             }
-            output.println("HTTP/1.0 200 OK");
+            output.println("HTTP/1.1 200 OK");
             output.println("Content-Type: " + Utils.detectMimeType(mHttpRequest.getPath()));
             output.println("access-control-allow-origin: *");
             if (!TextUtils.isEmpty(mAction) && (mAction.equalsIgnoreCase("downloadDb") || mAction.equalsIgnoreCase("downloadSp"))) {
@@ -207,7 +221,9 @@ public class RequestHandler {
             case "getTableList":
                 return getTableList(mRequest.getDatabase());
             case "getDataFromDbTable":
-                return getAllDataFromTheTableResponse(mRequest.getTableName(), mRequest.getPageIndex(), mRequest.getPageSize());
+                return getAllDataFromDbTable(mRequest.getDatabase(), mRequest.getTableName(), mRequest.getPageIndex(), mRequest.getPageSize());
+            case "getDataFromSpFile":
+                return getAllDataFromSpFile(mRequest.getSpFileName());
             case "addTableData":
                 return addTableDataAndGetResponse(mHttpRequest.getPath());
             case "updateTableData":
@@ -227,7 +243,6 @@ public class RequestHandler {
      */
     private void onRequestOptions(PrintStream output) {
         output.println("HTTP/1.0 200 OK");
-        output.println("Access-Control-Allow-Origin: *");
         output.println("Access-Control-Allow-Methods: *");
         output.println("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept");
         output.println("Access-Control-Max-Age: Origin, 3600");
@@ -250,6 +265,10 @@ public class RequestHandler {
     private void openDatabase(String database) {
         closeDatabase();
         File databaseFile = mDatabaseFiles.get(database);
+        if (databaseFile == null || !databaseFile.exists()) {
+            isDbOpened = true;
+            return;
+        }
         mDatabase = SQLiteDatabase.openOrCreateDatabase(databaseFile.getAbsolutePath(), null);
         isDbOpened = true;
     }
@@ -268,10 +287,7 @@ public class RequestHandler {
      * @return
      */
     private Response getDBList() {
-        mDatabaseFiles = DatabaseFileProvider.getDatabaseFiles(mContext);
-        if (mCustomDatabaseFiles != null) {
-            mDatabaseFiles.putAll(mCustomDatabaseFiles);
-        }
+        getDatabaseFiles(mContext);
         Response response = new Response();
         if (mDatabaseFiles != null) {
             List<String> dblist = new ArrayList<>(mDatabaseFiles.keySet());
@@ -294,29 +310,52 @@ public class RequestHandler {
     private Response getSPList() {
         Response response = new Response();
         response.setSpList(PrefHelper.getSharedPreferenceTags(mContext));
+        closeDatabase();
+        mSelectedDatabase = Constants.APP_SHARED_PREFERENCES;
         return response;
     }
 
-    private Response getAllDataFromTheTableResponse(String tableName, Integer pageindex, Integer pagesize) {
+    /**
+     * 从数据库表读取数据
+     *
+     * @param database
+     * @param tableName
+     * @param pageindex
+     * @param pagesize
+     * @return
+     */
+    private Response getAllDataFromDbTable(String database, String tableName, Integer pageindex, Integer pagesize) {
         if (tableName == null || tableName.length() < 1) {
             return null;
         }
-        if (pageindex == null || pageindex < 1) {
-            pageindex = 1;
-        }
-        if (pagesize == null || pagesize < 1) {
-            pagesize = 10;
-        }
         Response response = null;
+        openDatabase(database);
         if (isDbOpened) {
-            String sql = "SELECT * FROM " + tableName + " limit " + (pageindex - 1) * pagesize + "," + pagesize;
+            String sql;
+            if (pageindex == null || pagesize == null) {
+                sql = "SELECT * FROM " + tableName;
+            } else {
+                sql = "SELECT * FROM " + tableName + " limit " + (pageindex - 1) * pagesize + "," + pagesize;
+            }
             response = DatabaseHelper.getTableData(mDatabase, sql, tableName);
         } else {
-//            response = PrefHelper.getAllPrefData(mContext, tableName);
+            response = new Response().setCode(Response.code_FileNotFound).setMsg("数据库文件不存在，请检查是否做了删除操作");
         }
-
         return response;
+    }
 
+    /**
+     * 从共享参数文件获取数据
+     *
+     * @param filename
+     * @return
+     */
+    private Response getAllDataFromSpFile(String filename) {
+        if (filename == null || filename.length() < 1) {
+            return null;
+        }
+        Response response = PrefHelper.getAllPrefData(mContext, filename);
+        return response;
     }
 
     private Response executeQueryAndGetResponse(String route) {
@@ -361,22 +400,15 @@ public class RequestHandler {
             return null;
         }
         Response response = new Response();
-        if (Constants.APP_SHARED_PREFERENCES.equals(database)) {
-            response.setSpList(PrefHelper.getSharedPreferenceTags(mContext));
-
-            closeDatabase();
-            mSelectedDatabase = Constants.APP_SHARED_PREFERENCES;
-        } else {
-            openDatabase(database);
-            response = DatabaseHelper.getAllTableName(mDatabase);
-            mSelectedDatabase = database;
-        }
+        openDatabase(database);
+        response = DatabaseHelper.getAllTableName(mDatabase);
+        mSelectedDatabase = database;
         return response;
     }
 
 
     private Response addTableDataAndGetResponse(String route) {
-        Response response;
+        Response response = new Response();
         try {
             Uri uri = Uri.parse(URLDecoder.decode(route, "UTF-8"));
             String tableName = uri.getQueryParameter("tableName");
@@ -390,7 +422,6 @@ public class RequestHandler {
             return response;
         } catch (Exception e) {
             DebugDataTool.onError("web server:addTableDataAndGetResponse error,参数处理异常", e);
-            response = new Response();
             response.setCode(Response.code_Error).setMsg("web server:addTableDataAndGetResponse error,参数处理异常  " + e.getMessage());
             return response;
         }

@@ -17,6 +17,7 @@ public class Request {
      * 数据库名
      */
     private String database;
+    private String spFileName;
 
     /**
      * 数据表明
@@ -30,9 +31,23 @@ public class Request {
      *
      */
     private List<RowDataRequest> RowDataRequests;
+    /**
+     * 非必须
+     */
     private Integer pageIndex;
+    /**
+     * 非必须
+     */
     private Integer pageSize;
 
+    public String getSpFileName() {
+        return spFileName;
+    }
+
+    public Request setSpFileName(String mSpFileName) {
+        spFileName = mSpFileName;
+        return this;
+    }
 
     public Integer getPageIndex() {
         return pageIndex;

@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -90,63 +91,59 @@ public class PrefHelper {
      * @param context
      * @return
      */
-//    public static Response getAllPrefData(Context context, String tag) {
-//
-//        Response response = new Response();
-//        response.setEditable(true);
-//
-//        /**
-//         * 设置表结构
-//         */
-//        Response.TableInfo keyInfo = new Response.TableInfo();
-//        keyInfo.isPrimary = true;
-//        keyInfo.title = "Key";
-//        Response.TableInfo valueInfo = new Response.TableInfo();
-//        valueInfo.isPrimary = false;
-//        valueInfo.title = "Value";
-//        response.setTableColumns(new ArrayList<Response.TableInfo>());
-//        response.getTableColumns().add(keyInfo);
-//        response.getTableColumns().add(valueInfo);
-//
-//
-//        response.setTableDatas(new ArrayList<Response.TableData>());
-//        SharedPreferences preferences = context.getSharedPreferences(tag, Context.MODE_PRIVATE);
-//        Map<String, ?> allEntries = preferences.getAll();
-//
-//        for (Map.Entry<String, ?> entry : allEntries.entrySet()) {
-//            List<Response.TableData.TableItemData> row = new ArrayList<>();
-//            Response.TableData.TableItemData keyColumnData = new Response.TableData.TableItemData();
-//            keyColumnData.setDataType(DataType.TEXT);
-//            keyColumnData.setValue(entry.getKey());
-//
-//            row.add(keyColumnData);
-//
-//            Response.TableData.TableItemData valueColumnData = new Response.TableData.TableItemData();
-//            valueColumnData.setValue(entry.getValue().toString());
-//            if (entry.getValue() != null) {
-//                if (entry.getValue() instanceof String) {
-//                    valueColumnData.setDataType(DataType.TEXT);
-//                } else if (entry.getValue() instanceof Integer) {
-//                    valueColumnData.setDataType( DataType.INTEGER);
-//                } else if (entry.getValue() instanceof Long) {
-//                    valueColumnData.setDataType( DataType.LONG);
-//                } else if (entry.getValue() instanceof Float) {
-//                    valueColumnData.setDataType(DataType.FLOAT);
-//                } else if (entry.getValue() instanceof Boolean) {
-//                    valueColumnData.setDataType( DataType.BOOLEAN);
-//                } else if (entry.getValue() instanceof Set) {
-//                    valueColumnData.setDataType( DataType.STRING_SET);
-//                }
-//            } else {
-//                valueColumnData.setDataType(DataType.TEXT);
-//            }
-//            row.add(valueColumnData);
-//            response.getTableDatas().add(new Response.TableData().setTableitemdatas(row));
-//        }
-//
-//        return response;
-//
-//    }
+    public static Response getAllPrefData(Context context, String filename) {
+
+        Response response = new Response();
+        response.setEditable(true);
+
+        /**
+         * 设置表结构
+         */
+        Response.TableData.TableInfo keyInfo = new Response.TableData.TableInfo();
+        keyInfo.setPrimary(true).setTitle("Key");
+        Response.TableData.TableInfo valueInfo = new Response.TableData.TableInfo();
+        valueInfo.setPrimary(false).setTitle("Value");
+        Response.TableData.TableInfo typeInfo = new Response.TableData.TableInfo();
+        typeInfo.setPrimary(false).setTitle("DataType");
+
+        Response.TableData mTableData=new Response.TableData();
+        mTableData.setTableColumns(new ArrayList<Response.TableData.TableInfo>());
+        mTableData.getTableColumns().add(keyInfo);
+        mTableData.getTableColumns().add(valueInfo);
+        mTableData.getTableColumns().add(typeInfo);
+        response.setTableData(mTableData);
+        SharedPreferences preferences = context.getSharedPreferences(filename, Context.MODE_PRIVATE);
+        Map<String, ?> allEntries = preferences.getAll();
+
+        mTableData.setTableDatas(new ArrayList<List<Object>>());
+        for (Map.Entry<String, ?> entry : allEntries.entrySet()) {
+            List<Object> row=new ArrayList<>();
+            row.add(entry.getKey());
+            row.add(entry.getValue());
+            if (entry.getValue() != null) {
+                if (entry.getValue() instanceof String) {
+                    row.add( DataType.TEXT);
+                } else if (entry.getValue() instanceof Integer) {
+                    row.add(DataType.INTEGER);
+                } else if (entry.getValue() instanceof Long) {
+                    row.add(DataType.LONG);
+                } else if (entry.getValue() instanceof Float) {
+                    row.add( DataType.FLOAT);
+                } else if (entry.getValue() instanceof Boolean) {
+                    row.add( DataType.BOOLEAN);
+                } else if (entry.getValue() instanceof Set) {
+                    row.add( DataType.STRING_SET);
+                }
+            } else {
+                row.add(DataType.TEXT);
+            }
+            mTableData.getTableDatas().add(row);
+        }
+
+        return response;
+
+    }
+
     public static Response addOrUpdateRow(Context context, String tableName, List<RowDataRequest> rowDataRequests) {
         Response updateRowResponse = new Response();
 
