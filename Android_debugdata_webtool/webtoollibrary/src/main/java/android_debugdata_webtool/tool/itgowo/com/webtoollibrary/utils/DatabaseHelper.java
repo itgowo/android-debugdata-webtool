@@ -301,9 +301,16 @@ public class DatabaseHelper {
                 }
             }
         }
-        String[] whereArgs =  whereArgsList.toArray(new String[whereArgsList.size()]);
-        db.update(tableName, contentValues, whereClause, whereArgs);
-        return updateRowResponse;
+        if (whereArgsList.size() == 0) {
+            return updateRowResponse.setCode(Response.code_Error).setMsg("没有主键信息，不建议更改，请为表添加主键后再操作");
+        }
+        String[] whereArgs = whereArgsList.toArray(new String[whereArgsList.size()]);
+       int num= db.update(tableName, contentValues, whereClause, whereArgs);
+        if (num > 0) {
+            return updateRowResponse;
+        } else {
+            return updateRowResponse.setCode(Response.code_Error).setMsg("数据操作执行失败");
+        }
     }
 
 
@@ -335,15 +342,15 @@ public class DatabaseHelper {
             }
         }
         if (whereArgsList.size() == 0) {
+            return updateRowResponse.setCode(Response.code_Error).setMsg("没有主键信息，不建议更改，请为表添加主键后再操作");
+        }
+        String[] whereArgs = whereArgsList.toArray(new String[whereArgsList.size()]);
+        int num = db.delete(tableName, whereClause, whereArgs);
+        if (num > 0) {
             return updateRowResponse;
+        } else {
+            return updateRowResponse.setCode(Response.code_Error).setMsg("数据操作执行失败");
         }
-
-        String[] whereArgs =whereArgsList.toArray( new String[whereArgsList.size()]);
-        for (int i = 0; i < whereArgsList.size(); i++) {
-            whereArgs[i] = whereArgsList.get(i);
-        }
-        db.delete(tableName, whereClause, whereArgs);
-        return updateRowResponse;
     }
 
 

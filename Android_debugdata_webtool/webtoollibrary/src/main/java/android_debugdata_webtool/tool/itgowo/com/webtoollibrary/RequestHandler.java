@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.Socket;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -107,19 +108,17 @@ public class RequestHandler {
             }
             // Output stream that we send the response to
             output = new PrintStream(socket.getOutputStream());
-
             byte[] bytes = new byte[0];
             String mAction = null;
             if (mHttpRequest.getMethod().equalsIgnoreCase("OPTIONS")) {
                 onRequestOptions(output);
-
             } else if (mHttpRequest.getMethod().equalsIgnoreCase("POST")) {
                 Response mResponse = onRequestPost(output, mHttpRequest);
+                DebugDataTool.onRequest(mStringBuilder.toString(), mHttpRequest);
+                DebugDataTool.onResponse(new String(bytes));
                 if (mResponse != null) {
                     bytes = DebugDataTool.ObjectToJson(mResponse).getBytes();
                 }
-                DebugDataTool.onRequest(mStringBuilder.toString(), mHttpRequest);
-                DebugDataTool.onResponse(new String(bytes));
             } else if (mHttpRequest.getMethod().equalsIgnoreCase("GET")) {
                 if (TextUtils.isEmpty(mHttpRequest.getPath())) {//index.html
                     mHttpRequest.setPath("index.html");
@@ -218,8 +217,39 @@ public class RequestHandler {
                 return deleteData(mRequest, false);
             case "query":
                 return executeQuery(mRequest);
+            case "getFileList":
+                return getFileList(mRequest);
         }
         return null;
+    }
+
+    private Response getFileList(Request mRequest) {
+        List<Response.FileData> mFileDatas = new ArrayList<>();
+        File root = null;
+        if (mRequest.getData() == null || mRequest.getData().length() < 5) {
+            root = new File(mContext.getApplicationInfo().dataDir);
+        } else {
+            root = new File(mRequest.getData());
+        }
+        if (root == null || !root.exists()) {
+            return new Response().setCode(Response.code_FileNotFound).setMsg("请求的目录或文件不存在");
+        }
+        File[] files = root.listFiles();
+        if (files != null && files.length != 0) {
+            for (File f : files) {
+                Response.FileData mFileData = new Response.FileData();
+                if (f.isDirectory()) {
+                    mFileData.setDir(true);
+                }
+                mFileData.setFileName(f.getName());
+                mFileData.setFileSize(Utils.formatFileSize(mContext, f.length(), false));
+                SimpleDateFormat mSimpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                mFileData.setFileTime(mSimpleDateFormat.format(f.lastModified()));
+                mFileData.setPath(f.getPath());
+                mFileDatas.add(mFileData);
+            }
+        }
+        return new Response().setFileList(mFileDatas);
     }
 
     /**

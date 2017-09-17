@@ -37,7 +37,69 @@ public class Response {
      * 是否可编辑数据
      */
     private Boolean isEditable;
+    private List<FileData> fileList;
 
+    public List<FileData> getFileList() {
+        return fileList;
+    }
+
+    public Response setFileList(List<FileData> mFileList) {
+        fileList = mFileList;
+        return this;
+    }
+
+    public static class FileData {
+        private boolean isDir = false;
+        private String path;
+        private String fileName;
+        private String fileSize;
+        private String fileTime;
+
+        public boolean isDir() {
+            return isDir;
+        }
+
+        public FileData setDir(boolean mDir) {
+            isDir = mDir;
+            return this;
+        }
+
+        public String getPath() {
+            return path;
+        }
+
+        public FileData setPath(String mPath) {
+            path = mPath;
+            return this;
+        }
+
+        public String getFileName() {
+            return fileName;
+        }
+
+        public FileData setFileName(String mFileName) {
+            fileName = mFileName;
+            return this;
+        }
+
+        public String getFileSize() {
+            return fileSize;
+        }
+
+        public FileData setFileSize(String mFileSize) {
+            fileSize = mFileSize;
+            return this;
+        }
+
+        public String getFileTime() {
+            return fileTime;
+        }
+
+        public FileData setFileTime(String mFileTime) {
+            fileTime = mFileTime;
+            return this;
+        }
+    }
 
     public static class TableData {
         /**
