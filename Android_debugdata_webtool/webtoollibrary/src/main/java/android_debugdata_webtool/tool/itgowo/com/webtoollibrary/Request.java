@@ -2,8 +2,6 @@ package android_debugdata_webtool.tool.itgowo.com.webtoollibrary;
 
 import java.util.List;
 
-import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.model.RowDataRequest;
-
 /**
  * Created by hnvfh on 2017/8/22.
  */
@@ -110,5 +108,48 @@ public class Request {
     public Request setData(String mData) {
         data = mData;
         return this;
+    }
+
+    public static class RowDataRequest {
+        public String title;
+        public boolean isPrimary;
+        public String dataType;
+        public String value;
+
+        public String getTitle() {
+            return title;
+        }
+
+        public RowDataRequest setTitle(String mTitle) {
+            title = mTitle;
+            return this;
+        }
+
+        public boolean isPrimary() {
+            return isPrimary;
+        }
+
+        public RowDataRequest setPrimary(boolean mPrimary) {
+            isPrimary = mPrimary;
+            return this;
+        }
+
+        public String getDataType() {
+            return dataType;
+        }
+
+        public RowDataRequest setDataType(String mDataType) {
+            dataType = mDataType;
+            return this;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        public RowDataRequest setValue(String mValue) {
+            value = mValue;
+            return this;
+        }
     }
 }

@@ -1,11 +1,9 @@
 package android_debugdata_webtool.tool.itgowo.com.webtoollibrary;
 
-import org.json.JSONArray;
-
 import java.util.List;
 
 /**
- * Created by hnvfh on 2017/8/22.
+ * Created by lujianchao on 2017/8/22.
  */
 
 public class Response {
@@ -35,16 +33,13 @@ public class Response {
     private TableData tableData;
 
 
-
-
     /**
      * 是否可编辑数据
      */
     private Boolean isEditable;
 
 
-
-    public static class TableData{
+    public static class TableData {
         /**
          * 表结构信息
          */
@@ -163,7 +158,6 @@ public class Response {
     }
 
 
-
     public List<String> getTableList() {
         return tableList;
     }
@@ -227,7 +221,7 @@ public class Response {
         return this;
     }
 
-    public String toJson(){
+    public String toJson() {
         return DebugDataTool.ObjectToJson(this);
     }
 }

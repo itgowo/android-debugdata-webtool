@@ -34,10 +34,17 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.Response;
-import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.model.RowDataRequest;
+import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.Request.RowDataRequest;
+
+import static android_debugdata_webtool.tool.itgowo.com.webtoollibrary.utils.DatabaseHelper.BOOLEAN;
+import static android_debugdata_webtool.tool.itgowo.com.webtoollibrary.utils.DatabaseHelper.FLOAT;
+import static android_debugdata_webtool.tool.itgowo.com.webtoollibrary.utils.DatabaseHelper.INTEGER;
+import static android_debugdata_webtool.tool.itgowo.com.webtoollibrary.utils.DatabaseHelper.LONG;
+import static android_debugdata_webtool.tool.itgowo.com.webtoollibrary.utils.DatabaseHelper.STRING_SET;
+import static android_debugdata_webtool.tool.itgowo.com.webtoollibrary.utils.DatabaseHelper.TEXT;
 
 /**
- * Created by amitshekhar on 06/02/17.
+ * Created by lujianchao on 2017/8/22.
  */
 
 public class PrefHelper {
@@ -106,7 +113,7 @@ public class PrefHelper {
         Response.TableData.TableInfo typeInfo = new Response.TableData.TableInfo();
         typeInfo.setPrimary(false).setTitle("DataType");
 
-        Response.TableData mTableData=new Response.TableData();
+        Response.TableData mTableData = new Response.TableData();
         mTableData.setTableColumns(new ArrayList<Response.TableData.TableInfo>());
         mTableData.getTableColumns().add(keyInfo);
         mTableData.getTableColumns().add(valueInfo);
@@ -117,25 +124,25 @@ public class PrefHelper {
 
         mTableData.setTableDatas(new ArrayList<List<Object>>());
         for (Map.Entry<String, ?> entry : allEntries.entrySet()) {
-            List<Object> row=new ArrayList<>();
+            List<Object> row = new ArrayList<>();
             row.add(entry.getKey());
             row.add(entry.getValue());
             if (entry.getValue() != null) {
                 if (entry.getValue() instanceof String) {
-                    row.add( DataType.TEXT);
+                    row.add(TEXT);
                 } else if (entry.getValue() instanceof Integer) {
-                    row.add(DataType.INTEGER);
+                    row.add(INTEGER);
                 } else if (entry.getValue() instanceof Long) {
-                    row.add(DataType.LONG);
+                    row.add(LONG);
                 } else if (entry.getValue() instanceof Float) {
-                    row.add( DataType.FLOAT);
+                    row.add(FLOAT);
                 } else if (entry.getValue() instanceof Boolean) {
-                    row.add( DataType.BOOLEAN);
+                    row.add(BOOLEAN);
                 } else if (entry.getValue() instanceof Set) {
-                    row.add( DataType.STRING_SET);
+                    row.add(STRING_SET);
                 }
             } else {
-                row.add(DataType.TEXT);
+                row.add(TEXT);
             }
             mTableData.getTableDatas().add(row);
         }
@@ -166,22 +173,22 @@ public class PrefHelper {
 
         try {
             switch (dataType) {
-                case DataType.TEXT:
+                case TEXT:
                     preferences.edit().putString(key, value).apply();
                     break;
-                case DataType.INTEGER:
+                case INTEGER:
                     preferences.edit().putInt(key, Integer.valueOf(value)).apply();
                     break;
-                case DataType.LONG:
+                case LONG:
                     preferences.edit().putLong(key, Long.valueOf(value)).apply();
                     break;
-                case DataType.FLOAT:
+                case FLOAT:
                     preferences.edit().putFloat(key, Float.valueOf(value)).apply();
                     break;
-                case DataType.BOOLEAN:
+                case BOOLEAN:
                     preferences.edit().putBoolean(key, Boolean.valueOf(value)).apply();
                     break;
-                case DataType.STRING_SET:
+                case STRING_SET:
                     JSONArray jsonArray = new JSONArray(value);
                     Set<String> stringSet = new HashSet<>();
                     for (int i = 0; i < jsonArray.length(); i++) {

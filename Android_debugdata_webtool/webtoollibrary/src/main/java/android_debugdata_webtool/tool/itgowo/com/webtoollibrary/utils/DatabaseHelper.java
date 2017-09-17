@@ -1,21 +1,3 @@
-/*
- *
- *  *    Copyright (C) 2016 Amit Shekhar
- *  *    Copyright (C) 2011 Android Open Source Project
- *  *
- *  *    Licensed under the Apache License, Version 2.0 (the "License");
- *  *    you may not use this file except in compliance with the License.
- *  *    You may obtain a copy of the License at
- *  *
- *  *        http://www.apache.org/licenses/LICENSE-2.0
- *  *
- *  *    Unless required by applicable law or agreed to in writing, software
- *  *    distributed under the License is distributed on an "AS IS" BASIS,
- *  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  *    See the License for the specific language governing permissions and
- *  *    limitations under the License.
- *
- */
 
 package android_debugdata_webtool.tool.itgowo.com.webtoollibrary.utils;
 
@@ -24,18 +6,54 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.Response;
-import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.model.RowDataRequest;
+import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.Request.RowDataRequest;
 
 /**
- * Created by amitshekhar on 06/02/17.
+ * Created by lujianchao on 2017/8/22.
  */
 
 public class DatabaseHelper {
+    public static final String BOOLEAN = "boolean";
+    public static final String INTEGER = "integer";
+    public static final String REAL = "real";
+    public static final String TEXT = "text";
+    public static final String LONG = "long";
+    public static final String FLOAT = "float";
+    public static final String STRING_SET = "string_set";
+
+
+
+    private static final int MAX_BLOB_LENGTH = 512;
+
+    private static final String UNKNOWN_BLOB_LABEL = "{blob}";
+
+    public static String blobToString(byte[] blob) {
+        if (blob.length <= MAX_BLOB_LENGTH) {
+            if (fastIsAscii(blob)) {
+                try {
+                    return new String(blob, "US-ASCII");
+                } catch (UnsupportedEncodingException ignored) {
+
+                }
+            }
+        }
+        return UNKNOWN_BLOB_LABEL;
+    }
+
+    public static boolean fastIsAscii(byte[] blob) {
+        for (byte b : blob) {
+            if ((b & ~0x7f) != 0) {
+                return false;
+            }
+        }
+        return true;
+    }
 
     private DatabaseHelper() {
         // This class in not publicly instantiable
@@ -107,33 +125,7 @@ public class DatabaseHelper {
         }
         if (cursor != null) {
             cursor.moveToFirst();
-            // setting tableInfo when tableName is not known and making
-            // it non-editable also by making isPrimary true for all
-//            if (mTableData.getTableColumns() == null) {
-//                List<Response.TableInfo> mTableDatas = new ArrayList<>();
-//                for (int i = 0; i < cursor.getColumnCount(); i++) {
-//                    Response.TableInfo tableInfo = new Response.TableInfo();
-//                    tableInfo.setTitle(cursor.getColumnName(i));
-//                    tableInfo.setPrimary(true);
-//                    switch (cursor.getType(i)) {
-//                        case Cursor.FIELD_TYPE_BLOB:
-//                            tableInfo.setDataType(DataType.TEXT);
-//                            break;
-//                        case Cursor.FIELD_TYPE_FLOAT:
-//                            tableInfo.setDataType(DataType.REAL);
-//                            break;
-//                        case Cursor.FIELD_TYPE_INTEGER:
-//                            tableInfo.setDataType(DataType.INTEGER);
-//                            break;
-//                        case Cursor.FIELD_TYPE_STRING:
-//                            tableInfo.setDataType(DataType.TEXT);
-//                            break;
-//                        default:
-//                            tableInfo.setDataType(DataType.TEXT);
-//                    }
-//                }
-//                mTableData.setTableColumns(mTableDatas);
-//            }
+
             List<List<Object>> mTableDatas = new ArrayList<>();
             mTableData.setTableDatas(mTableDatas);
             if (cursor.getCount() > 0) {
@@ -143,7 +135,7 @@ public class DatabaseHelper {
                         Object mValue = null;
                         switch (cursor.getType(i)) {
                             case Cursor.FIELD_TYPE_BLOB:
-                                mValue = ConverterUtils.blobToString(cursor.getBlob(i));
+                                mValue = blobToString(cursor.getBlob(i));
                                 break;
                             case Cursor.FIELD_TYPE_FLOAT:
                                 mValue = cursor.getDouble(i);
@@ -247,13 +239,13 @@ public class DatabaseHelper {
                 rowDataRequest.value = null;
             }
             switch (rowDataRequest.dataType) {
-                case DataType.INTEGER:
+                case INTEGER:
                     contentValues.put(rowDataRequest.title, Long.valueOf(rowDataRequest.value));
                     break;
-                case DataType.REAL:
+                case REAL:
                     contentValues.put(rowDataRequest.title, Double.valueOf(rowDataRequest.value));
                     break;
-                case DataType.TEXT:
+                case TEXT:
                     contentValues.put(rowDataRequest.title, rowDataRequest.value);
                     break;
                 default:
@@ -292,13 +284,13 @@ public class DatabaseHelper {
                 whereArgsList.add(rowDataRequest.value);
             } else {
                 switch (rowDataRequest.dataType) {
-                    case DataType.INTEGER:
+                    case INTEGER:
                         contentValues.put(rowDataRequest.title, Long.valueOf(rowDataRequest.value));
                         break;
-                    case DataType.REAL:
+                    case REAL:
                         contentValues.put(rowDataRequest.title, Double.valueOf(rowDataRequest.value));
                         break;
-                    case DataType.TEXT:
+                    case TEXT:
                         contentValues.put(rowDataRequest.title, rowDataRequest.value);
                         break;
                     default:
@@ -375,17 +367,13 @@ public class DatabaseHelper {
     }
 
     private static String getTableName(String selectQuery) {
-        // TODO: 24/4/17 Handle JOIN Query
         TableNameParser tableNameParser = new TableNameParser(selectQuery);
         HashSet<String> tableNames = (HashSet<String>) tableNameParser.tables();
-
         for (String tableName : tableNames) {
             if (!TextUtils.isEmpty(tableName)) {
                 return tableName;
             }
         }
-
         return null;
     }
-
 }
