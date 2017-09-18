@@ -36,7 +36,6 @@ public class RequestHandler {
     private HashMap<String, File> mDatabaseFiles = new HashMap<>();
     ;
     private HashMap<String, File> mCustomDatabaseFiles;
-    private String mSelectedDatabase = null;
 
     public RequestHandler(Context context) {
         mContext = context;
@@ -135,13 +134,13 @@ public class RequestHandler {
                 File mFile = null;
                 //文件请求
                 if (mHttpRequest.getPath().equals("downloadFile")) {
-                    mFile =new File( mHttpRequest.getParameter().get("downloadFile"));
-                    if (mFile.exists()){
+                    mFile = new File(mHttpRequest.getParameter().get("downloadFile"));
+                    if (mFile.exists()) {
                         bytes = Utils.getFile(new File(mHttpRequest.getParameter().get("downloadFile")));
                     }
                 } else {
                     bytes = Utils.loadContent(mHttpRequest.getPath(), mAssets);
-                    mFile =new File( mHttpRequest.getPath());
+                    mFile = new File(mHttpRequest.getPath());
                 }
                 DebugDataTool.onRequest(mHttpRequest.getPath(), mHttpRequest);
                 if (null == bytes) {
@@ -158,7 +157,7 @@ public class RequestHandler {
                     output.println("access-control-allow-origin: *");
                     if (!mHttpRequest.getPath().equals("index.html")) {
                         output.println("Content-Disposition: attachment; filename = " + mFile.getName());
-                    }else {
+                    } else {
                         output.println("Content-Disposition: filename = " + mFile.getName());
                     }
                     output.println("Content-Length: " + bytes.length);
@@ -238,7 +237,7 @@ public class RequestHandler {
         return null;
     }
 
-    private Response getFileList(Request mRequest) {
+    private synchronized Response getFileList(Request mRequest) {
         List<Response.FileData> mFileDatas = new ArrayList<>();
         File root = null;
         if (mRequest.getData() == null || mRequest.getData().length() < 5) {
@@ -298,12 +297,9 @@ public class RequestHandler {
 
 
     private synchronized void openDatabase(String database) {
-        if (mSelectedDatabase != null && mSelectedDatabase.equals(database) && mDatabase != null && mDatabase.isOpen()) {
+        if (mDatabase != null && mDatabase.isOpen() && new File(mDatabase.getPath()).getName().equals(database)) {
             isDbOpened = true;
         } else {
-            if (database == null) {
-                return;
-            }
             closeDatabase();
             File databaseFile = mDatabaseFiles.get(database);
             if (databaseFile == null || !databaseFile.exists()) {
@@ -311,12 +307,11 @@ public class RequestHandler {
                 return;
             }
             mDatabase = SQLiteDatabase.openOrCreateDatabase(databaseFile.getAbsolutePath(), null);
-            mSelectedDatabase = database;
             isDbOpened = true;
         }
     }
 
-    private void closeDatabase() {
+    private synchronized void closeDatabase() {
         if (mDatabase != null && mDatabase.isOpen()) {
             mDatabase.close();
         }
@@ -329,7 +324,7 @@ public class RequestHandler {
      *
      * @return
      */
-    private Response getDBList() {
+    private synchronized Response getDBList() {
         getDatabaseFiles(mContext);
         Response response = new Response();
         if (mDatabaseFiles != null) {
@@ -349,11 +344,9 @@ public class RequestHandler {
      *
      * @return
      */
-    private Response getSPList() {
+    private synchronized Response getSPList() {
         Response response = new Response();
         response.setSpList(PrefHelper.getSharedPreferenceTags(mContext));
-        closeDatabase();
-        mSelectedDatabase = Constants.APP_SHARED_PREFERENCES;
         return response;
     }
 
@@ -366,7 +359,7 @@ public class RequestHandler {
      * @param pagesize
      * @return
      */
-    private Response getAllDataFromDbTable(String database, String tableName, Integer pageindex, Integer pagesize) {
+    private synchronized Response getAllDataFromDbTable(String database, String tableName, Integer pageindex, Integer pagesize) {
         if (tableName == null || tableName.length() < 1) {
             return null;
         }
@@ -392,7 +385,7 @@ public class RequestHandler {
      * @param filename
      * @return
      */
-    private Response getAllDataFromSpFile(String filename) {
+    private synchronized Response getAllDataFromSpFile(String filename) {
         if (filename == null || filename.length() < 1) {
             return null;
         }
@@ -400,7 +393,7 @@ public class RequestHandler {
         return response;
     }
 
-    private Response executeQuery(Request mRequest) {
+    private synchronized Response executeQuery(Request mRequest) {
         Response response = null;
         String first;
         try {
@@ -422,7 +415,7 @@ public class RequestHandler {
         return response;
     }
 
-    private Response getTableList(String database) {
+    private synchronized Response getTableList(String database) {
         if (database == null || database.length() < 1) {
             return null;
         }
@@ -440,7 +433,7 @@ public class RequestHandler {
      * @param isDatabase
      * @return
      */
-    private Response addData(Request mRequest, boolean isDatabase) {
+    private synchronized Response addData(Request mRequest, boolean isDatabase) {
         Response response = null;
         try {
             if (isDatabase) {
@@ -467,7 +460,7 @@ public class RequestHandler {
      * @param isDatabase
      * @return
      */
-    private Response updateData(Request mRequest, boolean isDatabase) {
+    private synchronized Response updateData(Request mRequest, boolean isDatabase) {
         Response response = new Response();
         try {
             if (isDatabase) {
@@ -492,7 +485,7 @@ public class RequestHandler {
      * @param mRequest
      * @return
      */
-    private Response deleteData(Request mRequest, boolean isDatabase) {
+    private synchronized Response deleteData(Request mRequest, boolean isDatabase) {
         Response response = null;
         try {
             if (isDatabase) {
