@@ -1,3 +1,4 @@
+var rootUrl="";
 $(document).ready(function () {
 	getDBList();
 	$("#query").keypress(function (e) {
@@ -48,7 +49,7 @@ function getData(datas) {
 	var dataSplit=datas.split(",")
 	$.ajax({
 		type: "POST",
-		url: "http://192.168.1.15:8088",
+		url: rootUrl,
 		crossDomain:true,
 		data: JSON.stringify(
 				{
@@ -96,7 +97,7 @@ function getDBList() {
 
 	$.ajax({
 		type: "POST",
-		url: "http://192.168.1.15:8088",
+		url: rootUrl,
 		crossDomain:true,
 		data: JSON.stringify({action: "getDbList"}),
 		contentType: "application/json; charset=utf-8",
@@ -142,7 +143,7 @@ function openDatabaseAndGetTableList(db) {
 	$.ajax({
 		type: "POST",
 		crossDomain:true,
-		url: "http://192.168.1.15:8088",
+		url: rootUrl,
 		data: JSON.stringify({
 			action : "getTableList",
 			database :db
@@ -325,7 +326,7 @@ function updateTableData(updatedData, callback) {
 console.log(requestParameters,requestParameters.RowDataRequests)
 	//execute request
 	$.ajax({
-		url: "http://192.168.1.15:8088",
+		url:rootUrl,
 		type: 'POST',
 		data: JSON.stringify(requestParameters),
 		success: function (response) {
@@ -367,7 +368,7 @@ function deleteTableData(deleteData, callback) {
 
 	//execute request
 	$.ajax({
-		url: "http://192.168.1.15:8088",
+		url: rootUrl,
 		type: 'POST',
 		data:JSON.stringify(requestParameters) ,
 		success: function (response) {
@@ -411,7 +412,7 @@ function addTableData(deleteData, callback) {
 
 	//execute request
 	$.ajax({
-		url: "http://192.168.1.15:8088",
+		url: rootUrl,
 		type: 'POST',
 		data:JSON.stringify(requestParameters),
 		success: function (response) {
