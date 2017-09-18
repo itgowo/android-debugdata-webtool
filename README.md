@@ -70,10 +70,16 @@ http://itgowo.com
 
 
 
-##图片示例
+##图片示例（web界面功能开发中，样式有待调整）
 
 ![ image](https://github.com/hnsugar/android-debugdata-webtool/blob/master/img1.png)
 
 ![ image](https://github.com/hnsugar/android-debugdata-webtool/blob/master/img2.png)
+
+![ image](https://github.com/hnsugar/android-debugdata-webtool/blob/master/img3.png)
+
+![ image](https://github.com/hnsugar/android-debugdata-webtool/blob/master/img4.png)
+
+
 
 因为web功底薄弱，请大家耐心等待
