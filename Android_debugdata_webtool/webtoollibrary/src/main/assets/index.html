@@ -10,7 +10,7 @@
     <title>Android-DebugData-Webtool</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel='shortcut icon' href='favicon.ico' type='image/x-icon'>
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
     <script src="js/jquery.min.js"></script>
     <script src="js/dataTables.bootstrap.min.js"></script>
     <script src="js/jquery.dataTables.min.js"></script>
@@ -72,20 +72,20 @@
     <div style="width: 98%">
         <div class="container  " style="padding-top: 36px;">
             <!-- Header -->
-            <div id='btnAll' class="container padding-fifty">
-                <div style="float: left;" class="panel panel-info">
-                    <div class="panel-heading" id='dataBase'>数据库</div>
+            <div class="container padding-fifty">
+                <div  id="btndb" style="float: left;" class="panel panel-info">
+                    <div class="panel-heading" id="dataBase">数据库</div>
                 </div>
-                <div style="float: left;" class="panel panel-info">
+                <div id="btnsp" style="float: left;" class="panel panel-info">
                     <div class="panel-heading" id="sharePreferences">共享参数</div>
                 </div>
-                <div style="float: left;" class="panel panel-info">
+                <div id="btnfm" style="float: left;" class="panel panel-info">
                     <div class="panel-heading" id="fileMag">文件管理</div>
                 </div>
             </div>
         </div>
 
-        <div class="container ">
+        <div id="dbwindow" class="container ">
             <div class="content">
                 <div class="container padding-twenty">
                     <div class="row padding-twenty">
@@ -121,10 +121,58 @@
                             </div>
                         </div>
                     </div>
-                    <div id="snackbar">数据修改成功</div>
+                  
                 </div>
-
-            </div> <!-- End main_wrapper -->
+            </div>
+        </div>
+          <div id="snackbar">数据修改成功</div>
+        <div id="spwindow" class="container ">
+            <div class="content">
+                <div class="container padding-twenty">
+                    <div class="row padding-twenty">
+                        <div class="col-sm-12">
+                           
+                            <button id="selected-sp-info" type="button"  class="btn btn-info">
+                                欢迎使用\(^o^)/~
+                            </button>
+    
+                        </div>
+                    </div>
+                    <div class="row padding-twenty">
+                        <div class="col-sm-2">
+                            <div class="panel panel-info">
+                                <div class="panel-heading">共享参数</div>
+                            </div>
+                            <div id="sp-list" class="list-group"></div>
+                        </div>
+                        <div class="col-sm-2">
+                            
+                        </div>
+                        <div id="parent-data-divsp" class="col-sm-8">
+                            <div class="panel panel-info">
+                                <div class="panel-heading">数据</div>
+                            </div>
+                        </div>
+                    </div>
+                   
+                </div>
+            </div>
+        </div>
+           <div id="fmwindow" class="container ">
+            <div class="content">
+                <div class="container padding-twenty">
+                    <div class="row padding-twenty">
+                        <div class="col-sm-2">
+                        </div>
+                        <div id="parent-data-divfm" class="col-sm-8">
+                            <div class="panel panel-info">
+                                <div class="panel-heading">数据</div>
+                            </div>
+                        </div>
+                    </div>
+                   
+                </div>
+            </div>
         </div>
     </div>
 </div>

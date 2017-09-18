@@ -8,6 +8,27 @@ $(document).ready(function () {
 			queryFunction(dbFileName);
 		}
 	});
+	$("#dbwindow").show();
+	$("#spwindow").hide();
+	$("#fmwindow").hide();
+	
+	$("#btndb").click( function(){
+		$("#dbwindow").show();
+		$("#spwindow").hide();
+		$("#fmwindow").hide();
+	});
+	$("#btnsp").click( function(){
+		$("#dbwindow").hide();
+		$("#spwindow").show();
+		$("#fmwindow").hide();
+	});
+	$("#btnfm").click( function(){
+		$("#dbwindow").hide();
+		$("#spwindow").hide();
+		$("#fmwindow").show();
+	});
+	
+	
 	//update currently selected database
 	$(document).on("click", "#db-list .list-group-item", function () {
 		$("#db-list .list-group-item").each(function () {
@@ -19,7 +40,7 @@ $(document).ready(function () {
 		$("#pane_show>div").each(function () {
 			$(this).hide();
 		});
-		$("#pane_show>div")
+		$("#pane_show>div");
 	});
 	$(document).on("click", "#db-list .list-group-item", function () {
 		$("#db-list .list-group-item").each(function () {
