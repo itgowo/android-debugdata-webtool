@@ -154,12 +154,8 @@ public class HttpRequest {
     public String toString() {
         return "HttpRequest{" +
                 "method='" + method + '\'' +
-                ", protocol='" + protocol + '\'' +
                 ", requestURI='" + requestURI + '\'' +
-                ", path='" + path + '\'' +
                 ", body='" + body + '\'' +
-                ", mParameter=" + mParameter +
-                ", mHeaders=" + mHeaders +
                 '}';
     }
 }

@@ -132,14 +132,16 @@ public class RequestHandler {
                 if (TextUtils.isEmpty(mHttpRequest.getPath())) {//index.html
                     mHttpRequest.setPath("index.html");
                 }
-                String filename = null;
+                File mFile = null;
                 //文件请求
                 if (mHttpRequest.getPath().equals("downloadFile")) {
-                    bytes = Utils.getFile(new File(mHttpRequest.getParameter().get("downloadFile")));
-                    filename = mHttpRequest.getParameter().get("downloadFile");
+                    mFile =new File( mHttpRequest.getParameter().get("downloadFile"));
+                    if (mFile.exists()){
+                        bytes = Utils.getFile(new File(mHttpRequest.getParameter().get("downloadFile")));
+                    }
                 } else {
                     bytes = Utils.loadContent(mHttpRequest.getPath(), mAssets);
-                    filename = mHttpRequest.getPath();
+                    mFile =new File( mHttpRequest.getPath());
                 }
                 DebugDataTool.onRequest(mHttpRequest.getPath(), mHttpRequest);
                 if (null == bytes) {
@@ -152,13 +154,14 @@ public class RequestHandler {
 
                 } else {
                     output.println("HTTP/1.1 200 OK");
-                    output.println("Content-Type: " + Utils.detectMimeType(filename));
+                    output.println("Content-Type: " + Utils.detectMimeType(mFile.getName()));
                     output.println("access-control-allow-origin: *");
                     if (!mHttpRequest.getPath().equals("index.html")) {
-                        output.println("Content-Disposition: attachment; filename=" + filename);
+                        output.println("Content-Disposition: attachment; filename = " + mFile.getName());
+                    }else {
+                        output.println("Content-Disposition: filename = " + mFile.getName());
                     }
                     output.println("Content-Length: " + bytes.length);
-                    output.println();
                     output.println();
                     output.write(bytes);
                     output.println();

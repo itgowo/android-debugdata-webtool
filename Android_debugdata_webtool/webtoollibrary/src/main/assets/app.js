@@ -1,5 +1,6 @@
 var rootUrl="";
 var dbFileName;
+var downloadFilePath;
 $(document).ready(function () {
 	getDBList();
 	$("#query").keypress(function (e) {
@@ -40,8 +41,6 @@ $(document).ready(function () {
 		});
 		$(this).addClass('selected');
 	});
-
-
 });
 
 var isDatabaseSelected = true;
@@ -69,31 +68,30 @@ function getData(fileName,tableName) {
 
 function queryFunction(dbname) {
 	var query = $('#query').val();
-$.ajax({
-		type: "POST",
-		crossDomain:true,
-		url: rootUrl,
-		data: JSON.stringify({
-			action : "query",
-			database :dbname,
-			data : query
-		}),
-		contentType: "application/json; charset=utf-8",
-		dataType: "json",
-	    success: function (result) {
-			 inflateData(result);
-		}
-	});
+    $.ajax({
+            type: "POST",
+            crossDomain:true,
+            url: rootUrl,
+            data: JSON.stringify({
+                action : "query",
+                database :dbname,
+                data : query
+            }),
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (result) {
+                 inflateData(result);
+            }
+        });
 }
 
-function downloadDb() {
+function downloadDb(path) {
 	if (isDatabaseSelected) {
-		$.ajax({
-			url: "downloadFile=", success: function () {
-				window.location = 'downloadDb';
-			}
-		});
-
+//		$.ajax({
+//			url: "downloadFile?downloadFile="+path, success: function () {
+			window.location="downloadFile?downloadFile="+path;
+//			}
+//		});
 	}
 }
 
@@ -109,7 +107,6 @@ function getDBList() {
 		success: function (result) {
 			if (result.code == 200) {
 				var dbList = result.dbList;
-
 				$('#db-list').empty();
 				var isSelectionDone = false;
 				for (var count = 0; count < dbList.length; count++) {
@@ -117,19 +114,16 @@ function getDBList() {
 						if (!isSelectionDone) {
 							isSelectionDone = true;
 							$('#db-list').find('a').trigger('click');
-
 						}
 					}
-
 		}
 	});
-
-
 }
 
 
 function openDatabaseAndGetTableList(dbname,path) {
         dbFileName=dbname;
+        downloadFilePath=path;
 	if ("APP_SHARED_PREFERENCES" == dbname) {
 		$('#run-query').removeClass('active');
 		$('#run-query').addClass('disabled');
@@ -160,6 +154,9 @@ function openDatabaseAndGetTableList(dbname,path) {
 				var tableList = result.tableList;
 				var dbVersion = result.dbVersion;
 				$("#selected-db-info").text("点击数据库名称下载 : " + dbname + " Version : " + dbVersion);
+				$("#selected-db-info").click(function(){
+                                             downloadDb(downloadFilePath)
+                                             });
 				$('#table-list').empty()
 				for (var count = 0; count < tableList.length; count++) {
 					$("#table-list").append("<a href='#' data-db-name='" + dbname + "' data-table-name='" + tableList[count] + "' class='list-group-item' onClick='getData(\""+ dbname+ "\",\""+ tableList[count]+ "\");'>" + tableList[count] + "</a>");
@@ -167,7 +164,6 @@ function openDatabaseAndGetTableList(dbname,path) {
 			} else {
 				showErrorInfo(result.msg);
 			}
-
 		}
 	});
 

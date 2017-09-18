@@ -94,7 +94,7 @@
                                 <label for="query">查询</label>
                                 <input class="form-control" id="query">
                             </div>
-                            <button id="selected-db-info" type="button" onclick="downloadDb()" class="btn btn-info">
+                            <button id="selected-db-info" type="button"  class="btn btn-info">
                                 欢迎使用\(^o^)/~
                             </button>
                             <button id="run-query" type="submit" onclick="queryFunction()"
@@ -123,76 +123,7 @@
                     </div>
                     <div id="snackbar">数据修改成功</div>
                 </div>
-                <!--<div class="content_wrapper">
 
-                    <div class="page_title_wrapper">
-                        <div>
-                            <div style="height: 60px;" >
-                                <form class="form-wrapper right">
-                                    <input type="text"  class='remove-bottom'id="search" placeholder="请输入要执行的完整Sql语句" required="" >
-                                    <input type="submit" value="执行Sql" id="submit">
-                                </form>
-                            </div>
-                        </div>
-                    </div> &lt;!&ndash; End page title wrapper &ndash;&gt;
-                    <div class="content_wrapper_inner">
-                        <div class="container my_wrap">
-
-                            <div id = "left_margin">
-                                <div class="four columns alpha widget">
-                                    <h5 > 数据库 </h5>
-                                    <ul class="categories">
-                                        <table class="hovertable">
-                                            <tr>
-                                                <th class="widget_title" style="width: 200px;height: auto">数据库</th>
-                                            </tr>
-                                            <tr v-for="name in dbList"  onmouseover="this.style.backgroundColor='#ffff66';" onmouseout="this.style.backgroundColor='#d4e3e5';">
-                                                <td>{{name}}</td>
-                                            </tr>
-                                        </table>
-
-                                    </ul>
-                                    <div class="clear"></div>
-                                </div>
-                            </div>
-                            <div id = "wrap">
-                                <div id = "center">
-                                    &lt;!&ndash;中间 表格&ndash;&gt;
-                                    <div class="four columns alpha widget tableWidth ">
-                                        <h5 > 表 </h5>
-                                        <ul class="categories">
-                                            <table class="hovertable">
-                                                <tr>
-                                                    <th class="widget_title" style="width: 200px;height: auto">数据库</th>
-                                                </tr>
-                                                <tr v-for="name in dbList"  onmouseover="this.style.backgroundColor='#ffff66';" onmouseout="this.style.backgroundColor='#d4e3e5';">
-                                                    <td>{{name}}</td>
-                                                </tr>
-                                            </table>
-
-                                        </ul>
-                                        <div class="clear"></div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div id = "right_margin"></div>
-                            <table class="dataintable">
-                                <tr>
-                                    <th v-for="title in titles ">{{title}}</th>
-                                </tr>
-                                <tr v-for="db in dbs">
-                                    <td>{{db.name}}</td>
-                                    <td>{{db.age}}</td>
-                                </tr>
-                                <tr>
-                                    <th :colspan="titles.length">分页代码</th>
-                                </tr>
-                            </table>
-                            <div class="border_divider"></div>
-
-                        </div>
-                    </div>
-        </div> -->
             </div> <!-- End main_wrapper -->
         </div>
     </div>
