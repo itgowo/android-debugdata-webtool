@@ -11,37 +11,37 @@
 **参数：**
 
  ```
-{
-    action:    addDataToSp,
-    spFileName:    appinfo,
-    RowDataRequests:
-    [
-        {
-            primary:    true,
-            title:    id,
-            value:    1,
-            dataType:    integer
-        }
-        {
-            primary:    false,
-            title:    key,
-            value:    GetHomeInfo,
-            dataType:    text
-        },
-        {
-            primary:    false,
-            title:    value,
-            value:    ,
-            dataType:    text
-        },
-        {
-            primary:    false,
-            title:    bak,
-            value:    lll,
-            dataType:    
-        }
-    ]
-}
+	{
+		action:    addDataToSp,
+		spFileName:    appinfo,
+		RowDataRequests:
+		[
+			{
+				primary:    true,
+				title:    id,
+				value:    1,
+				dataType:    integer
+			}
+			{
+				primary:    false,
+				title:    key,
+				value:    GetHomeInfo,
+				dataType:    text
+			},
+			{
+				primary:    false,
+				title:    value,
+				value:    ,
+				dataType:    text
+			},
+			{
+				primary:    false,
+				title:    bak,
+				value:    lll,
+				dataType:    
+			}
+		]
+	}
 
 
  ```
@@ -60,10 +60,10 @@
  **返回示例**
 
 ```
-{
-    code: 200,
-    msg: success
-}
+	{
+		code: 200,
+		msg: success
+	}
 ```
 
  **返回参数说明**

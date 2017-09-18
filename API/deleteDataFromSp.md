@@ -11,19 +11,19 @@
 **参数：**
 
  ```
-{
-    action:    deleteDataFromSp,
-    spFileName:appinfo,
-    RowDataRequests:
-    [
-        {
-            primary:    true,
-            title:    id,
-            value:    3,
-            dataType:    integer
-        }
-    ]
-}
+	{
+		action:    deleteDataFromSp,
+		spFileName:appinfo,
+		RowDataRequests:
+		[
+			{
+				primary:    true,
+				title:    id,
+				value:    3,
+				dataType:    integer
+			}
+		]
+	}
 
  ```
 

@@ -11,9 +11,9 @@
 **参数：**
 
  ```
- {
-     action : getSpList
- }
+	{
+		action : getSpList
+	}
 
  ```
 
