@@ -1,4 +1,5 @@
 var rootUrl="";
+
 $(document).ready(function () {
 	getDBList();
 	$("#query").keypress(function (e) {
@@ -45,8 +46,7 @@ $(document).ready(function () {
 
 var isDatabaseSelected = true;
 
-function getData(datas) {
-	var dataSplit=datas.split(",")
+function getData(fileName,tableName) {
 	$.ajax({
 		type: "POST",
 		url: rootUrl,
@@ -54,13 +54,13 @@ function getData(datas) {
 		data: JSON.stringify(
 				{
 					action : "getDataFromDbTable",
-					database:dataSplit[0],
-					tableName : dataSplit[1],
+					database:fileName,
+					tableName : tableName,
 				}
 				),
 		contentType: "application/json; charset=utf-8",
 		dataType: "json",
-	 success: function (result) {
+	    success: function (result) {
 			inflateData(result);
 		}
 	});
@@ -68,15 +68,10 @@ function getData(datas) {
 }
 
 function queryFunction() {
-
 	var query = $('#query').val();
-
 	$.ajax({
 		url: "query?query=" + escape(query), success: function (result) {
-
-			result = JSON.parse(result);
 			inflateData(result);
-
 		}
 	});
 
@@ -85,7 +80,7 @@ function queryFunction() {
 function downloadDb() {
 	if (isDatabaseSelected) {
 		$.ajax({
-			url: "downloadDb", success: function () {
+			url: "downloadFile=", success: function () {
 				window.location = 'downloadDb';
 			}
 		});
@@ -94,7 +89,6 @@ function downloadDb() {
 
 
 function getDBList() {
-
 	$.ajax({
 		type: "POST",
 		url: rootUrl,
@@ -109,13 +103,13 @@ function getDBList() {
 				$('#db-list').empty();
 				var isSelectionDone = false;
 				for (var count = 0; count < dbList.length; count++) {
-						$("#db-list").append("<a href='#' id=" + dbList[count] + " class='list-group-item' onClick='openDatabaseAndGetTableList(\"" + dbList[count] + "\");'>" + dbList[count] + "</a>")
-						;}
+						$("#db-list").append("<a href='#' id=" + dbList[count].fileName + " class='list-group-item' onClick='openDatabaseAndGetTableList(\"" + dbList[count].fileName+ "\",\"" + dbList[count].path+ "\")'>" + dbList[count].fileName + "</a>")	;}
 						if (!isSelectionDone) {
 							isSelectionDone = true;
 							$('#db-list').find('a').trigger('click');
 						}
 					}
+
 		}
 	});
 
@@ -123,9 +117,9 @@ function getDBList() {
 }
 
 
-function openDatabaseAndGetTableList(db) {
+function openDatabaseAndGetTableList(dbname,path) {
 
-	if ("APP_SHARED_PREFERENCES" == db) {
+	if ("APP_SHARED_PREFERENCES" == dbname) {
 		$('#run-query').removeClass('active');
 		$('#run-query').addClass('disabled');
 		$('#selected-db-info').removeClass('active');
@@ -138,7 +132,7 @@ function openDatabaseAndGetTableList(db) {
 		$('#selected-db-info').removeClass('disabled');
 		$('#selected-db-info').addClass('active');
 		isDatabaseSelected = true;
-		$("#selected-db-info").text("点击数据库名称下载 : " + db);
+		$("#selected-db-info").text("点击数据库名称下载 : " + dbname);
 	}
 	$.ajax({
 		type: "POST",
@@ -146,20 +140,18 @@ function openDatabaseAndGetTableList(db) {
 		url: rootUrl,
 		data: JSON.stringify({
 			action : "getTableList",
-			database :db
+			database :dbname
 		}),
 		contentType: "application/json; charset=utf-8",
 		dataType: "json",
-	 success: function (result) {
+	    success: function (result) {
 			if (result.code == 200) {
 				var tableList = result.tableList;
 				var dbVersion = result.dbVersion;
-				$("#selected-db-info").text("点击数据库名称下载 : " + db + " Version : " + dbVersion);
+				$("#selected-db-info").text("点击数据库名称下载 : " + dbname + " Version : " + dbVersion);
 				$('#table-list').empty()
 				for (var count = 0; count < tableList.length; count++) {
-					var tableName = tableList[count];
-					var datas = [db,tableName]
-					$("#table-list").append("<a href='#' data-db-name='" + db + "' data-table-name='" + tableName + "' class='list-group-item' onClick='getData(\""+ datas+ "\");'>" + tableName + "</a>");
+					$("#table-list").append("<a href='#' data-db-name='" + dbname + "' data-table-name='" + tableList[count] + "' class='list-group-item' onClick='getData(\""+ dbname+ "\",\""+ tableList[count]+ "\");'>" + tableList[count] + "</a>");
 				}
 			} else {
 				showErrorInfo(result.msg);
@@ -176,7 +168,6 @@ function inflateData(result) {
      if(!result.isSelectQuery){
 		showSuccessInfo("查询成功");
      }
-		console.info(result)
 		var columnHeader = result.tableData.tableColumns;
 		var columnData = result.tableData.tableDatas;
 

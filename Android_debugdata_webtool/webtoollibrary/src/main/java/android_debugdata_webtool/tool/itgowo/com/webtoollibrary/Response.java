@@ -1,5 +1,8 @@
 package android_debugdata_webtool.tool.itgowo.com.webtoollibrary;
 
+import android.support.annotation.NonNull;
+
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -19,11 +22,11 @@ public class Response {
     /**
      * 数据库列表
      */
-    private List<String> dbList;
+    private List<FileData> dbList;
     /**
      * 共享参数列表
      */
-    private List<String> spList;
+    private List<FileData> spList;
     /**
      * 数据库中所有表
      */
@@ -48,8 +51,8 @@ public class Response {
         return this;
     }
 
-    public static class FileData {
-        private boolean IsDir = false;
+    public static class FileData implements Comparable<FileData> {
+        private Boolean IsDir ;
         private String path;
         private String rootPath;
         private String fileName;
@@ -65,11 +68,11 @@ public class Response {
             return this;
         }
 
-        public boolean isDir() {
+        public Boolean isDir() {
             return IsDir;
         }
 
-        public FileData setIsDir(boolean mDir) {
+        public FileData setIsDir(Boolean mDir) {
             IsDir = mDir;
             return this;
         }
@@ -108,6 +111,10 @@ public class Response {
         public FileData setFileTime(String mFileTime) {
             fileTime = mFileTime;
             return this;
+        }
+        @Override
+        public int compareTo(@NonNull FileData o) {
+            return this.getFileName().compareTo(o.getFileName());
         }
     }
 
@@ -275,20 +282,20 @@ public class Response {
         return this;
     }
 
-    public List<String> getDbList() {
+    public List<FileData> getDbList() {
         return dbList;
     }
 
-    public Response setDbList(List<String> mDbList) {
+    public Response setDbList(List<FileData> mDbList) {
         dbList = mDbList;
         return this;
     }
 
-    public List<String> getSpList() {
+    public List<FileData> getSpList() {
         return spList;
     }
 
-    public Response setSpList(List<String> mSpList) {
+    public Response setSpList(List<FileData> mSpList) {
         spList = mSpList;
         return this;
     }

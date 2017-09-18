@@ -84,78 +84,36 @@ public class Utils {
         }
     }
 
+
     /**
-     * 获取sqlite3数据库文件
+     * 获取文件
      *
-     * @param selectedDatabase
-     * @param databaseFiles
+     * @param mFile
      * @return
      */
-    public static byte[] getDatabase(String selectedDatabase, HashMap<String, File> databaseFiles) {
-        if (TextUtils.isEmpty(selectedDatabase)) {
+    public static byte[] getFile(File mFile) {
+        if (mFile==null||!mFile.exists()) {
             return null;
         }
 
         byte[] byteArray = new byte[0];
         try {
-            File file = databaseFiles.get(selectedDatabase);
-
             byteArray = null;
             try {
-                InputStream inputStream = new FileInputStream(file);
+                InputStream inputStream = new FileInputStream(mFile);
                 ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                byte[] b = new byte[(int) file.length()];
+                byte[] b = new byte[(int) mFile.length()];
                 int bytesRead;
 
                 while ((bytesRead = inputStream.read(b)) != -1) {
                     bos.write(b, 0, bytesRead);
                 }
-
                 byteArray = bos.toByteArray();
             } catch (IOException e) {
-                Log.e(TAG, "getDatabase: ", e);
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        return byteArray;
-    }
-
-    /**
-     * 获取共享参数文件
-     *
-     * @param selectedDatabase
-     * @param databaseFiles
-     * @return
-     */
-    public static byte[] getSharedPreferences(String selectedDatabase, TreeMap<String, File> databaseFiles) {
-        if (TextUtils.isEmpty(selectedDatabase)) {
-            return null;
-        }
-
-        byte[] byteArray = new byte[0];
-        try {
-            File file = databaseFiles.get(selectedDatabase);
-            byteArray = null;
-            try {
-                InputStream inputStream = new FileInputStream(file);
-                ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                byte[] b = new byte[(int) file.length()];
-                int bytesRead;
-
-                while ((bytesRead = inputStream.read(b)) != -1) {
-                    bos.write(b, 0, bytesRead);
-                }
-
-                byteArray = bos.toByteArray();
-            } catch (IOException e) {
-                Log.e(TAG, "getDatabase: ", e);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
         return byteArray;
     }
 

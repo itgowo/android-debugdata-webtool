@@ -33,8 +33,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.Response;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.Request.RowDataRequest;
+import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.Response;
 
 import static android_debugdata_webtool.tool.itgowo.com.webtoollibrary.utils.DatabaseHelper.BOOLEAN;
 import static android_debugdata_webtool.tool.itgowo.com.webtoollibrary.utils.DatabaseHelper.FLOAT;
@@ -72,9 +72,9 @@ public class PrefHelper {
         return tags;
     }
 
-    public static List<String> getSharedPreferenceTags(Context context) {
+    public static List<Response.FileData> getSharedPreferenceTags(Context context) {
 
-        ArrayList<String> tags = new ArrayList<>();
+        ArrayList<Response.FileData> tags = new ArrayList<>();
 
         String rootPath = context.getApplicationInfo().dataDir + "/shared_prefs";
         File root = new File(rootPath);
@@ -82,13 +82,11 @@ public class PrefHelper {
             for (File file : root.listFiles()) {
                 String fileName = file.getName();
                 if (fileName.endsWith(PREFS_SUFFIX)) {
-                    tags.add(fileName.substring(0, fileName.length() - PREFS_SUFFIX.length()));
+                    tags.add(new Response.FileData().setFileName(fileName.substring(0, fileName.length() - PREFS_SUFFIX.length())).setPath(file.getPath()));
                 }
             }
         }
-
         Collections.sort(tags);
-
         return tags;
     }
 

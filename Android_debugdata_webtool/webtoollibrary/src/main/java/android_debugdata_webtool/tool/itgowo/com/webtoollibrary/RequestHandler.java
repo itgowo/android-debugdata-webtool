@@ -15,8 +15,8 @@ import java.net.Socket;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.utils.Constants;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.utils.DatabaseHelper;
@@ -112,49 +112,62 @@ public class RequestHandler {
             String mAction = null;
             if (mHttpRequest.getMethod().equalsIgnoreCase("OPTIONS")) {
                 onRequestOptions(output);
+
             } else if (mHttpRequest.getMethod().equalsIgnoreCase("POST")) {
                 Response mResponse = onRequestPost(output, mHttpRequest);
                 DebugDataTool.onRequest(mStringBuilder.toString(), mHttpRequest);
-                DebugDataTool.onResponse(new String(bytes));
                 if (mResponse != null) {
                     bytes = DebugDataTool.ObjectToJson(mResponse).getBytes();
                 }
+                DebugDataTool.onResponse(new String(bytes));
+                output.println("HTTP/1.1 200 OK");
+                output.println("Content-Type: " + Utils.detectMimeType(mHttpRequest.getPath()));
+                output.println("access-control-allow-origin: *");
+                output.println("Content-Length: " + bytes.length);
+                output.println();
+                output.write(bytes);
+                output.flush();
+                output.close();
             } else if (mHttpRequest.getMethod().equalsIgnoreCase("GET")) {
                 if (TextUtils.isEmpty(mHttpRequest.getPath())) {//index.html
                     mHttpRequest.setPath("index.html");
                 }
-                if (mHttpRequest.getPath().startsWith("downloadDb")) {
-                    bytes = Utils.getDatabase(mSelectedDatabase, mDatabaseFiles);
-                } else if (mHttpRequest.getPath().startsWith("downloadSp")) {
-                    bytes = Utils.getSharedPreferences(mSelectedDatabase, PrefHelper.getSharedPreference(mContext));
+                String filename = null;
+                //文件请求
+                if (mHttpRequest.getPath().startsWith("downloadFile")) {
+                    bytes = Utils.getFile(new File(mHttpRequest.getParameter().get("downloadFile")));
+                    filename = mHttpRequest.getParameter().get("downloadFile");
                 } else {
-                    //文件请求
                     bytes = Utils.loadContent(mHttpRequest.getPath(), mAssets);
-                    DebugDataTool.onRequest(mHttpRequest.getPath(), mHttpRequest);
-                    if (null == bytes) {
-                        output.println("HTTP/1.1 404 Not Found");
-                        output.println("Content-Type: application/json");
-                        output.println("access-control-allow-origin: *");
-                        output.println();
-                        output.println(new Response().setCode(Response.code_FileNotFound).setMsg("请求的资源不存在").toJson());
-                        output.println();
-                        output.flush();
-                        return;
-                    }
+                    filename = mHttpRequest.getPath();
                 }
+                DebugDataTool.onRequest(mHttpRequest.getPath(), mHttpRequest);
+                if (null == bytes) {
+                    output.println("HTTP/1.1 404 Not Found");
+                    output.println("Content-Type: application/json");
+                    output.println("access-control-allow-origin: *");
+                    output.println();
+                    output.println(new Response().setCode(Response.code_FileNotFound).setMsg("请求的资源不存在").toJson());
+                    output.println();
+
+                } else {
+                    output.println("HTTP/1.1 200 OK");
+                    output.println("Content-Type: " + Utils.detectMimeType(filename));
+                    output.println("access-control-allow-origin: *");
+                    if (!mHttpRequest.getPath().equals("index.html")) {
+                        output.println("Content-Disposition: attachment; filename=" + filename);
+                    }
+                    output.println("Content-Length: " + bytes.length);
+                    output.println();
+                    output.println();
+                    output.write(bytes);
+                    output.println();
+                }
+
+                output.flush();
+                output.close();
             }
-            output.println("HTTP/1.1 200 OK");
-            output.println("Content-Type: " + Utils.detectMimeType(mHttpRequest.getPath()));
-            output.println("access-control-allow-origin: *");
-            if (!TextUtils.isEmpty(mAction) && (mAction.equalsIgnoreCase("downloadDb") || mAction.equalsIgnoreCase("downloadSp"))) {
-                output.println("Content-Disposition: attachment; filename=" + mSelectedDatabase);
-            } else {
-                output.println("Content-Length: " + bytes.length);
-            }
-            output.println();
-            output.write(bytes);
-            output.flush();
-            output.close();
+
             socket.close();
         } finally {
             try {
@@ -238,11 +251,9 @@ public class RequestHandler {
         if (files != null && files.length != 0) {
             for (File f : files) {
                 Response.FileData mFileData = new Response.FileData();
-                if (f.isDirectory()) {
-                    mFileData.setIsDir(true);
-                }
+                mFileData.setIsDir(f.isDirectory());
                 mFileData.setFileName(f.getName());
-                mFileData.setRootPath(root.getPath().equalsIgnoreCase(mContext.getApplicationInfo().dataDir)?null:root.getParent());
+                mFileData.setRootPath(root.getPath().equalsIgnoreCase(mContext.getApplicationInfo().dataDir) ? null : root.getParent());
                 mFileData.setFileSize(Utils.formatFileSize(mContext, f.length(), false));
                 SimpleDateFormat mSimpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 mFileData.setFileTime(mSimpleDateFormat.format(f.lastModified()));
@@ -263,6 +274,11 @@ public class RequestHandler {
         output.println("Access-Control-Allow-Methods: *");
         output.println("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept");
         output.println("Access-Control-Max-Age: Origin, 3600");
+        output.println("access-control-allow-origin: *");
+        output.println("Content-Length: " + 0);
+        output.println();
+        output.flush();
+        output.close();
     }
 
     private void onServerError(PrintStream output, String msg) {
@@ -315,11 +331,10 @@ public class RequestHandler {
         getDatabaseFiles(mContext);
         Response response = new Response();
         if (mDatabaseFiles != null) {
-            List<String> dblist = new ArrayList<>(mDatabaseFiles.keySet());
-            Iterator<String> mIterator = dblist.iterator();
-            while (mIterator.hasNext()) {
-                if (mIterator.next().contains("-journal")) {
-                    mIterator.remove();
+            List<Response.FileData> dblist = new ArrayList<>();
+            for (Map.Entry<String, File> mStringFileEntry : mDatabaseFiles.entrySet()) {
+                if (!mStringFileEntry.getKey().contains("-journal")) {
+                    dblist.add(new Response.FileData().setFileName(mStringFileEntry.getKey()).setPath(mStringFileEntry.getValue().getPath()));
                 }
             }
             response.setDbList(dblist);
