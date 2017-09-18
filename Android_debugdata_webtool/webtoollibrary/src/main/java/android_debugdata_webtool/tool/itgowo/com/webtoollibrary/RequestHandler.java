@@ -134,7 +134,7 @@ public class RequestHandler {
                 }
                 String filename = null;
                 //文件请求
-                if (mHttpRequest.getPath().startsWith("downloadFile")) {
+                if (mHttpRequest.getPath().equals("downloadFile")) {
                     bytes = Utils.getFile(new File(mHttpRequest.getParameter().get("downloadFile")));
                     filename = mHttpRequest.getParameter().get("downloadFile");
                 } else {
@@ -204,7 +204,6 @@ public class RequestHandler {
             output.flush();
             return null;
         }
-
         switch (mRequest.getAction()) {
             case "getDbList":
                 return getDBList();

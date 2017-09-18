@@ -1,10 +1,10 @@
 var rootUrl="";
-
+var dbFileName;
 $(document).ready(function () {
 	getDBList();
 	$("#query").keypress(function (e) {
 		if (e.which == 13) {
-			queryFunction();
+			queryFunction(dbFileName);
 		}
 	});
 	//update currently selected database
@@ -67,14 +67,23 @@ function getData(fileName,tableName) {
 
 }
 
-function queryFunction() {
+function queryFunction(dbname) {
 	var query = $('#query').val();
-	$.ajax({
-		url: "query?query=" + escape(query), success: function (result) {
-			inflateData(result);
+$.ajax({
+		type: "POST",
+		crossDomain:true,
+		url: rootUrl,
+		data: JSON.stringify({
+			action : "query",
+			database :dbname,
+			data : query
+		}),
+		contentType: "application/json; charset=utf-8",
+		dataType: "json",
+	    success: function (result) {
+			 inflateData(result);
 		}
 	});
-
 }
 
 function downloadDb() {
@@ -84,6 +93,7 @@ function downloadDb() {
 				window.location = 'downloadDb';
 			}
 		});
+
 	}
 }
 
@@ -107,6 +117,7 @@ function getDBList() {
 						if (!isSelectionDone) {
 							isSelectionDone = true;
 							$('#db-list').find('a').trigger('click');
+
 						}
 					}
 
@@ -118,7 +129,7 @@ function getDBList() {
 
 
 function openDatabaseAndGetTableList(dbname,path) {
-
+        dbFileName=dbname;
 	if ("APP_SHARED_PREFERENCES" == dbname) {
 		$('#run-query').removeClass('active');
 		$('#run-query').addClass('disabled');
