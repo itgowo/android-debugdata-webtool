@@ -239,9 +239,10 @@ public class RequestHandler {
             for (File f : files) {
                 Response.FileData mFileData = new Response.FileData();
                 if (f.isDirectory()) {
-                    mFileData.setDir(true);
+                    mFileData.setIsDir(true);
                 }
                 mFileData.setFileName(f.getName());
+                mFileData.setRootPath(root.getPath().equalsIgnoreCase(mContext.getApplicationInfo().dataDir)?null:root.getParent());
                 mFileData.setFileSize(Utils.formatFileSize(mContext, f.length(), false));
                 SimpleDateFormat mSimpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 mFileData.setFileTime(mSimpleDateFormat.format(f.lastModified()));
