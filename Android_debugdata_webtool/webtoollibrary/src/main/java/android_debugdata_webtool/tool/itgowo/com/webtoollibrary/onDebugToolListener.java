@@ -1,12 +1,11 @@
 package android_debugdata_webtool.tool.itgowo.com.webtoollibrary;
 
-import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.httpParser.HttpRequest;
-
 /**
  * Created by hnvfh on 2017/8/17.
  */
 
 public interface onDebugToolListener {
+    void onSystemMsg(String mS);
     String onObjectToJson(Object mObject);
 
     <T> T onJsonStringToObject(String mJsonString, Class<T> mClass);

@@ -34,11 +34,17 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.Response;
-import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.model.Request.RowDataRequest;
-import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.model.UpdateRowResponse;
+import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.Request.RowDataRequest;
+
+import static android_debugdata_webtool.tool.itgowo.com.webtoollibrary.utils.DatabaseHelper.BOOLEAN;
+import static android_debugdata_webtool.tool.itgowo.com.webtoollibrary.utils.DatabaseHelper.FLOAT;
+import static android_debugdata_webtool.tool.itgowo.com.webtoollibrary.utils.DatabaseHelper.INTEGER;
+import static android_debugdata_webtool.tool.itgowo.com.webtoollibrary.utils.DatabaseHelper.LONG;
+import static android_debugdata_webtool.tool.itgowo.com.webtoollibrary.utils.DatabaseHelper.STRING_SET;
+import static android_debugdata_webtool.tool.itgowo.com.webtoollibrary.utils.DatabaseHelper.TEXT;
 
 /**
- * Created by amitshekhar on 06/02/17.
+ * Created by lujianchao on 2017/8/22.
  */
 
 public class PrefHelper {
@@ -90,10 +96,9 @@ public class PrefHelper {
      * 获取共享参数list
      *
      * @param context
-     * @param tag
      * @return
      */
-    public static Response getAllPrefData(Context context, String tag) {
+    public static Response getAllPrefData(Context context, String filename) {
 
         Response response = new Response();
         response.setEditable(true);
@@ -101,62 +106,59 @@ public class PrefHelper {
         /**
          * 设置表结构
          */
-        Response.TableInfo keyInfo = new Response.TableInfo();
-        keyInfo.isPrimary = true;
-        keyInfo.title = "Key";
-        Response.TableInfo valueInfo = new Response.TableInfo();
-        valueInfo.isPrimary = false;
-        valueInfo.title = "Value";
-        response.setTableColumns(new ArrayList<Response.TableInfo>());
-        response.getTableColumns().add(keyInfo);
-        response.getTableColumns().add(valueInfo);
+        Response.TableData.TableInfo keyInfo = new Response.TableData.TableInfo();
+        keyInfo.setPrimary(true).setTitle("Key");
+        Response.TableData.TableInfo valueInfo = new Response.TableData.TableInfo();
+        valueInfo.setPrimary(false).setTitle("Value");
+        Response.TableData.TableInfo typeInfo = new Response.TableData.TableInfo();
+        typeInfo.setPrimary(false).setTitle("DataType");
 
-
-        response.setTableDatas(new ArrayList<Response.TableData>());
-        SharedPreferences preferences = context.getSharedPreferences(tag, Context.MODE_PRIVATE);
+        Response.TableData mTableData = new Response.TableData();
+        mTableData.setTableColumns(new ArrayList<Response.TableData.TableInfo>());
+        mTableData.getTableColumns().add(keyInfo);
+        mTableData.getTableColumns().add(valueInfo);
+        mTableData.getTableColumns().add(typeInfo);
+        response.setTableData(mTableData);
+        SharedPreferences preferences = context.getSharedPreferences(filename, Context.MODE_PRIVATE);
         Map<String, ?> allEntries = preferences.getAll();
+
+        mTableData.setTableDatas(new ArrayList<List<Object>>());
         for (Map.Entry<String, ?> entry : allEntries.entrySet()) {
-            List<Response.TableData> row = new ArrayList<>();
-            Response.TableData keyColumnData = new Response.TableData();
-            keyColumnData.dataType = DataType.TEXT;
-            keyColumnData.value = entry.getKey();
-
-            row.add(keyColumnData);
-
-            Response.TableData valueColumnData = new Response.TableData();
-            valueColumnData.value = entry.getValue().toString();
+            List<Object> row = new ArrayList<>();
+            row.add(entry.getKey());
+            row.add(entry.getValue());
             if (entry.getValue() != null) {
                 if (entry.getValue() instanceof String) {
-                    valueColumnData.dataType = DataType.TEXT;
+                    row.add(TEXT);
                 } else if (entry.getValue() instanceof Integer) {
-                    valueColumnData.dataType = DataType.INTEGER;
+                    row.add(INTEGER);
                 } else if (entry.getValue() instanceof Long) {
-                    valueColumnData.dataType = DataType.LONG;
+                    row.add(LONG);
                 } else if (entry.getValue() instanceof Float) {
-                    valueColumnData.dataType = DataType.FLOAT;
+                    row.add(FLOAT);
                 } else if (entry.getValue() instanceof Boolean) {
-                    valueColumnData.dataType = DataType.BOOLEAN;
+                    row.add(BOOLEAN);
                 } else if (entry.getValue() instanceof Set) {
-                    valueColumnData.dataType = DataType.STRING_SET;
+                    row.add(STRING_SET);
                 }
             } else {
-                valueColumnData.dataType = DataType.TEXT;
+                row.add(TEXT);
             }
-            row.add(valueColumnData);
-            response.getTableDatas().addAll(row);
+            mTableData.getTableDatas().add(row);
         }
 
         return response;
 
     }
 
-    public static UpdateRowResponse addOrUpdateRow(Context context, String tableName, List<RowDataRequest> rowDataRequests) {
-        UpdateRowResponse updateRowResponse = new UpdateRowResponse();
-
-        if (tableName == null) {
-            return updateRowResponse;
+    public static Response addOrUpdateRow(Context context, String fileName, List<RowDataRequest> rowDataRequests) {
+        Response updateRowResponse = new Response();
+        if (fileName == null) {
+            return updateRowResponse.setCode(Response.code_Error).setMsg("共享参数文件名未指定");
         }
-
+        if (rowDataRequests == null || rowDataRequests.size() == 0) {
+            return updateRowResponse.setCode(Response.code_Error).setMsg("rowDataRequests操作数据不存在，请确认参数是否正确");
+        }
         RowDataRequest rowDataKey = rowDataRequests.get(0);
         RowDataRequest rowDataValue = rowDataRequests.get(1);
 
@@ -167,75 +169,61 @@ public class PrefHelper {
         if (Constants.NULL.equals(value)) {
             value = null;
         }
-
-        SharedPreferences preferences = context.getSharedPreferences(tableName, Context.MODE_PRIVATE);
-
+        SharedPreferences preferences = context.getSharedPreferences(fileName, Context.MODE_PRIVATE);
         try {
             switch (dataType) {
-                case DataType.TEXT:
+                case TEXT:
                     preferences.edit().putString(key, value).apply();
-                    updateRowResponse.isSuccessful = true;
                     break;
-                case DataType.INTEGER:
+                case INTEGER:
                     preferences.edit().putInt(key, Integer.valueOf(value)).apply();
-                    updateRowResponse.isSuccessful = true;
                     break;
-                case DataType.LONG:
+                case LONG:
                     preferences.edit().putLong(key, Long.valueOf(value)).apply();
-                    updateRowResponse.isSuccessful = true;
                     break;
-                case DataType.FLOAT:
+                case FLOAT:
                     preferences.edit().putFloat(key, Float.valueOf(value)).apply();
-                    updateRowResponse.isSuccessful = true;
                     break;
-                case DataType.BOOLEAN:
+                case BOOLEAN:
                     preferences.edit().putBoolean(key, Boolean.valueOf(value)).apply();
-                    updateRowResponse.isSuccessful = true;
                     break;
-                case DataType.STRING_SET:
+                case STRING_SET:
                     JSONArray jsonArray = new JSONArray(value);
                     Set<String> stringSet = new HashSet<>();
                     for (int i = 0; i < jsonArray.length(); i++) {
                         stringSet.add(jsonArray.getString(i));
                     }
                     preferences.edit().putStringSet(key, stringSet).apply();
-                    updateRowResponse.isSuccessful = true;
                     break;
                 default:
                     preferences.edit().putString(key, value).apply();
-                    updateRowResponse.isSuccessful = true;
             }
         } catch (Exception e) {
             e.printStackTrace();
+            updateRowResponse.setCode(Response.code_Error).setMsg("web server:SP addOrUpdateRow error,参数处理异常  " + e.getMessage());
         }
 
         return updateRowResponse;
     }
 
 
-    public static UpdateRowResponse deleteRow(Context context, String tableName,
-                                              List<RowDataRequest> rowDataRequests) {
-        UpdateRowResponse updateRowResponse = new UpdateRowResponse();
+    public static Response deleteRow(Context context, String fileName, List<RowDataRequest> rowDataRequests) {
+        Response updateRowResponse = new Response();
 
-        if (tableName == null) {
-            return updateRowResponse;
+        if (fileName == null) {
+            return updateRowResponse.setCode(Response.code_Error).setMsg("共享参数文件名未指定");
         }
-
+        if (rowDataRequests == null || rowDataRequests.size() == 0) {
+            return updateRowResponse.setCode(Response.code_Error).setMsg("rowDataRequests操作数据不存在，请确认参数是否正确");
+        }
         RowDataRequest rowDataKey = rowDataRequests.get(0);
-
         String key = rowDataKey.value;
-
-
-        SharedPreferences preferences = context.getSharedPreferences(tableName, Context.MODE_PRIVATE);
-
+        SharedPreferences preferences = context.getSharedPreferences(fileName, Context.MODE_PRIVATE);
         try {
-            preferences.edit()
-                    .remove(key).apply();
-            updateRowResponse.isSuccessful = true;
+            preferences.edit().remove(key).apply();
         } catch (Exception ex) {
-            updateRowResponse.isSuccessful = false;
+            updateRowResponse.setCode(Response.code_Error).setMsg("共享参数删除错误  " + ex.getMessage());
         }
-
         return updateRowResponse;
     }
 }

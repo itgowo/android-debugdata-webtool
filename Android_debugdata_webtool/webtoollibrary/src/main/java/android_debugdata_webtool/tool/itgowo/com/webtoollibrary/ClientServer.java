@@ -65,6 +65,7 @@ public class ClientServer implements Runnable {
             if (null != mServerSocket) {
                 mServerSocket.close();
                 mServerSocket = null;
+                DebugDataTool.onSystemMsg("服务器已关闭");
             }
         } catch (Exception e) {
             DebugDataTool.onError("web server error,服务器关闭异常", e);
@@ -78,7 +79,7 @@ public class ClientServer implements Runnable {
             while (mIsRunning) {
                 Socket socket = mServerSocket.accept();
                 if (isMultMode) {
-                    mRequestHandler.asynchronousHandle(socket);
+                    mRequestHandler.asynHandle(socket);
                 } else {
                     mRequestHandler.syncHandle(socket);
                 }

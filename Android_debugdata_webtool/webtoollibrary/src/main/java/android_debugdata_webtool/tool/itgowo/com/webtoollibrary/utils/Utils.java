@@ -19,6 +19,7 @@
 
 package android_debugdata_webtool.tool.itgowo.com.webtoollibrary.utils;
 
+import android.content.Context;
 import android.content.res.AssetManager;
 import android.text.TextUtils;
 import android.util.Log;
@@ -46,7 +47,7 @@ public class Utils {
 
     public static String detectMimeType(String fileName) {
         if (TextUtils.isEmpty(fileName)) {
-            return null;
+            return "application/json;charset=utf-8";
         } else if (fileName.endsWith(".html")) {
             return "text/html";
         } else if (fileName.endsWith(".js")) {
@@ -85,6 +86,7 @@ public class Utils {
 
     /**
      * 获取sqlite3数据库文件
+     *
      * @param selectedDatabase
      * @param databaseFiles
      * @return
@@ -122,6 +124,7 @@ public class Utils {
 
     /**
      * 获取共享参数文件
+     *
      * @param selectedDatabase
      * @param databaseFiles
      * @return
@@ -154,5 +157,54 @@ public class Utils {
         }
 
         return byteArray;
+    }
+
+    public static String formatFileSize(Context context, long number, boolean shorter) {
+        if (context == null) {
+            return "";
+        }
+
+        float result = number;
+        String suffix = "B";
+        if (result > 900) {
+            suffix = "KB";
+            result = result / 1024;
+        }
+        if (result > 900) {
+            suffix = "MB";
+            result = result / 1024;
+        }
+        if (result > 900) {
+            suffix = "GB";
+            result = result / 1024;
+        }
+        if (result > 900) {
+            suffix = "TB";
+            result = result / 1024;
+        }
+        if (result > 900) {
+            suffix = "PB";
+            result = result / 1024;
+        }
+        String value;
+        if (result < 1) {
+            value = String.format("%.2f", result);
+        } else if (result < 10) {
+            if (shorter) {
+                value = String.format("%.1f", result);
+            } else {
+                value = String.format("%.2f", result);
+            }
+        } else if (result < 100) {
+            if (shorter) {
+                value = String.format("%.0f", result);
+            } else {
+                value = String.format("%.2f", result);
+            }
+        } else {
+            value = String.format("%.0f", result);
+        }
+  
+        return value + suffix;
     }
 }

@@ -1,52 +1,30 @@
-/*
- *
- *  *    Copyright (C) 2016 Amit Shekhar
- *  *    Copyright (C) 2011 Android Open Source Project
- *  *
- *  *    Licensed under the Apache License, Version 2.0 (the "License");
- *  *    you may not use this file except in compliance with the License.
- *  *    You may obtain a copy of the License at
- *  *
- *  *        http://www.apache.org/licenses/LICENSE-2.0
- *  *
- *  *    Unless required by applicable law or agreed to in writing, software
- *  *    distributed under the License is distributed on an "AS IS" BASIS,
- *  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  *    See the License for the specific language governing permissions and
- *  *    limitations under the License.
- *
- */
+
 
 package android_debugdata_webtool.tool.itgowo.com.webtoollibrary;
 
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.database.sqlite.SQLiteDatabase;
-import android.net.Uri;
+import android.text.TextUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.Socket;
-import java.net.URLDecoder;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
-import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.httpParser.HttpRequest;
-import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.model.Request;
-import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.model.Request.RowDataRequest;
-import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.model.TableDataResponse;
-import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.model.UpdateRowResponse;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.utils.Constants;
-import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.utils.DatabaseFileProvider;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.utils.DatabaseHelper;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.utils.PrefHelper;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.utils.Utils;
 
 /**
- * Created by amitshekhar on 06/02/17.
+ * Created by lujianchao on 2017/8/22.
  */
 
 public class RequestHandler {
@@ -63,10 +41,22 @@ public class RequestHandler {
     public RequestHandler(Context context) {
         mContext = context;
         mAssets = context.getResources().getAssets();
-        mDatabaseFiles = DatabaseFileProvider.getDatabaseFiles(mContext);
-        if (mCustomDatabaseFiles != null) {
-            mDatabaseFiles.putAll(mCustomDatabaseFiles);
+        getDatabaseFiles(context);
+    }
+
+    public HashMap<String, File> getDatabaseFiles(Context context) {
+        mDatabaseFiles = new HashMap<>();
+        try {
+            for (String databaseName : context.databaseList()) {
+                mDatabaseFiles.put(databaseName, context.getDatabasePath(databaseName));
+            }
+            if (mCustomDatabaseFiles != null) {
+                mDatabaseFiles.putAll(mCustomDatabaseFiles);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+        return mDatabaseFiles;
     }
 
     /**
@@ -74,14 +64,14 @@ public class RequestHandler {
      *
      * @param mSocket
      */
-    public void asynchronousHandle(final Socket mSocket) {
+    public void asynHandle(final Socket mSocket) {
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
                     syncHandle(mSocket);
                 } catch (IOException mE) {
-                    DebugDataTool.onError("web server:boot error,分配并处理数据异常", mE);
+                    DebugDataTool.onError("web server:received request error,分配并处理数据异常", mE);
                 }
             }
         }).start();
@@ -90,6 +80,9 @@ public class RequestHandler {
     public void syncHandle(Socket socket) throws IOException {
         InputStream mInputStream = null;
         PrintStream output = null;
+        if (mDatabaseFiles == null) {
+            getDatabaseFiles(mContext);
+        }
         try {
             int count = 0;
             StringBuilder mStringBuilder = new StringBuilder();
@@ -97,7 +90,9 @@ public class RequestHandler {
             byte[] mBytes = new byte[4096];
             while (true) {
                 count = mInputStream.read(mBytes);
-                mStringBuilder.append(new String(mBytes, 0, count)).append("\r\n");
+                if (count > 0) {
+                    mStringBuilder.append(new String(mBytes, 0, count)).append("\r\n");
+                }
                 if (count < 4096) {
                     break;
                 }
@@ -113,61 +108,45 @@ public class RequestHandler {
             }
             // Output stream that we send the response to
             output = new PrintStream(socket.getOutputStream());
-
-            boolean isFile = false;
             byte[] bytes = new byte[0];
-            if (mHttpRequest.getPath() != null) {
-                if (mHttpRequest.getPath().equalsIgnoreCase("getDbList")) {
-                    bytes = DebugDataTool.ObjectToJson(getDBList()).getBytes();
-                } else if (mHttpRequest.getPath().equalsIgnoreCase("getAllDataFromTheTable")) {
-                    bytes = DebugDataTool.ObjectToJson(getAllDataFromTheTableResponse(mHttpRequest.getParameter().get("tableName"))).getBytes();
-                } else if (mHttpRequest.getPath().equalsIgnoreCase("getTableList")) {
-                    bytes = DebugDataTool.ObjectToJson(getTableList(mHttpRequest.getParameter().get("database"))).getBytes();
-                } else if (mHttpRequest.getPath().equalsIgnoreCase("addTableData")) {
-                    final String response = addTableDataAndGetResponse(mHttpRequest.getPath());
-                    bytes = response.getBytes();
-                } else if (mHttpRequest.getPath().equalsIgnoreCase("updateTableData")) {
-                    final String response = updateTableDataAndGetResponse(mHttpRequest.getPath());
-                    bytes = response.getBytes();
-                } else if (mHttpRequest.getPath().equalsIgnoreCase("deleteTableData")) {
-                    final String response = deleteTableDataAndGetResponse(mHttpRequest.getPath());
-                    bytes = response.getBytes();
-                } else if (mHttpRequest.getPath().equalsIgnoreCase("query")) {
-                    final String response = executeQueryAndGetResponse(mHttpRequest.getRequestURI());
-                    bytes = response.getBytes();
-                } else if (mHttpRequest.getPath().equalsIgnoreCase("downloadDb")) {
-                    isFile = true;
-                    if (Constants.APP_SHARED_PREFERENCES.equals(mSelectedDatabase)) {
-                        bytes = Utils.getSharedPreferences(mSelectedDatabase, PrefHelper.getSharedPreference(mContext));
-                    } else {
-                        bytes = Utils.getDatabase(mSelectedDatabase, mDatabaseFiles);
-                    }
-                } else if (mHttpRequest.getPath().isEmpty()) {
-                    isFile = true;
-                    bytes = Utils.loadContent("index.html", mAssets);
-                } else {
-                    isFile = true;
-                    bytes = Utils.loadContent(mHttpRequest.getPath(), mAssets);
-                }
-
-
-            }
-            if (!isFile) {
+            String mAction = null;
+            if (mHttpRequest.getMethod().equalsIgnoreCase("OPTIONS")) {
+                onRequestOptions(output);
+            } else if (mHttpRequest.getMethod().equalsIgnoreCase("POST")) {
+                Response mResponse = onRequestPost(output, mHttpRequest);
                 DebugDataTool.onRequest(mStringBuilder.toString(), mHttpRequest);
                 DebugDataTool.onResponse(new String(bytes));
-            } else {
-                DebugDataTool.onRequest(mHttpRequest.getPath(), mHttpRequest);
+                if (mResponse != null) {
+                    bytes = DebugDataTool.ObjectToJson(mResponse).getBytes();
+                }
+            } else if (mHttpRequest.getMethod().equalsIgnoreCase("GET")) {
+                if (TextUtils.isEmpty(mHttpRequest.getPath())) {//index.html
+                    mHttpRequest.setPath("index.html");
+                }
+                if (mHttpRequest.getPath().startsWith("downloadDb")) {
+                    bytes = Utils.getDatabase(mSelectedDatabase, mDatabaseFiles);
+                } else if (mHttpRequest.getPath().startsWith("downloadSp")) {
+                    bytes = Utils.getSharedPreferences(mSelectedDatabase, PrefHelper.getSharedPreference(mContext));
+                } else {
+                    //文件请求
+                    bytes = Utils.loadContent(mHttpRequest.getPath(), mAssets);
+                    DebugDataTool.onRequest(mHttpRequest.getPath(), mHttpRequest);
+                    if (null == bytes) {
+                        output.println("HTTP/1.1 404 Not Found");
+                        output.println("Content-Type: application/json");
+                        output.println("access-control-allow-origin: *");
+                        output.println();
+                        output.println(new Response().setCode(Response.code_FileNotFound).setMsg("请求的资源不存在").toJson());
+                        output.println();
+                        output.flush();
+                        return;
+                    }
+                }
             }
-            if (null == bytes) {
-                writeServerError(output);
-                return;
-            }
-
-            output.println("HTTP/1.0 200 OK");
-
+            output.println("HTTP/1.1 200 OK");
             output.println("Content-Type: " + Utils.detectMimeType(mHttpRequest.getPath()));
-
-            if (mHttpRequest.getPath().equalsIgnoreCase("downloadDb")) {
+            output.println("access-control-allow-origin: *");
+            if (!TextUtils.isEmpty(mAction) && (mAction.equalsIgnoreCase("downloadDb") || mAction.equalsIgnoreCase("downloadSp"))) {
                 output.println("Content-Disposition: attachment; filename=" + mSelectedDatabase);
             } else {
                 output.println("Content-Length: " + bytes.length);
@@ -195,20 +174,127 @@ public class RequestHandler {
 
     }
 
+    private Response onRequestPost(PrintStream output, HttpRequest mHttpRequest) {
+        //post请求数据
+        Request mRequest = null;
+        try {
+            mRequest = DebugDataTool.JsonToObject(mHttpRequest.getBody(), Request.class);
+        } catch (Exception mE) {
+            DebugDataTool.onError("web server:Request error,http请求解析异常", mE);
+            onServerError(output, "web server:Request error,http请求解析异常 " + mE.getMessage());
+            output.flush();
+            return null;
+        }
+        if (mRequest == null || TextUtils.isEmpty(mRequest.getAction())) {
+            DebugDataTool.onError("web server:Request data is null or action is null,http请求没有action，无法解析操作", new Throwable("action is null"));
+            onServerError(output, "web server:Request data is null or action is null,http请求没有action，无法解析操作");
+            output.flush();
+            return null;
+        }
+
+        switch (mRequest.getAction()) {
+            case "getDbList":
+                return getDBList();
+            case "getSpList":
+                return getSPList();
+            case "getTableList":
+                return getTableList(mRequest.getDatabase());
+            case "getDataFromDbTable":
+                return getAllDataFromDbTable(mRequest.getDatabase(), mRequest.getTableName(), mRequest.getPageIndex(), mRequest.getPageSize());
+            case "getDataFromSpFile":
+                return getAllDataFromSpFile(mRequest.getSpFileName());
+            case "addDataToDb":
+                return addData(mRequest, true);
+            case "addDataToSp":
+                return addData(mRequest, false);
+            case "updateDataToDb":
+                return updateData(mRequest, true);
+            case "updateDataToSp":
+                return updateData(mRequest, false);
+            case "deleteDataFromDb":
+                return deleteData(mRequest, true);
+            case "deleteDataFromSp":
+                return deleteData(mRequest, false);
+            case "query":
+                return executeQuery(mRequest);
+            case "getFileList":
+                return getFileList(mRequest);
+        }
+        return null;
+    }
+
+    private Response getFileList(Request mRequest) {
+        List<Response.FileData> mFileDatas = new ArrayList<>();
+        File root = null;
+        if (mRequest.getData() == null || mRequest.getData().length() < 5) {
+            root = new File(mContext.getApplicationInfo().dataDir);
+        } else {
+            root = new File(mRequest.getData());
+        }
+        if (root == null || !root.exists()) {
+            return new Response().setCode(Response.code_FileNotFound).setMsg("请求的目录或文件不存在");
+        }
+        File[] files = root.listFiles();
+        if (files != null && files.length != 0) {
+            for (File f : files) {
+                Response.FileData mFileData = new Response.FileData();
+                if (f.isDirectory()) {
+                    mFileData.setDir(true);
+                }
+                mFileData.setFileName(f.getName());
+                mFileData.setFileSize(Utils.formatFileSize(mContext, f.length(), false));
+                SimpleDateFormat mSimpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                mFileData.setFileTime(mSimpleDateFormat.format(f.lastModified()));
+                mFileData.setPath(f.getPath());
+                mFileDatas.add(mFileData);
+            }
+        }
+        return new Response().setFileList(mFileDatas);
+    }
+
+    /**
+     * 响应跨域请求
+     *
+     * @param output
+     */
+    private void onRequestOptions(PrintStream output) {
+        output.println("HTTP/1.0 200 OK");
+        output.println("Access-Control-Allow-Methods: *");
+        output.println("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept");
+        output.println("Access-Control-Max-Age: Origin, 3600");
+    }
+
+    private void onServerError(PrintStream output, String msg) {
+        output.println("HTTP/1.0 500 Internal Server Error");
+        output.println("Content-Type: application/json");
+        output.println("access-control-allow-origin: *");
+        output.println();
+        output.println(new Response().setCode(Response.code_Error).setMsg("服务器异常  " + msg).toJson());
+        output.println();
+    }
+
     public void setCustomDatabaseFiles(HashMap<String, File> customDatabaseFiles) {
         mCustomDatabaseFiles = customDatabaseFiles;
     }
 
-    private void writeServerError(PrintStream output) {
-        output.println("HTTP/1.0 500 Internal Server Error");
-        output.flush();
-    }
 
-    private void openDatabase(String database) {
-        closeDatabase();
-        File databaseFile = mDatabaseFiles.get(database);
-        mDatabase = SQLiteDatabase.openOrCreateDatabase(databaseFile.getAbsolutePath(), null);
-        isDbOpened = true;
+    private synchronized void openDatabase(String database) {
+        if (mSelectedDatabase != null && mSelectedDatabase.equals(database) && mDatabase != null && mDatabase.isOpen()) {
+            isDbOpened = true;
+        } else {
+            if (database == null) {
+                return;
+            }
+            closeDatabase();
+            File databaseFile = mDatabaseFiles.get(database);
+            if (databaseFile == null || !databaseFile.exists()) {
+                isDbOpened = false;
+                return;
+            }
+            mDatabase = SQLiteDatabase.openOrCreateDatabase(databaseFile.getAbsolutePath(), null);
+            mSelectedDatabase = database;
+            isDbOpened = true;
+        }
     }
 
     private void closeDatabase() {
@@ -225,14 +311,16 @@ public class RequestHandler {
      * @return
      */
     private Response getDBList() {
-        mDatabaseFiles = DatabaseFileProvider.getDatabaseFiles(mContext);
-        if (mCustomDatabaseFiles != null) {
-            mDatabaseFiles.putAll(mCustomDatabaseFiles);
-        }
+        getDatabaseFiles(mContext);
         Response response = new Response();
         if (mDatabaseFiles != null) {
             List<String> dblist = new ArrayList<>(mDatabaseFiles.keySet());
-            dblist.add(Constants.APP_SHARED_PREFERENCES);
+            Iterator<String> mIterator = dblist.iterator();
+            while (mIterator.hasNext()) {
+                if (mIterator.next().contains("-journal")) {
+                    mIterator.remove();
+                }
+            }
             response.setDbList(dblist);
         }
         return response;
@@ -245,141 +333,164 @@ public class RequestHandler {
      */
     private Response getSPList() {
         Response response = new Response();
-        List<String> dblist = new ArrayList<>();
-        dblist.add(Constants.APP_SHARED_PREFERENCES);
-        response.setDbList(dblist);
+        response.setSpList(PrefHelper.getSharedPreferenceTags(mContext));
+        closeDatabase();
+        mSelectedDatabase = Constants.APP_SHARED_PREFERENCES;
         return response;
     }
 
-    private Response getAllDataFromTheTableResponse(String tableName) {
-        Response response;
+    /**
+     * 从数据库表读取数据
+     *
+     * @param database
+     * @param tableName
+     * @param pageindex
+     * @param pagesize
+     * @return
+     */
+    private Response getAllDataFromDbTable(String database, String tableName, Integer pageindex, Integer pagesize) {
+        if (tableName == null || tableName.length() < 1) {
+            return null;
+        }
+        Response response = null;
+        openDatabase(database);
         if (isDbOpened) {
-            String sql = "SELECT * FROM " + tableName;
+            String sql;
+            if (pageindex == null || pagesize == null) {
+                sql = "SELECT * FROM " + tableName;
+            } else {
+                sql = "SELECT * FROM " + tableName + " limit " + (pageindex - 1) * pagesize + "," + pagesize;
+            }
             response = DatabaseHelper.getTableData(mDatabase, sql, tableName);
         } else {
-            response = PrefHelper.getAllPrefData(mContext, tableName);
+            response = new Response().setCode(Response.code_FileNotFound).setMsg("数据库文件不存在，请检查是否做了删除操作");
         }
-
         return response;
-
     }
 
-    private String executeQueryAndGetResponse(String route) {
-        String query = null;
-        String data = null;
+    /**
+     * 从共享参数文件获取数据
+     *
+     * @param filename
+     * @return
+     */
+    private Response getAllDataFromSpFile(String filename) {
+        if (filename == null || filename.length() < 1) {
+            return null;
+        }
+        Response response = PrefHelper.getAllPrefData(mContext, filename);
+        return response;
+    }
+
+    private Response executeQuery(Request mRequest) {
+        Response response = null;
         String first;
         try {
-            if (route.contains("?query=")) {
-                query = route.substring(route.indexOf("=") + 1, route.length());
-            }
-            try {
-                query = URLDecoder.decode(query, "UTF-8");
-            } catch (Exception e) {
-                DebugDataTool.onError("web server:executeQueryAndGetResponse error,参数处理异常，不是utf-8编码", e);
-            }
-
-            if (query != null) {
-                first = query.split(" ")[0].toLowerCase();
+            if (mRequest.getData() != null) {
+                openDatabase(mRequest.getDatabase());
+                first = mRequest.getData().split(" ")[0].toLowerCase();
                 if (first.equals("select") || first.equals("pragma")) {
-                    Response response = DatabaseHelper.getTableData(mDatabase, query, null);
-                    data = DebugDataTool.ObjectToJson(response);
+                    response = DatabaseHelper.getTableData(mDatabase, mRequest.getData(), null);
                 } else {
-                    TableDataResponse response = DatabaseHelper.exec(mDatabase, query);
-                    data = DebugDataTool.ObjectToJson(response);
+                    response = DatabaseHelper.exec(mDatabase, mRequest.getData());
                 }
             }
         } catch (Exception e) {
             DebugDataTool.onError("web server:executeQueryAndGetResponse error,参数处理异常", e);
         }
-
-        if (data == null) {
-            Response response = new Response();
-            response.setCode(Response.code_SQLNODATA);
-            response.setMsg("找不到数据");
-            data = DebugDataTool.ObjectToJson(response);
-        }
-
-        return data;
-    }
-
-    private Response getTableList(String database) {
-        Response response = new Response();
-        if (Constants.APP_SHARED_PREFERENCES.equals(database)) {
-            response.setSpList(PrefHelper.getSharedPreferenceTags(mContext));
-
-            closeDatabase();
-            mSelectedDatabase = Constants.APP_SHARED_PREFERENCES;
-        } else {
-            openDatabase(database);
-            response = DatabaseHelper.getAllTableName(mDatabase);
-            mSelectedDatabase = database;
+        if (response == null) {
+            response = new Response().setCode(Response.code_SQLNODATA).setMsg("找不到数据或者SQL语句错误");
         }
         return response;
     }
 
+    private Response getTableList(String database) {
+        if (database == null || database.length() < 1) {
+            return null;
+        }
+        Response response = new Response();
+        openDatabase(database);
+        response = DatabaseHelper.getAllTableName(mDatabase);
 
-    private String addTableDataAndGetResponse(String route) {
-        UpdateRowResponse response;
+        return response;
+    }
+
+    /**
+     * 添加数据
+     *
+     * @param mRequest
+     * @param isDatabase
+     * @return
+     */
+    private Response addData(Request mRequest, boolean isDatabase) {
+        Response response = null;
         try {
-            Uri uri = Uri.parse(URLDecoder.decode(route, "UTF-8"));
-            String tableName = uri.getQueryParameter("tableName");
-            String updatedData = uri.getQueryParameter("addData");
-            List<RowDataRequest> rowDataRequests = DebugDataTool.JsonToObject(updatedData, Request.class).getRowDataRequests();
-            if (Constants.APP_SHARED_PREFERENCES.equals(mSelectedDatabase)) {
-                response = PrefHelper.addOrUpdateRow(mContext, tableName, rowDataRequests);
+            if (isDatabase) {
+                openDatabase(mRequest.getDatabase());
+                response = DatabaseHelper.addRow(mDatabase, mRequest.getTableName(), mRequest.getRowDataRequests());
             } else {
-                response = DatabaseHelper.addRow(mDatabase, tableName, rowDataRequests);
+                response = PrefHelper.addOrUpdateRow(mContext, mRequest.getSpFileName(), mRequest.getRowDataRequests());
             }
-            return DebugDataTool.ObjectToJson(response);
+            return response;
         } catch (Exception e) {
-            DebugDataTool.onError("web server:addTableDataAndGetResponse error,参数处理异常", e);
-            response = new UpdateRowResponse();
-            response.isSuccessful = false;
-            return DebugDataTool.ObjectToJson(response);
+            DebugDataTool.onError("web server:addData error,参数处理异常", e);
+            if (response == null) {
+                response = new Response();
+            }
+            response.setCode(Response.code_Error).setMsg("web server:addData error,参数处理异常  " + e.getMessage());
+            return response;
         }
     }
 
-    private String updateTableDataAndGetResponse(String route) {
-        UpdateRowResponse response;
+    /**
+     * 更新数据
+     *
+     * @param mRequest
+     * @param isDatabase
+     * @return
+     */
+    private Response updateData(Request mRequest, boolean isDatabase) {
+        Response response = new Response();
         try {
-            Uri uri = Uri.parse(URLDecoder.decode(route, "UTF-8"));
-            String tableName = uri.getQueryParameter("tableName");
-            String updatedData = uri.getQueryParameter("updatedData");
-            List<RowDataRequest> rowDataRequests = DebugDataTool.JsonToObject(updatedData, Request.class).getRowDataRequests();
-            if (Constants.APP_SHARED_PREFERENCES.equals(mSelectedDatabase)) {
-                response = PrefHelper.addOrUpdateRow(mContext, tableName, rowDataRequests);
+            if (isDatabase) {
+                response = DatabaseHelper.updateRow(mDatabase, mRequest.getTableName(), mRequest.getRowDataRequests());
             } else {
-                response = DatabaseHelper.updateRow(mDatabase, tableName, rowDataRequests);
+                response = PrefHelper.addOrUpdateRow(mContext, mRequest.getSpFileName(), mRequest.getRowDataRequests());
             }
-            return DebugDataTool.ObjectToJson(response);
+            return response;
         } catch (Exception e) {
-            DebugDataTool.onError("web server:updateTableDataAndGetResponse error,参数处理异常", e);
-            response = new UpdateRowResponse();
-            response.isSuccessful = false;
-            return DebugDataTool.ObjectToJson(response);
+            DebugDataTool.onError("web server:updateData error,参数处理异常", e);
+            if (response == null) {
+                response = new Response();
+            }
+            response.setCode(Response.code_Error).setMsg("web server:updateData error,参数处理异常  " + e.getMessage());
+            return response;
         }
     }
 
-
-    private String deleteTableDataAndGetResponse(String route) {
-        UpdateRowResponse response;
+    /**
+     * 删除数据
+     *
+     * @param mRequest
+     * @return
+     */
+    private Response deleteData(Request mRequest, boolean isDatabase) {
+        Response response = null;
         try {
-            Uri uri = Uri.parse(URLDecoder.decode(route, "UTF-8"));
-            String tableName = uri.getQueryParameter("tableName");
-            String updatedData = uri.getQueryParameter("deleteData");
-            List<RowDataRequest> rowDataRequests = DebugDataTool.JsonToObject(updatedData, Request.class).getRowDataRequests();
-            if (Constants.APP_SHARED_PREFERENCES.equals(mSelectedDatabase)) {
-                response = PrefHelper.deleteRow(mContext, tableName, rowDataRequests);
+            if (isDatabase) {
+                openDatabase(mRequest.getDatabase());
+                response = DatabaseHelper.deleteRow(mDatabase, mRequest.getTableName(), mRequest.getRowDataRequests());
             } else {
-                response = DatabaseHelper.deleteRow(mDatabase, tableName, rowDataRequests);
+                response = PrefHelper.deleteRow(mContext, mRequest.getSpFileName(), mRequest.getRowDataRequests());
             }
-            return DebugDataTool.ObjectToJson(response);
+            return response;
         } catch (Exception e) {
-            DebugDataTool.onError("web server:deleteTableDataAndGetResponse error,参数处理异常", e);
-            response = new UpdateRowResponse();
-            response.isSuccessful = false;
-            return DebugDataTool.ObjectToJson(response);
+            DebugDataTool.onError("web server:deleteData error,参数处理异常", e);
+            if (response == null) {
+                response = new Response();
+            }
+            response.setCode(Response.code_Error).setMsg("web server:deleteData error,参数处理异常  " + e);
+            return response;
         }
     }
-
 }

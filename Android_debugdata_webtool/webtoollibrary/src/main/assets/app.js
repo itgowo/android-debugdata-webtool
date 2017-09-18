@@ -124,6 +124,7 @@ function getDBList() {
 
 function openDatabaseAndGetTableList(db) {
 
+<<<<<<< HEAD
 	if ("APP_SHARED_PREFERENCES" == db) {
 		$('#run-query').removeClass('active');
 		$('#run-query').addClass('disabled');
@@ -293,6 +294,168 @@ function inflateData(result) {
 		$(".dataTables_scrollHeadInner").css({"width": "100%"});
 		$(".table ").css({"width": "100%"});
 	} else {
+=======
+    if("APP_SHARED_PREFERENCES" == db) {
+        $('#run-query').removeClass('active');
+        $('#run-query').addClass('disabled');
+        $('#selected-db-info').removeClass('active');
+        $('#selected-db-info').addClass('disabled');
+        isDatabaseSelected = false;
+        $("#selected-db-info").text("SharedPreferences");
+    } else {
+        $('#run-query').removeClass('disabled');
+        $('#run-query').addClass('active');
+        $('#selected-db-info').removeClass('disabled');
+        $('#selected-db-info').addClass('active');
+        isDatabaseSelected = true;
+        $("#selected-db-info").text("点击数据库名称下载 : "+db);
+    }
+
+
+   $.ajax({type:"POST",url: "getTableList?database="+db, success: function(result){
+
+           result = JSON.parse(result);
+//             console.info(result);
+             if(result.code==200){
+               var tableList = result.tableList;
+               var dbVersion = result.dbVersion;
+               if("APP_SHARED_PREFERENCES" != db) {
+                  $("#selected-db-info").text("点击数据库名称下载 : "+db +" Version : "+dbVersion);
+               }
+               $('#table-list').empty()
+               for(var count = 0; count < tableList.length; count++){
+                 var tableName = tableList[count];
+                 $("#table-list").append("<a href='#' data-db-name='"+db+"' data-table-name='"+tableName+"' class='list-group-item' onClick='getData(\""+ tableName + "\");'>" +tableName + "</a>");
+               }
+           }else{
+             showErrorInfo(result.msg);
+           }
+
+   }});
+
+}
+
+function inflateData(result){
+
+   if(result.code==200){
+//      if(!result.isSelectQuery){
+         showSuccessInfo("查询成功");
+//         return;
+//      }
+        
+      var columnHeader = result.tableColumns;
+     var columnData = result.tableDatas;
+	   console.info(columnHeader)
+      // set function to return cell data for different usages like set, display, filter, search etc..
+      for(var i = 0; i < columnHeader.length; i++) {
+        columnHeader[i]['targets'] = i;
+        columnHeader[i]['data'] = function(row, type, val, meta) {
+			 console.info(row);
+            return  row.value;
+        }
+      }
+
+       var tableId = "#db-data";
+        if ($.fn.DataTable.isDataTable(tableId) ) {
+          $(tableId).DataTable().destroy();
+        }
+
+       $("#db-data-div").remove();
+       $("#parent-data-div").append('<div id="db-data-div"><table class="display nowrap" cellpadding="0" border="0" cellspacing="0" width="100%" class="table table-striped table-bordered display" id="db-data"></table></div>');
+
+       var availableButtons;
+       if (result.isEditable) {
+            availableButtons = [
+                {
+                    text : '添加',
+                    name : 'add' // don not change name
+                },
+                {
+                    extend: 'selected', // Bind to Selected row
+                    text: '编辑',
+                    name: 'edit'        // do not change name
+                },
+                {
+                    extend: 'selected',
+                    text: '删除',
+                    name: 'delete'
+                }
+            ];
+       } else {
+            availableButtons = [];
+       }
+
+       $(tableId).dataTable({
+           "data": columnData,
+           "columnDefs": columnHeader,
+           'bPaginate': true,
+           'searching': true,
+           'bFilter': true,
+           'bInfo': true,
+           "bSort" : true,
+           "scrollX": true,
+           "iDisplayLength": 10,
+           "dom": "Bfrtip",
+            select: 'single',
+            altEditor: true,     // Enable altEditor
+            buttons: availableButtons
+       })
+
+       //attach row-updated listener
+       $(tableId).on('update-row.dt', function (e, updatedRowData, callback) {
+            var updatedRowDataArray = JSON.parse(updatedRowData);
+            //add value for each column
+            var data = columnHeader;
+            for(var i = 0; i < data.length; i++) {
+                data[i].value = updatedRowDataArray[i].value;
+                data[i].dataType = updatedRowDataArray[i].dataType;
+            }
+            //send update table data request to server
+            updateTableData(data, callback);
+       });
+
+
+       //attach delete-updated listener
+       $(tableId).on('delete-row.dt', function (e, updatedRowData, callback) {
+            var deleteRowDataArray = JSON.parse(updatedRowData);
+
+            console.log(deleteRowDataArray);
+
+            //add value for each column
+            var data = columnHeader;
+            for(var i = 0; i < data.length; i++) {
+                data[i].value = deleteRowDataArray[i].value;
+                data[i].dataType = deleteRowDataArray[i].dataType;
+
+            }
+
+            //send delete table data request to server
+            deleteTableData(data, callback);
+       });
+
+
+
+       $(tableId).on('add-row.dt', function (e, updatedRowData, callback) {
+                   var deleteRowDataArray = JSON.parse(updatedRowData);
+
+                   console.log(deleteRowDataArray);
+
+                   //add value for each column
+                   var data = columnHeader;
+                   for(var i = 0; i < data.length; i++) {
+                       data[i].value = deleteRowDataArray[i].value;
+                       data[i].dataType = deleteRowDataArray[i].dataType;
+                   }
+
+                   //send delete table data request to server
+                   addTableData(data, callback);
+              });
+
+       // hack to fix alignment issue when scrollX is enabled
+       $(".dataTables_scrollHeadInner").css({"width":"100%"});
+       $(".table ").css({"width":"100%"});
+   }else{
+>>>>>>> 34262130bbced30c6a5f1742705f08e182b4bba9
 //      if(!result.isSelectQuery){
 //         showErrorInfo("查询失败");
 //      }else {
@@ -305,6 +468,7 @@ function inflateData(result) {
 
 //send update database request to server
 function updateTableData(updatedData, callback) {
+<<<<<<< HEAD
 	//get currently selected element
 	var selectedTableElement = $("#table-list .list-group-item.selected");
 
@@ -343,11 +507,48 @@ console.log(requestParameters,requestParameters.RowDataRequests)
 			}
 		}
 	})
+=======
+    //get currently selected element
+    var selectedTableElement = $("#table-list .list-group-item.selected");
+
+    var filteredUpdatedData = updatedData.map(function(columnData){
+        return {
+            title: columnData.title,
+            isPrimary: columnData.isPrimary,
+            value: columnData.value,
+            dataType: columnData.dataType
+        }
+    });
+    //build request parameters
+    var requestParameters = {};
+    requestParameters.dbName = selectedTableElement.attr('data-db-name');
+    requestParameters.tableName = selectedTableElement.attr('data-table-name');;
+    requestParameters.updatedData = encodeURIComponent(JSON.stringify(filteredUpdatedData));
+
+    //execute request
+    $.ajax({
+        url: "updateTableData",
+        type: 'POST',
+        data: requestParameters,
+        success: function(response) {
+            response = JSON.parse(response);
+            if(response.isSuccessful){
+               console.log("数据更新成功");
+               callback(true);
+               showSuccessInfo("数据更新成功");
+            } else {
+               console.log("数据更新失败");
+               callback(false);
+            }
+        }
+    })
+>>>>>>> 34262130bbced30c6a5f1742705f08e182b4bba9
 }
 
 
 function deleteTableData(deleteData, callback) {
 
+<<<<<<< HEAD
 	var selectedTableElement = $("#table-list .list-group-item.selected");
 	var filteredUpdatedData = deleteData.map(function (columnData) {
 		return {
@@ -383,10 +584,46 @@ function deleteTableData(deleteData, callback) {
 			}
 		}
 	})
+=======
+    var selectedTableElement = $("#table-list .list-group-item.selected");
+        var filteredUpdatedData = deleteData.map(function(columnData){
+            return {
+                title: columnData.title,
+                isPrimary: columnData.isPrimary,
+                value: columnData.value,
+                dataType: columnData.dataType
+            }
+        });
+
+        //build request parameters
+        var requestParameters = {};
+        requestParameters.dbName = selectedTableElement.attr('data-db-name');
+        requestParameters.tableName = selectedTableElement.attr('data-table-name');;
+        requestParameters.deleteData = encodeURIComponent(JSON.stringify(filteredUpdatedData));
+
+        //execute request
+        $.ajax({
+            url: "deleteTableData",
+            type: 'POST',
+            data: requestParameters,
+            success: function(response) {
+                response = JSON.parse(response);
+                if(response.isSuccessful){
+                   console.log("数据删除成功");
+                   callback(true);
+                   showSuccessInfo("数据删除成功");
+                } else {
+                   console.log("数据删除失败");
+                   callback(false);
+                }
+            }
+    })
+>>>>>>> 34262130bbced30c6a5f1742705f08e182b4bba9
 }
 
 function addTableData(deleteData, callback) {
 
+<<<<<<< HEAD
 	var selectedTableElement = $("#table-list .list-group-item.selected");
 	var filteredUpdatedData = deleteData.map(function (columnData) {
 		return {
@@ -428,6 +665,46 @@ function addTableData(deleteData, callback) {
 			}
 		}
 	});
+=======
+    var selectedTableElement = $("#table-list .list-group-item.selected");
+    var filteredUpdatedData = deleteData.map(function(columnData){
+        return {
+            title: columnData.title,
+            isPrimary: columnData.isPrimary,
+            value: columnData.value,
+            dataType: columnData.dataType
+        }
+    });
+
+    console.log(filteredUpdatedData);
+
+    //build request parameters
+    var requestParameters = {};
+    requestParameters.dbName = selectedTableElement.attr('data-db-name');
+    requestParameters.tableName = selectedTableElement.attr('data-table-name');;
+    requestParameters.addData = encodeURIComponent(JSON.stringify(filteredUpdatedData));
+
+    console.log(requestParameters);
+
+    //execute request
+    $.ajax({
+        url: "addTableData",
+        type: 'POST',
+        data: requestParameters,
+        success: function(response) {
+            response = JSON.parse(response);
+            if(response.isSuccessful){
+               console.log("数据添加成功");
+               callback(true);
+               getData(requestParameters.tableName);
+               showSuccessInfo("数据添加成功");
+            } else {
+               console.log("数据添加失败");
+               callback(false);
+            }
+        }
+    });
+>>>>>>> 34262130bbced30c6a5f1742705f08e182b4bba9
 }
 
 function showSuccessInfo(message) {

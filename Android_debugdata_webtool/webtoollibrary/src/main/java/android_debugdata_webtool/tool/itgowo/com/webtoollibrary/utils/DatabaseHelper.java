@@ -1,21 +1,3 @@
-/*
- *
- *  *    Copyright (C) 2016 Amit Shekhar
- *  *    Copyright (C) 2011 Android Open Source Project
- *  *
- *  *    Licensed under the Apache License, Version 2.0 (the "License");
- *  *    you may not use this file except in compliance with the License.
- *  *    You may obtain a copy of the License at
- *  *
- *  *        http://www.apache.org/licenses/LICENSE-2.0
- *  *
- *  *    Unless required by applicable law or agreed to in writing, software
- *  *    distributed under the License is distributed on an "AS IS" BASIS,
- *  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  *    See the License for the specific language governing permissions and
- *  *    limitations under the License.
- *
- */
 
 package android_debugdata_webtool.tool.itgowo.com.webtoollibrary.utils;
 
@@ -24,20 +6,53 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
+import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.Request.RowDataRequest;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.Response;
-import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.model.Request.RowDataRequest;
-import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.model.TableDataResponse;
-import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.model.UpdateRowResponse;
 
 /**
- * Created by amitshekhar on 06/02/17.
+ * Created by lujianchao on 2017/8/22.
  */
 
 public class DatabaseHelper {
+    public static final String BOOLEAN = "boolean";
+    public static final String INTEGER = "integer";
+    public static final String REAL = "real";
+    public static final String TEXT = "text";
+    public static final String LONG = "long";
+    public static final String FLOAT = "float";
+    public static final String STRING_SET = "string_set";
+
+
+    private static final int MAX_BLOB_LENGTH = 512;
+
+    private static final String UNKNOWN_BLOB_LABEL = "{blob}";
+
+    public static String blobToString(byte[] blob) {
+        if (blob.length <= MAX_BLOB_LENGTH) {
+            if (fastIsAscii(blob)) {
+                try {
+                    return new String(blob, "US-ASCII");
+                } catch (UnsupportedEncodingException ignored) {
+
+                }
+            }
+        }
+        return UNKNOWN_BLOB_LABEL;
+    }
+
+    public static boolean fastIsAscii(byte[] blob) {
+        for (byte b : blob) {
+            if ((b & ~0x7f) != 0) {
+                return false;
+            }
+        }
+        return true;
+    }
 
     private DatabaseHelper() {
         // This class in not publicly instantiable
@@ -60,8 +75,9 @@ public class DatabaseHelper {
     }
 
     public static Response getTableData(SQLiteDatabase db, String selectQuery, String tableName) {
-
         Response tableData = new Response();
+        Response.TableData mTableData = new Response.TableData();
+        tableData.setTableData(mTableData);
         if (tableName == null) {
             tableName = getTableName(selectQuery);
         }
@@ -70,13 +86,14 @@ public class DatabaseHelper {
 
         if (tableName != null) {
             final String pragmaQuery = "PRAGMA table_info(" + quotedTableName + ")";
-            tableData.setTableColumns(getTableInfo(db, pragmaQuery));
+            mTableData.setTableColumns(getTableInfo(db, pragmaQuery));
         }
         Cursor cursor = null;
+
+        //检查是否是view视图，如果是不能当做数据表编辑
         boolean isView = false;
         try {
-            cursor = db.rawQuery("SELECT type FROM sqlite_master WHERE name=?",
-                    new String[]{quotedTableName});
+            cursor = db.rawQuery("SELECT type FROM sqlite_master WHERE name=?", new String[]{quotedTableName});
             if (cursor.moveToFirst()) {
                 isView = "view".equalsIgnoreCase(cursor.getString(0));
             }
@@ -87,14 +104,16 @@ public class DatabaseHelper {
                 cursor.close();
             }
         }
-        tableData.setEditable(tableName != null && tableData.getTableColumns() != null && !isView);
-
+        tableData.setEditable(tableName != null && mTableData.getTableColumns() != null && !isView);
 
         if (!TextUtils.isEmpty(tableName)) {
             selectQuery = selectQuery.replace(tableName, quotedTableName);
         }
-
         try {
+            cursor = db.rawQuery("SELECT COUNT(*) FROM " + quotedTableName, null);
+            cursor.moveToFirst();
+            mTableData.setDataCount(cursor.getLong(0));
+            cursor.close();
             cursor = db.rawQuery(selectQuery, null);
         } catch (Exception e) {
             e.printStackTrace();
@@ -102,59 +121,41 @@ public class DatabaseHelper {
             tableData.setMsg("database error 数据库异常");
             return tableData;
         }
-
         if (cursor != null) {
             cursor.moveToFirst();
-            // setting tableInfo when tableName is not known and making
-            // it non-editable also by making isPrimary true for all
-            if (tableData.getTableColumns() == null) {
-                List<Response.TableInfo> mTableDatas = new ArrayList<>();
-                for (int i = 0; i < cursor.getColumnCount(); i++) {
-                    Response.TableInfo tableInfo = new Response.TableInfo();
-                    tableInfo.title = cursor.getColumnName(i);
-                    tableInfo.isPrimary = true;
 
-                }
-                tableData.setTableColumns(mTableDatas);
-            }
-            tableData.setTableDatas(new ArrayList<Response.TableData>());
-            List<Response.TableData> mTableDatas = new ArrayList<>();
+            List<List<Object>> mTableDatas = new ArrayList<>();
+            mTableData.setTableDatas(mTableDatas);
             if (cursor.getCount() > 0) {
                 do {
-                    List<Response.TableData> row = new ArrayList<>();
+                    List<Object> row = new ArrayList<>();
                     for (int i = 0; i < cursor.getColumnCount(); i++) {
-                        Response.TableData columnData = new Response.TableData();
+                        Object mValue = null;
                         switch (cursor.getType(i)) {
                             case Cursor.FIELD_TYPE_BLOB:
-                                columnData.dataType = DataType.TEXT;
-                                columnData.value = ConverterUtils.blobToString(cursor.getBlob(i));
+                                mValue = blobToString(cursor.getBlob(i));
                                 break;
                             case Cursor.FIELD_TYPE_FLOAT:
-                                columnData.dataType = DataType.REAL;
-                                columnData.value = cursor.getDouble(i);
+                                mValue = cursor.getDouble(i);
                                 break;
                             case Cursor.FIELD_TYPE_INTEGER:
-                                columnData.dataType = DataType.INTEGER;
-                                columnData.value = cursor.getLong(i);
+                                mValue = cursor.getLong(i);
                                 break;
                             case Cursor.FIELD_TYPE_STRING:
-                                columnData.dataType = DataType.TEXT;
-                                columnData.value = cursor.getString(i);
-                                if (columnData.value == null) {
-                                    columnData.value = "";
+                                mValue = cursor.getString(i);
+                                if (mValue == null) {
+                                    mValue = "";
                                 }
                                 break;
                             default:
-                                columnData.dataType = DataType.TEXT;
-                                columnData.value = cursor.getString(i);
-                                if (columnData.value == null) {
-                                    columnData.value = "";
+                                mValue = cursor.getString(i);
+                                if (mValue == null) {
+                                    mValue = "";
                                 }
                         }
-                        row.add(columnData);
+                        row.add(mValue);
                     }
-                    tableData.getTableDatas().addAll(row);
-
+                    mTableDatas.add(row);
                 } while (cursor.moveToNext());
             }
             cursor.close();
@@ -172,9 +173,9 @@ public class DatabaseHelper {
         return String.format("[%s]", tableName);
     }
 
-    private static List<Response.TableInfo> getTableInfo(SQLiteDatabase db, String pragmaQuery) {
+    private static List<Response.TableData.TableInfo> getTableInfo(SQLiteDatabase db, String pragmaQuery) {
         Cursor cursor;
-        List<Response.TableInfo> tableInfoList = new ArrayList<>();
+        List<Response.TableData.TableInfo> tableInfoList = new ArrayList<>();
         try {
             cursor = db.rawQuery(pragmaQuery, null);
         } catch (Exception e) {
@@ -185,15 +186,24 @@ public class DatabaseHelper {
             cursor.moveToFirst();
             if (cursor.getCount() > 0) {
                 do {
-                    Response.TableInfo tableInfo = new Response.TableInfo();
+                    Response.TableData.TableInfo tableInfo = new Response.TableData.TableInfo();
                     for (int i = 0; i < cursor.getColumnCount(); i++) {
                         final String columnName = cursor.getColumnName(i);
                         switch (columnName) {
-                            case Constants.PK:
-                                tableInfo.isPrimary = cursor.getInt(i) == 1;
+                            case Constants.PrimaryKey:
+                                tableInfo.setPrimary(cursor.getInt(i) == 1);
+                                break;
+                            case Constants.TYPE:
+                                tableInfo.setDataType(cursor.getString(i));
                                 break;
                             case Constants.NAME:
-                                tableInfo.title = cursor.getString(i);
+                                tableInfo.setTitle(cursor.getString(i));
+                                break;
+                            case Constants.NotNull:
+                                tableInfo.setNotNull(cursor.getInt(i) == 1);
+                                break;
+                            case Constants.DefaultValue:
+                                tableInfo.setDefaultValue(cursor.getString(i));
                                 break;
                             default:
 
@@ -210,32 +220,31 @@ public class DatabaseHelper {
     }
 
 
-    public static UpdateRowResponse addRow(SQLiteDatabase db, String tableName,
-                                           List<RowDataRequest> rowDataRequests) {
-        UpdateRowResponse updateRowResponse = new UpdateRowResponse();
-
-        if (rowDataRequests == null || tableName == null) {
-            updateRowResponse.isSuccessful = false;
-            return updateRowResponse;
+    public static Response addRow(SQLiteDatabase db, String tableName, List<RowDataRequest> rowDataRequests) {
+        Response updateRowResponse = new Response();
+        if (db == null) {
+            return updateRowResponse.setCode(Response.code_Error).setMsg("数据库打开失败，文件可能被删除或者权限不足");
         }
-
+        if (tableName == null) {
+            return updateRowResponse.setCode(Response.code_Error).setMsg("表名称为null，请确认参数是否正确");
+        }
+        if (rowDataRequests == null || rowDataRequests.size() == 0) {
+            return updateRowResponse.setCode(Response.code_Error).setMsg("rowDataRequests操作数据不存在，请确认参数是否正确");
+        }
         tableName = getQuotedTableName(tableName);
-
         ContentValues contentValues = new ContentValues();
-
         for (RowDataRequest rowDataRequest : rowDataRequests) {
             if (Constants.NULL.equals(rowDataRequest.value)) {
                 rowDataRequest.value = null;
             }
-
             switch (rowDataRequest.dataType) {
-                case DataType.INTEGER:
+                case INTEGER:
                     contentValues.put(rowDataRequest.title, Long.valueOf(rowDataRequest.value));
                     break;
-                case DataType.REAL:
+                case REAL:
                     contentValues.put(rowDataRequest.title, Double.valueOf(rowDataRequest.value));
                     break;
-                case DataType.TEXT:
+                case TEXT:
                     contentValues.put(rowDataRequest.title, rowDataRequest.value);
                     break;
                 default:
@@ -243,31 +252,29 @@ public class DatabaseHelper {
                     break;
             }
         }
-
         long result = db.insert(tableName, null, contentValues);
-        updateRowResponse.isSuccessful = result > 0;
-
+        if (result <= 0) {
+            updateRowResponse.setCode(Response.code_Error).setMsg("db addRow  记录插入失败");
+        }
         return updateRowResponse;
-
     }
 
 
-    public static UpdateRowResponse updateRow(SQLiteDatabase db, String tableName, List<RowDataRequest> rowDataRequests) {
-
-        UpdateRowResponse updateRowResponse = new UpdateRowResponse();
-
-        if (rowDataRequests == null || tableName == null) {
-            updateRowResponse.isSuccessful = false;
-            return updateRowResponse;
+    public static Response updateRow(SQLiteDatabase db, String tableName, List<RowDataRequest> rowDataRequests) {
+        Response updateRowResponse = new Response();
+        if (db == null) {
+            return updateRowResponse.setCode(Response.code_Error).setMsg("数据库打开失败，文件可能被删除或者权限不足");
         }
-
+        if (tableName == null) {
+            return updateRowResponse.setCode(Response.code_Error).setMsg("表名称为null，请确认参数是否正确");
+        }
+        if (rowDataRequests == null || rowDataRequests.size() == 0) {
+            return updateRowResponse.setCode(Response.code_Error).setMsg("rowDataRequests操作数据不存在，请确认参数是否正确");
+        }
         tableName = getQuotedTableName(tableName);
-
         ContentValues contentValues = new ContentValues();
-
         String whereClause = null;
         List<String> whereArgsList = new ArrayList<>();
-
         for (RowDataRequest rowDataRequest : rowDataRequests) {
             if (Constants.NULL.equals(rowDataRequest.value)) {
                 rowDataRequest.value = null;
@@ -281,48 +288,46 @@ public class DatabaseHelper {
                 whereArgsList.add(rowDataRequest.value);
             } else {
                 switch (rowDataRequest.dataType) {
-                    case DataType.INTEGER:
+                    case INTEGER:
                         contentValues.put(rowDataRequest.title, Long.valueOf(rowDataRequest.value));
                         break;
-                    case DataType.REAL:
+                    case REAL:
                         contentValues.put(rowDataRequest.title, Double.valueOf(rowDataRequest.value));
                         break;
-                    case DataType.TEXT:
+                    case TEXT:
                         contentValues.put(rowDataRequest.title, rowDataRequest.value);
                         break;
                     default:
                 }
             }
         }
-
-        String[] whereArgs = new String[whereArgsList.size()];
-
-        for (int i = 0; i < whereArgsList.size(); i++) {
-            whereArgs[i] = whereArgsList.get(i);
+        if (whereArgsList.size() == 0) {
+            return updateRowResponse.setCode(Response.code_Error).setMsg("没有主键信息，不建议更改，请为表添加主键后再操作");
         }
-
-        db.update(tableName, contentValues, whereClause, whereArgs);
-        updateRowResponse.isSuccessful = true;
-        return updateRowResponse;
+        String[] whereArgs = whereArgsList.toArray(new String[whereArgsList.size()]);
+       int num= db.update(tableName, contentValues, whereClause, whereArgs);
+        if (num > 0) {
+            return updateRowResponse;
+        } else {
+            return updateRowResponse.setCode(Response.code_Error).setMsg("数据操作执行失败");
+        }
     }
 
 
-    public static UpdateRowResponse deleteRow(SQLiteDatabase db, String tableName,
-                                              List<RowDataRequest> rowDataRequests) {
-
-        UpdateRowResponse updateRowResponse = new UpdateRowResponse();
-
-        if (rowDataRequests == null || tableName == null) {
-            updateRowResponse.isSuccessful = false;
-            return updateRowResponse;
+    public static Response deleteRow(SQLiteDatabase db, String tableName, List<RowDataRequest> rowDataRequests) {
+        Response updateRowResponse = new Response();
+        if (db == null) {
+            return updateRowResponse.setCode(Response.code_Error).setMsg("数据库打开失败，文件可能被删除或者权限不足");
         }
-
+        if (tableName == null) {
+            return updateRowResponse.setCode(Response.code_Error).setMsg("表名称为null，请确认参数是否正确");
+        }
+        if (rowDataRequests == null || rowDataRequests.size() == 0) {
+            return updateRowResponse.setCode(Response.code_Error).setMsg("rowDataRequests操作数据不存在，请确认参数是否正确");
+        }
         tableName = getQuotedTableName(tableName);
-
-
         String whereClause = null;
         List<String> whereArgsList = new ArrayList<>();
-
         for (RowDataRequest rowDataRequest : rowDataRequests) {
             if (Constants.NULL.equals(rowDataRequest.value)) {
                 rowDataRequest.value = null;
@@ -336,59 +341,44 @@ public class DatabaseHelper {
                 whereArgsList.add(rowDataRequest.value);
             }
         }
-
         if (whereArgsList.size() == 0) {
-            updateRowResponse.isSuccessful = true;
+            return updateRowResponse.setCode(Response.code_Error).setMsg("没有主键信息，不建议更改，请为表添加主键后再操作");
+        }
+        String[] whereArgs = whereArgsList.toArray(new String[whereArgsList.size()]);
+        int num = db.delete(tableName, whereClause, whereArgs);
+        if (num > 0) {
             return updateRowResponse;
+        } else {
+            return updateRowResponse.setCode(Response.code_Error).setMsg("数据操作执行失败");
         }
-
-        String[] whereArgs = new String[whereArgsList.size()];
-
-        for (int i = 0; i < whereArgsList.size(); i++) {
-            whereArgs[i] = whereArgsList.get(i);
-        }
-
-        db.delete(tableName, whereClause, whereArgs);
-        updateRowResponse.isSuccessful = true;
-        return updateRowResponse;
     }
 
 
-    public static TableDataResponse exec(SQLiteDatabase database, String sql) {
-        TableDataResponse tableDataResponse = new TableDataResponse();
-        tableDataResponse.isSelectQuery = false;
+    public static Response exec(SQLiteDatabase database, String sql) {
+        Response tableDataResponse = new Response();
         try {
-
             String tableName = getTableName(sql);
-
             if (!TextUtils.isEmpty(tableName)) {
                 String quotedTableName = getQuotedTableName(tableName);
                 sql = sql.replace(tableName, quotedTableName);
             }
-
             database.execSQL(sql);
         } catch (Exception e) {
             e.printStackTrace();
-            tableDataResponse.isSuccessful = false;
-            tableDataResponse.errorMessage = e.getMessage();
+            tableDataResponse.setCode(Response.code_Error).setMsg("数据库Sql执行错误：" + e.getMessage());
             return tableDataResponse;
         }
-        tableDataResponse.isSuccessful = true;
         return tableDataResponse;
     }
 
     private static String getTableName(String selectQuery) {
-        // TODO: 24/4/17 Handle JOIN Query
         TableNameParser tableNameParser = new TableNameParser(selectQuery);
         HashSet<String> tableNames = (HashSet<String>) tableNameParser.tables();
-
         for (String tableName : tableNames) {
             if (!TextUtils.isEmpty(tableName)) {
                 return tableName;
             }
         }
-
         return null;
     }
-
 }
