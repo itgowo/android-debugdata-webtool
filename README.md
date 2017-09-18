@@ -8,6 +8,8 @@ http://itgowo.com
 
 ![ image](https://github.com/hnsugar/android-debugdata-webtool/blob/master/img1.png)
 
+![ image](https://github.com/hnsugar/android-debugdata-webtool/blob/master/img2.png)
+
 ##优化与改进
 
 ###1.增加多线程处理请求
