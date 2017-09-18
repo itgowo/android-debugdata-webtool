@@ -1,101 +1,202 @@
 <!DOCTYPE html>
-<!--
-  ~ /*
-  ~  *    Copyright (C) 2017 lujianchao  卢建超
-  ~  *    站在巨人的肩膀上，原作者Github：https://github.com/amitshekhariitbhu/Android-Debug-Database
-  ~  *    本项目地址Github：https://github.com/hnsugar/android-debugdata-webtool
-  ~  */
-  -->
-
-<html>
+<html dir="ltr" lang="en-US">
 <head>
-<title>Android-DebugData-Webtool</title>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel='shortcut icon' href='favicon.ico' type='image/x-icon'>
-<script src="jquery.min.js"></script>
-<script src="bootstrap.min.js"></script>
-<script src="jquery.dataTables.min.js"></script>
-<script src="dataTables.altEditor.free.js"></script>
-<script src="dataTables.buttons.min.js"></script>
-<script src="dataTables.select.min.js"></script>
-<script src="dataTables.responsive.min.js"></script>
-<link href="bootstrap.min.css" rel="stylesheet">
-<link href="custom.css" rel="stylesheet">
-<link href="jquery.dataTables.min.css" rel="stylesheet">
-<link href="buttons.dataTables.min.css" rel="stylesheet">
-<link href="select.dataTables.min.css" rel="stylesheet">
-<link href="responsive.dataTables.min.css" rel="stylesheet">
+    <meta charset="UTF-8"/>
+    <meta name="robots" content="index, follow"/>
+
+
+    <!-- add css stylesheets -->
+    <!-- 引入组件库 -->
+    <title>Android-DebugData-Webtool</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel='shortcut icon' href='favicon.ico' type='image/x-icon'>
+    <script src="js/jquery.min.js"></script>
+    <script src="js/dataTables.bootstrap.min.js"></script>
+    <script src="js/jquery.dataTables.min.js"></script>
+    <script src="js/dataTables.altEditor.free.js"></script>
+    <script src="js/dataTables.buttons.min.js"></script>
+    <script src="js/dataTables.select.min.js"></script>
+    <script src="js/dataTables.responsive.min.js"></script>
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="custom.css" rel="stylesheet">
+    <link href="css/jquery.dataTables.min.css" rel="stylesheet">
+    <link href="css/buttons.dataTables.min.css" rel="stylesheet">
+    <link href="css/select.dataTables.min.css" rel="stylesheet">
+    <link href="css/responsive.dataTables.min.css" rel="stylesheet">
+    <!-- Pretty Photo -->
+    <link rel="stylesheet" type="text/css" href="css/prettyPhoto.css"/>
+
+    <![endif]-->
+    <!-- mobile setting -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="images/favicon.ico">
+
+
 </head>
 <body>
+<div id="app">
+    <img src="images/bg.jpg" alt="" id="background"/>
+    <div>
+        <nav class="navbar navbar-default navbar-fixed-top" role="navigation"
+             style="background-color: #333 !important;">
+            <div class="container">
+                <!-- Brand and toggle get grouped for better mobile display -->
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse"
+                            data-target="#bs-example-navbar-collapse-1"><span class="sr-only">Toggle navigation</span>
+                    </button>
+                    <a class="navbar-brand" href="images/index.html" style="color: #f7f7f7;">Android DebugData
+                        Webtool</a></div>
+                <!-- Collect the nav links, forms, and other content for toggling -->
+                <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                    <ul class="nav navbar-nav navbar-right">
+                        <li><a href="https://github.com/hnsugar/android_debugdata_webtool" style="color: #f7f7f7;"
+                               target="_blank">Github</a></li>
+                        <li><a href="http://itgowo.com" style="color: #f7f7f7;"
+                               target="_blank">IT狗窝</a></li>
+                        <li><a href="http://blog.csdn.net/hnsugar" style="color: #f7f7f7;"
+                               target="_blank">CSDN</a></li>
+                    </ul>
+                </div>
+                <!-- /.navbar-collapse -->
+            </div>
+            <!-- /.container -->
+        </nav>
+    </div>
+</div>
+<!-- Main header -->
+<div id="main_wrapper">
+    <div style="width: 98%">
+        <div class="container  " style="padding-top: 36px;">
+            <!-- Header -->
+            <div id='btnAll' class="container padding-fifty">
+                <div style="float: left;" class="panel panel-info">
+                    <div class="panel-heading" id='dataBase'>数据库</div>
+                </div>
+                <div style="float: left;" class="panel panel-info">
+                    <div class="panel-heading" id="sharePreferences">共享参数</div>
+                </div>
+                <div style="float: left;" class="panel panel-info">
+                    <div class="panel-heading" id="fileMag">文件管理</div>
+                </div>
+            </div>
+        </div>
 
-<!-- Navigation -->
-<nav class="navbar navbar-default navbar-fixed-top" role="navigation">
-  <div class="container"> 
-    <!-- Brand and toggle get grouped for better mobile display -->
-    <div class="navbar-header">
-      <button type="button" class="navbar-toggle" data-toggle="collapse"
-                    data-target="#bs-example-navbar-collapse-1"> <span class="sr-only">Toggle navigation</span> </button>
-      <a class="navbar-brand" href="index.html">Android DebugData Webtool</a> </div>
-    <!-- Collect the nav links, forms, and other content for toggling -->
-    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-      <ul class="nav navbar-nav navbar-right">
-        <li> <a href="https://github.com/hnsugar/android_debugdata_webtool"
-                       target="_blank">Github</a> </li>
-        <li> <a href="http://itgowo.com"
-                       target="_blank">IT狗窝</a> </li>
-        <li> <a href="http://blog.csdn.net/hnsugar"
-                       target="_blank">CSDN</a> </li>
-      </ul>
+        <div class="container ">
+            <div class="content">
+                <div class="container padding-twenty">
+                    <div class="row padding-twenty">
+                        <div class="col-sm-12">
+                            <div class="form-group">
+                                <label for="query">查询</label>
+                                <input class="form-control" id="query">
+                            </div>
+                            <button id="selected-db-info" type="button" onclick="downloadDb()" class="btn btn-info">
+                                欢迎使用\(^o^)/~
+                            </button>
+                            <button id="run-query" type="submit" onclick="queryFunction()"
+                                    class="btn btn-primary pull-right disabled">执行SQL
+                            </button>
+                        </div>
+                    </div>
+                    <div class="row padding-twenty">
+                        <div class="col-sm-2">
+                            <div class="panel panel-info">
+                                <div class="panel-heading">数据库</div>
+                            </div>
+                            <div id="db-list" class="list-group"></div>
+                        </div>
+                        <div class="col-sm-2">
+                            <div class="panel panel-info">
+                                <div class="panel-heading">表</div>
+                            </div>
+                            <div id="table-list" class="list-group"></div>
+                        </div>
+                        <div id="parent-data-div" class="col-sm-8">
+                            <div class="panel panel-info">
+                                <div class="panel-heading">数据</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="snackbar">数据修改成功</div>
+                </div>
+                <!--<div class="content_wrapper">
+
+                    <div class="page_title_wrapper">
+                        <div>
+                            <div style="height: 60px;" >
+                                <form class="form-wrapper right">
+                                    <input type="text"  class='remove-bottom'id="search" placeholder="请输入要执行的完整Sql语句" required="" >
+                                    <input type="submit" value="执行Sql" id="submit">
+                                </form>
+                            </div>
+                        </div>
+                    </div> &lt;!&ndash; End page title wrapper &ndash;&gt;
+                    <div class="content_wrapper_inner">
+                        <div class="container my_wrap">
+
+                            <div id = "left_margin">
+                                <div class="four columns alpha widget">
+                                    <h5 > 数据库 </h5>
+                                    <ul class="categories">
+                                        <table class="hovertable">
+                                            <tr>
+                                                <th class="widget_title" style="width: 200px;height: auto">数据库</th>
+                                            </tr>
+                                            <tr v-for="name in dbList"  onmouseover="this.style.backgroundColor='#ffff66';" onmouseout="this.style.backgroundColor='#d4e3e5';">
+                                                <td>{{name}}</td>
+                                            </tr>
+                                        </table>
+
+                                    </ul>
+                                    <div class="clear"></div>
+                                </div>
+                            </div>
+                            <div id = "wrap">
+                                <div id = "center">
+                                    &lt;!&ndash;中间 表格&ndash;&gt;
+                                    <div class="four columns alpha widget tableWidth ">
+                                        <h5 > 表 </h5>
+                                        <ul class="categories">
+                                            <table class="hovertable">
+                                                <tr>
+                                                    <th class="widget_title" style="width: 200px;height: auto">数据库</th>
+                                                </tr>
+                                                <tr v-for="name in dbList"  onmouseover="this.style.backgroundColor='#ffff66';" onmouseout="this.style.backgroundColor='#d4e3e5';">
+                                                    <td>{{name}}</td>
+                                                </tr>
+                                            </table>
+
+                                        </ul>
+                                        <div class="clear"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id = "right_margin"></div>
+                            <table class="dataintable">
+                                <tr>
+                                    <th v-for="title in titles ">{{title}}</th>
+                                </tr>
+                                <tr v-for="db in dbs">
+                                    <td>{{db.name}}</td>
+                                    <td>{{db.age}}</td>
+                                </tr>
+                                <tr>
+                                    <th :colspan="titles.length">分页代码</th>
+                                </tr>
+                            </table>
+                            <div class="border_divider"></div>
+
+                        </div>
+                    </div>
+        </div> -->
+            </div> <!-- End main_wrapper -->
+        </div>
     </div>
-    <!-- /.navbar-collapse --> 
-  </div>
-  <!-- /.container --> 
-</nav>
-<div class="container padding-fifty">
-  <div style="float: left;" class="panel panel-info">
-    <div  class="panel-heading">数据库</div>
-  </div>
-  <div style="float: left;" class="panel panel-info">
-    <div class="panel-heading">共享参数</div>
-  </div>
-  <div  style="float: left;" class="panel panel-info">
-    <div class="panel-heading">文件管理</div>
-  </div>
 </div>
-<div class="container padding-fifty">
-  <div class="row padding-twenty">
-    <div class="col-sm-12">
-      <div class="form-group">
-        <label for="query">查询</label>
-        <input class="form-control" id="query">
-      </div>
-      <button id="selected-db-info" type="button" onclick="downloadDb()" class="btn btn-info"> 欢迎使用\(^o^)/~ </button>
-      <button id="run-query" type="submit" onclick="queryFunction()"
-                    class="btn btn-primary pull-right disabled">执行SQL </button>
-    </div>
-  </div>
-  <div class="row padding-twenty">
-    <div class="col-sm-2">
-      <div class="panel panel-info">
-        <div class="panel-heading">数据库</div>
-      </div>
-      <div id="db-list" class="list-group"> </div>
-    </div>
-    <div class="col-sm-2">
-      <div class="panel panel-info">
-        <div class="panel-heading">表</div>
-      </div>
-      <div id="table-list" class="list-group"> </div>
-    </div>
-    <div id="parent-data-div" class="col-sm-8">
-      <div class="panel panel-info">
-        <div class="panel-heading">数据</div>
-      </div>
-    </div>
-  </div>
-  <div id="snackbar">数据修改成功</div>
-</div>
-<script src="app.js"></script>
 </body>
+<script src="app.js"></script>
 </html>
