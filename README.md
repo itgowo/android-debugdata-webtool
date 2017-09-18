@@ -3,12 +3,11 @@ android debug database SharedPreference 查看并修改手机数据库和共享�
 
 http://itgowo.com
 
-##被踩肩膀的那个巨人 Github：https://github.com/amitshekhariitbhu/Android-Debug-Database
-大家可以去英文版看看
+##原版 Github：https://github.com/amitshekhariitbhu/Android-Debug-Database
+大家可以去膜拜一下前辈
 
-![ image](https://github.com/hnsugar/android-debugdata-webtool/blob/master/img1.png)
+因为一次使用中发现国外前辈写的服务和接口无法满足我的使用，主要是用的GET请求方式，再编码后url过于长，超出范围就会数据丢失，所以我改成了POST请求的，并且重写了Server逻辑，从Socket拿到流再解析http报文，再到业务处理，同时增加了文件管理功能。
 
-![ image](https://github.com/hnsugar/android-debugdata-webtool/blob/master/img2.png)
 
 ##优化与改进
 
@@ -31,6 +30,50 @@ http://itgowo.com
 ###9.POST请求统一用action表示意向操作
 
 
+##API
 
+###Database 数据库
+
+[getDbList](/API/getDbList.md)
+
+[getTableList](/API/getTableList.md)
+
+[getDataFromDbTable](/API/getDataFromDbTable.md)
+
+[addDataToDb](/API/addDataToDb.md)
+
+[deleteDataFromDb](/API/deleteDataFromDb.md)
+
+[updateDataToDb](/API/updateDataToDb.md)
+
+[query](/API/query.md)
+
+
+###SharedPreferences 共享参数
+
+[getSpList](/API/getSpList.md)
+
+[getDataFromSpFile](/API/getDataFromSpFile.md)
+
+[addDataToSp](/API/addDataToSp.md)
+
+[deleteDataFromSp](/API/deleteDataFromSp.md)
+
+[updateDataToSp](/API/updateDataToSp.md)
+
+
+###FileManager 文件管理
+
+[getFileList](/API/getFileList.md)
+
+[downloadFile](/API/downloadFile.md)
+
+
+
+##图片示例
+
+![ image](https://github.com/hnsugar/android-debugdata-webtool/blob/master/img1.png)
+
+![ image](https://github.com/hnsugar/android-debugdata-webtool/blob/master/img2.png)
 
 因为web功底薄弱，请大家耐心等待
