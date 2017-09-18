@@ -6,9 +6,6 @@ http://itgowo.com
 ##被踩肩膀的那个巨人 Github：https://github.com/amitshekhariitbhu/Android-Debug-Database
 大家可以去英文版看看
 
-![ image](https://github.com/hnsugar/android-debugdata-webtool/blob/master/img1.png)
-
-![ image](https://github.com/hnsugar/android-debugdata-webtool/blob/master/img2.png)
 
 ##优化与改进
 
@@ -32,7 +29,33 @@ http://itgowo.com
 
 
 ##API
-
+###Database 数据库
 [getDbList](/API/getDbList.md)
+[getTableList](/API/getTableList.md)
+[getDataFromDbTable](/API/getDataFromDbTable.md)
+[addDataToDb](/API/addDataToDb.md)
+[deleteDataFromDb](/API/deleteDataFromDb.md)
+[updateDataToDb](/API/updateDataToDb.md)
+[query](/API/query.md)
+
+###SharedPreferences 共享参数
+[getSpList](/API/getSpList.md)
+[getDataFromSpFile](/API/getDataFromSpFile.md)
+[addDataToSp](/API/addDataToSp.md)
+[deleteDataFromSp](/API/deleteDataFromSp.md)
+[updateDataToSp](/API/updateDataToSp.md)
+
+
+###FileManager 文件管理
+[getFileList](/API/getFileList.md)
+[downloadFile](/API/downloadFile.md)
+
+
+
+##图片示例
+
+![ image](https://github.com/hnsugar/android-debugdata-webtool/blob/master/img1.png)
+
+![ image](https://github.com/hnsugar/android-debugdata-webtool/blob/master/img2.png)
 
 因为web功底薄弱，请大家耐心等待
