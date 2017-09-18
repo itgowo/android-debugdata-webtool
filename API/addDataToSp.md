@@ -12,33 +12,33 @@
 
  ```
 {
-    &quot;action&quot;:    &quot;addDataToSp&quot;,
-    &quot;spFileName&quot;:    &quot;appinfo&quot;,
-    &quot;RowDataRequests&quot;:
+    action:    addDataToSp,
+    spFileName:    appinfo,
+    RowDataRequests:
     [
         {
-            &quot;primary&quot;:    true,
-            &quot;title&quot;:    &quot;id&quot;,
-            &quot;value&quot;:    1,
-            &quot;dataType&quot;:    &quot;integer&quot;
+            primary:    true,
+            title:    id,
+            value:    1,
+            dataType:    integer
         }
         {
-            &quot;primary&quot;:    false,
-            &quot;title&quot;:    &quot;key&quot;,
-            &quot;value&quot;:    &quot;GetHomeInfo&quot;,
-            &quot;dataType&quot;:    &quot;text&quot;
+            primary:    false,
+            title:    key,
+            value:    GetHomeInfo,
+            dataType:    text
         },
         {
-            &quot;primary&quot;:    false,
-            &quot;title&quot;:    &quot;value&quot;,
-            &quot;value&quot;:    &quot;&quot;,
-            &quot;dataType&quot;:    &quot;text&quot;
+            primary:    false,
+            title:    value,
+            value:    ,
+            dataType:    text
         },
         {
-            &quot;primary&quot;:    false,
-            &quot;title&quot;:    &quot;bak&quot;,
-            &quot;value&quot;:    &quot;lll&quot;,
-            &quot;dataType&quot;:    &quot;&quot;
+            primary:    false,
+            title:    bak,
+            value:    lll,
+            dataType:    
         }
     ]
 }
@@ -61,8 +61,8 @@
 
 ```
 {
-    &quot;code&quot;: 200,
-    &quot;msg&quot;: &quot;success&quot;
+    code: 200,
+    msg: success
 }
 ```
 

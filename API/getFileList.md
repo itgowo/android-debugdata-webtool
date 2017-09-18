@@ -12,8 +12,8 @@
 
  ```
 {
-    &quot;action&quot;:    &quot;getFileList&quot;,
-    &quot;data&quot;:    &quot;/data/user/0/com.itgowo.tool.android_debugdata_webtool/databases&quot;
+    action:    getFileList,
+    data:    /data/user/0/com.itgowo.tool.android_debugdata_webtool/databases
 }
 
  ```
@@ -27,24 +27,24 @@
 
  ```
 {
-    &quot;code&quot;: 200,
-    &quot;msg&quot;: &quot;success&quot;,
-    &quot;fileList&quot;: [
+    code: 200,
+    msg: success,
+    fileList: [
         {
-            &quot;dir&quot;: false,
-            &quot;fileName&quot;: &quot;appinfo.db&quot;,
-            &quot;fileSize&quot;: &quot;20.00KB&quot;,
-            &quot;fileTime&quot;: &quot;2017-09-17 23:19:32&quot;,
-            &quot;path&quot;: &quot;/data/user/0/com.itgowo.tool.android_debugdata_webtool/databases/appinfo.db&quot;,
-            &quot;rootPath&quot;: &quot;/data/user/0/com.itgowo.tool.android_debugdata_webtool&quot;
+            dir: false,
+            fileName: appinfo.db,
+            fileSize: 20.00KB,
+            fileTime: 2017-09-17 23:19:32,
+            path: /data/user/0/com.itgowo.tool.android_debugdata_webtool/databases/appinfo.db,
+            rootPath: /data/user/0/com.itgowo.tool.android_debugdata_webtool
         },
         {
-            &quot;dir&quot;: false,
-            &quot;fileName&quot;: &quot;appinfo.db-journal&quot;,
-            &quot;fileSize&quot;: &quot;12.52KB&quot;,
-            &quot;fileTime&quot;: &quot;2017-09-17 23:19:32&quot;,
-            &quot;path&quot;: &quot;/data/user/0/com.itgowo.tool.android_debugdata_webtool/databases/appinfo.db-journal&quot;,
-            &quot;rootPath&quot;: &quot;/data/user/0/com.itgowo.tool.android_debugdata_webtool&quot;
+            dir: false,
+            fileName: appinfo.db-journal,
+            fileSize: 12.52KB,
+            fileTime: 2017-09-17 23:19:32,
+            path: /data/user/0/com.itgowo.tool.android_debugdata_webtool/databases/appinfo.db-journal,
+            rootPath: /data/user/0/com.itgowo.tool.android_debugdata_webtool
         }
     ]
 }

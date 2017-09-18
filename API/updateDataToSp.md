@@ -12,21 +12,21 @@
 
  ```
 {
-    &quot;action&quot;:    &quot;updateDataToSp&quot;,
-    &quot;spFileName&quot;:    &quot;appinfo&quot;,
-    &quot;RowDataRequests&quot;:
+    action:    updateDataToSp,
+    spFileName:    appinfo,
+    RowDataRequests:
     [
         {
-            &quot;primary&quot;:    true,
-            &quot;title&quot;:    &quot;key&quot;,
-            &quot;value&quot;:    &quot;ggg&quot;,
-            &quot;dataType&quot;:    &quot;text&quot;
+            primary:    true,
+            title:    key,
+            value:    ggg,
+            dataType:    text
         },
         {
-            &quot;primary&quot;:    false,
-            &quot;title&quot;:    &quot;value&quot;,
-            &quot;value&quot;:    &quot;啦啦啦&quot;,
-            &quot;dataType&quot;:    &quot;text&quot;
+            primary:    false,
+            title:    value,
+            value:    啦啦啦,
+            dataType:    text
         }
     ]
 }
@@ -48,8 +48,8 @@
 
 ```
 {
-    &quot;code&quot;: 200,
-    &quot;msg&quot;: &quot;success&quot;
+    code: 200,
+    msg: success
 }
 ```
 

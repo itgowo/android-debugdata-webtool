@@ -12,15 +12,15 @@
 
  ```
 {
-    &quot;action&quot;:    &quot;deleteDataFromSp&quot;,
-    &quot;spFileName&quot;:&quot;appinfo&quot;,
-    &quot;RowDataRequests&quot;:
+    action:    deleteDataFromSp,
+    spFileName:appinfo,
+    RowDataRequests:
     [
         {
-            &quot;primary&quot;:    true,
-            &quot;title&quot;:    &quot;id&quot;,
-            &quot;value&quot;:    3,
-            &quot;dataType&quot;:    &quot;integer&quot;
+            primary:    true,
+            title:    id,
+            value:    3,
+            dataType:    integer
         }
     ]
 }
@@ -43,8 +43,8 @@
 
 ```
 {
-    &quot;code&quot;: 200,
-    &quot;msg&quot;: &quot;success&quot;
+    code: 200,
+    msg: success
 }
 ```
 

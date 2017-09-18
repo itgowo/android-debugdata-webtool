@@ -12,9 +12,9 @@
 
  ```
 {
-    &quot;action&quot;:    &quot;query&quot;,
-    &quot;database&quot;:    &quot;appinfo.db&quot;,
-    &quot;data&quot;:    &quot;select * from historycache where key like '%Home%'&quot;
+    action:    query,
+    database:    appinfo.db,
+    data:    select * from historycache where key like '%Home%'
 }
 
  ```
@@ -30,57 +30,57 @@
 
 ```
 {
-    &quot;code&quot;: 200,
-    &quot;editable&quot;: true,
-    &quot;msg&quot;: &quot;success&quot;,
-    &quot;tableData&quot;: {
-        &quot;dataCount&quot;: 12,
-        &quot;tableColumns&quot;: [
+    code: 200,
+    editable: true,
+    msg: success,
+    tableData: {
+        dataCount: 12,
+        tableColumns: [
             {
-                &quot;dataType&quot;: &quot;integer&quot;,
-                &quot;notNull&quot;: false,
-                &quot;primary&quot;: true,
-                &quot;title&quot;: &quot;id&quot;
+                dataType: integer,
+                notNull: false,
+                primary: true,
+                title: id
             },
             {
-                &quot;dataType&quot;: &quot;text&quot;,
-                &quot;notNull&quot;: false,
-                &quot;primary&quot;: false,
-                &quot;title&quot;: &quot;key&quot;
+                dataType: text,
+                notNull: false,
+                primary: false,
+                title: key
             },
             {
-                &quot;dataType&quot;: &quot;text&quot;,
-                &quot;notNull&quot;: false,
-                &quot;primary&quot;: false,
-                &quot;title&quot;: &quot;value&quot;
+                dataType: text,
+                notNull: false,
+                primary: false,
+                title: value
             },
             {
-                &quot;dataType&quot;: &quot;long&quot;,
-                &quot;notNull&quot;: false,
-                &quot;primary&quot;: false,
-                &quot;title&quot;: &quot;lasttime&quot;
+                dataType: long,
+                notNull: false,
+                primary: false,
+                title: lasttime
             },
             {
-                &quot;dataType&quot;: &quot;text&quot;,
-                &quot;notNull&quot;: false,
-                &quot;primary&quot;: false,
-                &quot;title&quot;: &quot;bak&quot;
+                dataType: text,
+                notNull: false,
+                primary: false,
+                title: bak
             },
             {
-                &quot;dataType&quot;: &quot;text&quot;,
-                &quot;notNull&quot;: false,
-                &quot;primary&quot;: false,
-                &quot;title&quot;: &quot;flag&quot;
+                dataType: text,
+                notNull: false,
+                primary: false,
+                title: flag
             }
         ],
-        &quot;tableDatas&quot;: [
+        tableDatas: [
             [
                 1,
-                &quot;GetHomeInfo&quot;,
-                &quot;llljk&quot;,
+                GetHomeInfo,
+                llljk,
                 1505489911016,
-                &quot;&quot;,
-                &quot;&quot;
+                ,
+                
             ]
         ]
     }

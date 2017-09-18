@@ -12,7 +12,7 @@
 
  ```
  {
-     &quot;action&quot; : &quot;getSpList&quot;
+     action : getSpList
  }
 
  ```
@@ -26,20 +26,20 @@
 
  ```
  {
-     &quot;code&quot; : 200,
-     &quot;msg&quot; : &quot;success&quot;,
-     &quot;SpList&quot; : [
+     code : 200,
+     msg : success,
+     SpList : [
                  {
-                      &quot;fileName&quot;: &quot;WebViewChromiumPrefs&quot;,
-                      &quot;path&quot;: &quot;/data/user/0/com.itgowo.tool.android_debugdata_webtool/shared_prefs/WebViewChromiumPrefs.xml&quot;
+                      fileName: WebViewChromiumPrefs,
+                      path: /data/user/0/com.itgowo.tool.android_debugdata_webtool/shared_prefs/WebViewChromiumPrefs.xml
                 },
                 {
-                     &quot;fileName&quot;: &quot;appinfo&quot;,
-                     &quot;path&quot;: &quot;/data/user/0/com.itgowo.tool.android_debugdata_webtool/shared_prefs/appinfo.xml&quot;
+                     fileName: appinfo,
+                     path: /data/user/0/com.itgowo.tool.android_debugdata_webtool/shared_prefs/appinfo.xml
                },
               {
-                     &quot;fileName&quot;: &quot;appinfo11&quot;,
-                     &quot;path&quot;: &quot;/data/user/0/com.itgowo.tool.android_debugdata_webtool/shared_prefs/appinfo11.xml&quot;
+                     fileName: appinfo11,
+                     path: /data/user/0/com.itgowo.tool.android_debugdata_webtool/shared_prefs/appinfo11.xml
               }
          ]
  }

@@ -13,8 +13,8 @@
 
  ```
  {
-     &quot;action&quot; : &quot;getTableList&quot;,
-     &quot;database&quot; : &quot;appinfo.db&quot;
+     action : getTableList,
+     database : appinfo.db
  }
 
  ```
@@ -32,13 +32,13 @@
 ```
 
  {
-     &quot;code&quot; : 200,
-     &quot;msg&quot; : &quot;success&quot;,
-     &quot;dbVersion&quot; : 1,
-     &quot;tableList&quot; :[
-          &quot;android_metadata&quot;,
-          &quot;historycache&quot;,
-          &quot;sqlite_sequence&quot;
+     code : 200,
+     msg : success,
+     dbVersion : 1,
+     tableList :[
+          android_metadata,
+          historycache,
+          sqlite_sequence
      ]
  }
 

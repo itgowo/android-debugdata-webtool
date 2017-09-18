@@ -12,7 +12,7 @@
 
  ```
  {
-     &quot;action&quot; : &quot;getDbList&quot;
+     action : getDbList
  }
 
  ```
@@ -26,12 +26,12 @@
 
  ```
  {
-     &quot;code&quot; : 200,
-     &quot;msg&quot; : &quot;success&quot;,
-     &quot;dbList&quot; : [
+     code : 200,
+     msg : success,
+     dbList : [
           {
-            &quot;fileName&quot;: &quot;appinfo.db&quot;,
-            &quot;path&quot;: &quot;/data/user/0/com.itgowo.tool.android_debugdata_webtool/databases/appinfo.db&quot;
+            fileName: appinfo.db,
+            path: /data/user/0/com.itgowo.tool.android_debugdata_webtool/databases/appinfo.db
           }
      ]
  }

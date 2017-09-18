@@ -12,8 +12,8 @@
 
 
  {
-     &quot;action&quot; : &quot;getDataFromSpFile&quot;,
-     &quot;spFileName&quot; : &quot;appinfo&quot;
+     action : getDataFromSpFile,
+     spFileName : appinfo
  }
 
  ```
@@ -34,69 +34,69 @@
 
  ```
  {
-    &quot;code&quot;: 200,
-    &quot;editable&quot;: true,
-    &quot;msg&quot;: &quot;success&quot;,
-    &quot;tableData&quot;: {
-        &quot;tableColumns&quot;: [
+    code: 200,
+    editable: true,
+    msg: success,
+    tableData: {
+        tableColumns: [
             {
-                &quot;primary&quot;: true,
-                &quot;title&quot;: &quot;Key&quot;
+                primary: true,
+                title: Key
             },
             {
-                &quot;primary&quot;: false,
-                &quot;title&quot;: &quot;Value&quot;
+                primary: false,
+                title: Value
             },
             {
-                &quot;primary&quot;: false,
-                &quot;title&quot;: &quot;DataType&quot;
+                primary: false,
+                title: DataType
             }
         ],
-        &quot;tableDatas&quot;: [
+        tableDatas: [
             [
-                &quot;Int&quot;,
+                Int,
                 1234,
-                &quot;integer&quot;
+                integer
             ],
             [
-                &quot;ggg&quot;,
-                &quot;teddddst&quot;,
-                &quot;text&quot;
+                ggg,
+                teddddst,
+                text
             ],
             [
-                &quot;aaaasdfsafee3aa&quot;,
-                &quot;tadsfsadfest&quot;,
-                &quot;text&quot;
+                aaaasdfsafee3aa,
+                tadsfsadfest,
+                text
             ],
             [
-                &quot;Float&quot;,
+                Float,
                 1.5,
-                &quot;float&quot;
+                float
             ],
             [
-                &quot;Booblean&quot;,
+                Booblean,
                 true,
-                &quot;boolean&quot;
+                boolean
             ],
             [
-                &quot;aaaaa&quot;,
-                &quot;test&quot;,
-                &quot;text&quot;
+                aaaaa,
+                test,
+                text
             ],
             [
-                &quot;Long&quot;,
+                Long,
                 1232131231,
-                &quot;long&quot;
+                long
             ],
             [
-                &quot;adfs&quot;,
-                &quot;1505489963276&quot;,
-                &quot;text&quot;
+                adfs,
+                1505489963276,
+                text
             ],
             [
-                &quot;String&quot;,
-                &quot;tadsfsadfest&quot;,
-                &quot;text&quot;
+                String,
+                tadsfsadfest,
+                text
             ]
         ]
     }
