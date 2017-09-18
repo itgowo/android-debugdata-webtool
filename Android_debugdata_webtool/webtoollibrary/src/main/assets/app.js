@@ -1,6 +1,8 @@
-var rootUrl="";
+var rootUrl = "http://192.168.1.15:8088";
 var dbFileName;
+var SPFileName;
 var downloadFilePath;
+var downloadFilePath2;
 $(document).ready(function () {
 	getDBList();
 	$("#query").keypress(function (e) {
@@ -11,24 +13,27 @@ $(document).ready(function () {
 	$("#dbwindow").show();
 	$("#spwindow").hide();
 	$("#fmwindow").hide();
-	
-	$("#btndb").click( function(){
+
+	$("#btndb").click(function () {
 		$("#dbwindow").show();
 		$("#spwindow").hide();
 		$("#fmwindow").hide();
+		getDBList();
 	});
-	$("#btnsp").click( function(){
+	$("#btnsp").click(function () {
 		$("#dbwindow").hide();
 		$("#spwindow").show();
 		$("#fmwindow").hide();
+		getSpList();
 	});
-	$("#btnfm").click( function(){
+	$("#btnfm").click(function () {
 		$("#dbwindow").hide();
 		$("#spwindow").hide();
 		$("#fmwindow").show();
+		getFileList();
 	});
-	
-	
+
+
 	//update currently selected database
 	$(document).on("click", "#db-list .list-group-item", function () {
 		$("#db-list .list-group-item").each(function () {
@@ -66,22 +71,32 @@ $(document).ready(function () {
 
 var isDatabaseSelected = true;
 
-function getData(fileName,tableName) {
+function getData(fileName, tableNameOrPath, isDB) {
+	var getData
+	if (isDB == "true") {
+		getData = {
+			action: "getDataFromDbTable",
+			database: fileName,
+			tableName: tableNameOrPath,
+		}
+	} else {
+		SPFileName = fileName;
+		downloadFilePath2 = tableNameOrPath;
+		getData = {
+			action: "getDataFromSpFile",
+			SPFileName: fileName
+		}
+	}
+
 	$.ajax({
 		type: "POST",
 		url: rootUrl,
-		crossDomain:true,
-		data: JSON.stringify(
-				{
-					action : "getDataFromDbTable",
-					database:fileName,
-					tableName : tableName,
-				}
-				),
+		crossDomain: true,
+		data: JSON.stringify(getData),
 		contentType: "application/json; charset=utf-8",
 		dataType: "json",
-	    success: function (result) {
-			inflateData(result);
+		success: function (result) {
+			inflateData(result, isDB == "true");
 		}
 	});
 
@@ -89,28 +104,28 @@ function getData(fileName,tableName) {
 
 function queryFunction(dbname) {
 	var query = $('#query').val();
-    $.ajax({
-            type: "POST",
-            crossDomain:true,
-            url: rootUrl,
-            data: JSON.stringify({
-                action : "query",
-                database :dbname,
-                data : query
-            }),
-            contentType: "application/json; charset=utf-8",
-            dataType: "json",
-            success: function (result) {
-                 inflateData(result);
-            }
-        });
+	$.ajax({
+		type: "POST",
+		crossDomain: true,
+		url: rootUrl,
+		data: JSON.stringify({
+			action: "query",
+			database: dbname,
+			data: query
+		}),
+		contentType: "application/json; charset=utf-8",
+		dataType: "json",
+		success: function (result) {
+			inflateData(result, true);
+		}
+	});
 }
 
-function downloadDb(path) {
+function downloadFile(path) {
 	if (isDatabaseSelected) {
 //		$.ajax({
 //			url: "downloadFile?downloadFile="+path, success: function () {
-			window.location="downloadFile?downloadFile="+path;
+		window.location = "downloadFile?downloadFile=" + path;
 //			}
 //		});
 	}
@@ -121,7 +136,7 @@ function getDBList() {
 	$.ajax({
 		type: "POST",
 		url: rootUrl,
-		crossDomain:true,
+		crossDomain: true,
 		data: JSON.stringify({action: "getDbList"}),
 		contentType: "application/json; charset=utf-8",
 		dataType: "json",
@@ -131,20 +146,77 @@ function getDBList() {
 				$('#db-list').empty();
 				var isSelectionDone = false;
 				for (var count = 0; count < dbList.length; count++) {
-						$("#db-list").append("<a href='#' id=" + dbList[count].fileName + " class='list-group-item' onClick='openDatabaseAndGetTableList(\"" + dbList[count].fileName+ "\",\"" + dbList[count].path+ "\")'>" + dbList[count].fileName + "</a>")	;}
-						if (!isSelectionDone) {
-							isSelectionDone = true;
-							$('#db-list').find('a').trigger('click');
-						}
-					}
+					$("#db-list").append("<a href='#' id=" + dbList[count].fileName + " class='list-group-item' onClick='openDatabaseAndGetTableList(\"" + dbList[count].fileName + "\",\"" + dbList[count].path + "\")'>" + dbList[count].fileName + "</a>");
+				}
+				if (!isSelectionDone) {
+					isSelectionDone = true;
+					$('#db-list').find('a').trigger('click');
+				}
+			}
 		}
 	});
 }
 
+function getSpList() {
+	$.ajax({
+		type: "POST",
+		url: rootUrl,
+		crossDomain: true,
+		data: JSON.stringify({action: "getSpList"}),
+		contentType: "application/json; charset=utf-8",
+		dataType: "json",
+		success: function (result) {
+			if (result.code == 200) {
+				var spList = result.spList;
+				$('#sp-list').empty();
+				var isSelectionDone = false;
+				for (var count = 0; count < spList.length; count++) {
+					$("#sp-list").append("<a href='#' id=" + spList[count].fileName + " class='list-group-item' onClick='getData(\"" + spList[count].fileName + "\",\"" + spList[count].path + "\",\"" + false + "\")'>" + spList[count].fileName + "</a>");
+				}
+				if (!isSelectionDone) {
+					isSelectionDone = true;
+					$('#sp-list').find('a').trigger('click');
+				}
+			}
+		}
+	});
+}
+function getFileList() {
+	$.ajax({
+		type: "POST",
+		url: rootUrl,
+		crossDomain: true,
+		data: JSON.stringify({action: "getFileList"}),
+		contentType: "application/json; charset=utf-8",
+		dataType: "json",
+		success: function (result) {
+			if (result.code == 200) {
+				var fileList = result.fileList;
+				var columnHeader = [{"data": "fileName"}, {"data": "fileSize"}, {"data": "fileTime"}, {"data": "dir"}];
+				var columnData = result.fileList;
 
-function openDatabaseAndGetTableList(dbname,path) {
-        dbFileName=dbname;
-        downloadFilePath=path;
+				var tableId = "#fm-data";
+				// if ($.fn.DataTable.isDataTable(tableId)) {
+				// 	$(tableId).DataTable().destroy();
+				// }
+				$("#fm-data-div").remove();
+				var thead="<thead><tr><th>文件名</th><th>文件大小</th><th>最后编辑时间</th><th>是否是文件夹</th></tr></thead>"
+				$("#parent-data-divfm").append('<div id="fm-data-div"><table class="display nowrap" cellpadding="0" border="0" cellspacing="0" width="100%" class="table table-striped table-bordered display" id="fm-data">'+thead+'</table></div>');
+				$(tableId).dataTable(
+						{
+							columns: columnHeader,
+							data: columnData
+						}
+				)
+			} else {
+				showErrorInfo(result.msg);
+			}
+		}
+	});
+}
+function openDatabaseAndGetTableList(dbname, path) {
+	dbFileName = dbname;
+	downloadFilePath = path;
 	if ("APP_SHARED_PREFERENCES" == dbname) {
 		$('#run-query').removeClass('active');
 		$('#run-query').addClass('disabled');
@@ -162,25 +234,25 @@ function openDatabaseAndGetTableList(dbname,path) {
 	}
 	$.ajax({
 		type: "POST",
-		crossDomain:true,
+		crossDomain: true,
 		url: rootUrl,
 		data: JSON.stringify({
-			action : "getTableList",
-			database :dbname
+			action: "getTableList",
+			database: dbname
 		}),
 		contentType: "application/json; charset=utf-8",
 		dataType: "json",
-	    success: function (result) {
+		success: function (result) {
 			if (result.code == 200) {
 				var tableList = result.tableList;
 				var dbVersion = result.dbVersion;
 				$("#selected-db-info").text("点击数据库名称下载 : " + dbname + " Version : " + dbVersion);
-				$("#selected-db-info").click(function(){
-                                             downloadDb(downloadFilePath)
-                                             });
+				$("#selected-db-info").click(function () {
+					downloadFile(downloadFilePath)
+				});
 				$('#table-list').empty()
 				for (var count = 0; count < tableList.length; count++) {
-					$("#table-list").append("<a href='#' data-db-name='" + dbname + "' data-table-name='" + tableList[count] + "' class='list-group-item' onClick='getData(\""+ dbname+ "\",\""+ tableList[count]+ "\");'>" + tableList[count] + "</a>");
+					$("#table-list").append("<a href='#' data-db-name='" + dbname + "' data-table-name='" + tableList[count] + "' class='list-group-item' onClick='getData(\"" + dbname + "\",\"" + tableList[count] + "\",\"" + true + "\");'>" + tableList[count] + "</a>");
 				}
 			} else {
 				showErrorInfo(result.msg);
@@ -190,31 +262,38 @@ function openDatabaseAndGetTableList(dbname,path) {
 
 }
 
-function inflateData(result) {
+function inflateData(result, isDB) {
 
 	if (result.code == 200) {
-     if(!result.isSelectQuery){
-		showSuccessInfo("查询成功");
-     }
 		var columnHeader = result.tableData.tableColumns;
 		var columnData = result.tableData.tableDatas;
-
-		
-		// set function to return cell data for different usages like set, display, filter, search etc..
 		for (var i = 0; i < columnHeader.length; i++) {
 			columnHeader[i]['targets'] = i;
 			columnHeader[i]['data'] = function (data, type, val, meta) {
 				return data[meta.col].value;
 			}
 		}
-
-		var tableId = "#db-data";
+		var tableId
+		if (isDB) {
+			tableId = "#db-data";
+		} else {
+			tableId = "#sp-data";
+			$("#selected-sp-info").text("点击文件名称下载 : " + SPFileName);
+			$("#selected-sp-info").click(function () {
+				downloadFile(downloadFilePath2)
+			});
+		}
 		if ($.fn.DataTable.isDataTable(tableId)) {
 			$(tableId).DataTable().destroy();
 		}
 
-		$("#db-data-div").remove();
-		$("#parent-data-div").append('<div id="db-data-div"><table class="display nowrap" cellpadding="0" border="0" cellspacing="0" width="100%" class="table table-striped table-bordered display" id="db-data"></table></div>');
+		if (isDB) {
+			$("#db-data-div").remove();
+			$("#parent-data-div").append('<div id="db-data-div"><table class="display nowrap" cellpadding="0" border="0" cellspacing="0" width="100%" class="table table-striped table-bordered display" id="db-data"></table></div>');
+		} else {
+			$("#sp-data-div").remove();
+			$("#parent-data-divsp").append('<div id="sp-data-div"><table class="display nowrap" cellpadding="0" border="0" cellspacing="0" width="100%" class="table table-striped table-bordered display" id="sp-data"></table></div>');
+		}
 
 		var availableButtons;
 		if (result.editable) {
@@ -237,10 +316,10 @@ function inflateData(result) {
 		} else {
 			availableButtons = [];
 		}
-		 var changecolumnData =[]
-		for(var i =0;i<columnData.length;i++){
-			changecolumnData[i]	=columnData[i].map(function (item,index) {
-				return 	item = {value:item }
+		var changecolumnData = []
+		for (var i = 0; i < columnData.length; i++) {
+			changecolumnData[i] = columnData[i].map(function (item, index) {
+				return item = {value: item}
 			})
 		}
 
@@ -260,74 +339,64 @@ function inflateData(result) {
 			buttons: availableButtons
 		})
 
-		//attach row-updated listener
 		$(tableId).on('update-row.dt', function (e, updatedRowData, callback) {
-			console.log(typeof updatedRowData,updatedRowData)
-			var updatedRowDataArray =JSON.parse(updatedRowData);
+			var updatedRowDataArray = JSON.parse(updatedRowData);
 			//add value for each column
-			var data = columnHeader;
 
-			for (var i = 0; i < data.length; i++) {
-				data[i].value = updatedRowDataArray[i].value;
-				data[i].dataType = data[i].dataType;
+			if (isDB) {
+				var data = columnHeader;
+				for (var i = 0; i < data.length; i++) {
+					data[i].value = updatedRowDataArray[i].value;
+					data[i].dataType = data[i].dataType;
+				}
+				db_update(data, callback);
+			} else {
+				sp_update(updatedRowDataArray, callback)
 			}
-			//send update table data request to server
-			updateTableData(data, callback);
+
 		});
 
-
-		//attach delete-updated listener
 		$(tableId).on('delete-row.dt', function (e, updatedRowData, callback) {
-			var deleteRowDataArray = JSON.parse(updatedRowData);
-
-			console.log(deleteRowDataArray);
-
-			//add value for each column
-			var data = columnHeader;
-			for (var i = 0; i < data.length; i++) {
-				data[i].value = deleteRowDataArray[i].value;
-				data[i].dataType = deleteRowDataArray[i].dataType;
-			}
-
-			//send delete table data request to server
-			deleteTableData(data, callback);
-		});
-
+					var deleteRowDataArray = JSON.parse(updatedRowData);
+					if (isDB) {
+						var data = columnHeader;
+						for (var i = 0; i < data.length; i++) {
+							data[i].value = deleteRowDataArray[i].value;
+							data[i].dataType = deleteRowDataArray[i].dataType;
+						}
+						db_delete(data, callback);
+					} else {
+						sp_delete(deleteRowDataArray, callback);
+					}
+				}
+		);
 
 		$(tableId).on('add-row.dt', function (e, updatedRowData, callback) {
-			var deleteRowDataArray = JSON.parse(updatedRowData);
-			console.log(deleteRowDataArray,123789);
-			//add value for each column
-			var data = columnHeader;
-			for (var i = 0; i < data.length; i++) {
-				data[i].value = deleteRowDataArray[i].value;
-				data[i].dataType = deleteRowDataArray[i].dataType;
+			var addRowDataArray = JSON.parse(updatedRowData);
+			if (isDB) {
+				var data = columnHeader;
+				for (var i = 0; i < data.length; i++) {
+					data[i].value = addRowDataArray[i].value;
+					data[i].dataType = addRowDataArray[i].dataType;
+				}
+				db_addData(data, callback);
+			} else {
+				sp_addData(addRowDataArray, callback);
 			}
-
-			//send delete table data request to server
-			console.error(data)
-			addTableData(data, callback);
 		});
 
 		// hack to fix alignment issue when scrollX is enabled
 		$(".dataTables_scrollHeadInner").css({"width": "100%"});
 		$(".table ").css({"width": "100%"});
 	} else {
-//      if(!result.isSelectQuery){
-//         showErrorInfo("查询失败");
-//      }else {
-//         showErrorInfo("发生未知错误");
-//      }
 		showErrorInfo(result.msg);
 	}
 
 }
 
 //send update database request to server
-function updateTableData(updatedData, callback) {
-	//get currently selected element
+function db_update(updatedData, callback) {
 	var selectedTableElement = $("#table-list .list-group-item.selected");
-
 	var filteredUpdatedData = updatedData.map(function (columnData) {
 		return {
 			title: columnData.title,
@@ -336,38 +405,49 @@ function updateTableData(updatedData, callback) {
 			dataType: columnData.dataType
 		}
 	});
-	//build request parameters
 	var requestParameters = {};
 	requestParameters.action = "updateDataToDb"
 	requestParameters.database = selectedTableElement.attr('data-db-name');
 	requestParameters.tableName = selectedTableElement.attr('data-table-name');
 	requestParameters.RowDataRequests = filteredUpdatedData
-console.log(requestParameters,requestParameters.RowDataRequests)
-	//execute request
 	$.ajax({
-		url:rootUrl,
+		url: rootUrl,
 		type: 'POST',
 		data: JSON.stringify(requestParameters),
 		success: function (response) {
 			if (response.code == 200) {
-				console.log("数据更新成功");
 				callback(true);
 				showSuccessInfo("数据更新成功");
-				getData( requestParameters.database+","+requestParameters.tableName);
-
-
+				getData(requestParameters.database + "," + requestParameters.tableName);
 			} else {
-				console.log("数据更新失败");
 				showErrorInfo(response.msg)
 				callback(false);
 			}
 		}
 	})
 }
-
-
-function deleteTableData(deleteData, callback) {
-
+function sp_update(updatedData, callback) {
+	var requestParameters = {};
+	requestParameters.action = "updateDataToSp"
+	requestParameters.spFileName = SPFileName;
+	requestParameters.RowDataRequests = updatedData;
+	$.ajax({
+		url: rootUrl,
+		type: 'POST',
+		data: JSON.stringify(requestParameters),
+		success: function (response) {
+			if (response.code == 200) {
+				callback(true);
+				showSuccessInfo("数据更新成功");
+				getData(requestParameters.spFileName, "", false);
+			} else {
+				showErrorInfo(response.msg)
+				callback(false);
+			}
+		}
+	})
+}
+function db_delete(deleteData, callback) {
 	var selectedTableElement = $("#table-list .list-group-item.selected");
 	var filteredUpdatedData = deleteData.map(function (columnData) {
 		return {
@@ -377,36 +457,49 @@ function deleteTableData(deleteData, callback) {
 			dataType: columnData.dataType
 		}
 	});
-
-	//build request parameters
 	var requestParameters = {};
-	requestParameters.action =  "deleteDataFromDb"
+	requestParameters.action = "deleteDataFromDb"
 	requestParameters.database = selectedTableElement.attr('data-db-name');
 	requestParameters.tableName = selectedTableElement.attr('data-table-name');
 	requestParameters.RowDataRequests = filteredUpdatedData
-
-	//execute request
 	$.ajax({
 		url: rootUrl,
 		type: 'POST',
-		data:JSON.stringify(requestParameters) ,
+		data: JSON.stringify(requestParameters),
 		success: function (response) {
 			if (response.code == 200) {
-				console.log("数据删除成功");
 				callback(true);
-				getData( requestParameters.database+","+requestParameters.tableName);
+				getData(requestParameters.database + "," + requestParameters.tableName);
 				showSuccessInfo("数据删除成功");
 			} else {
-				console.log("数据删除失败");
 				showErrorInfo(response.msg)
 				callback(false);
 			}
 		}
 	})
 }
-
-function addTableData(deleteData, callback) {
-
+function sp_delete(updatedData, callback) {
+	var requestParameters = {};
+	requestParameters.action = "deleteDataFromSp"
+	requestParameters.spFileName = SPFileName;
+	requestParameters.RowDataRequests = updatedData;
+	$.ajax({
+		url: rootUrl,
+		type: 'POST',
+		data: JSON.stringify(requestParameters),
+		success: function (response) {
+			if (response.code == 200) {
+				callback(true);
+				showSuccessInfo("数据删除成功");
+				getData(requestParameters.spFileName, "", false);
+			} else {
+				showErrorInfo(response.msg)
+				callback(false);
+			}
+		}
+	})
+}
+function db_addData(deleteData, callback) {
 	var selectedTableElement = $("#table-list .list-group-item.selected");
 	var filteredUpdatedData = deleteData.map(function (columnData) {
 		return {
@@ -416,32 +509,24 @@ function addTableData(deleteData, callback) {
 			dataType: columnData.dataType
 		}
 	});
-
-	//build request parameters
 	var requestParameters = {
-		"action":  "addDataToDb",
-		"database":   "",
-		"tableName":  "",};
+		"action": "addDataToDb",
+		"database": "",
+		"tableName": "",
+	};
 	requestParameters.database = selectedTableElement.attr('data-db-name');
 	requestParameters.tableName = selectedTableElement.attr('data-table-name');
-	;
-	requestParameters.RowDataRequests =filteredUpdatedData
-
-	console.log(requestParameters);
-
-	//execute request
+	requestParameters.RowDataRequests = filteredUpdatedData
 	$.ajax({
 		url: rootUrl,
 		type: 'POST',
-		data:JSON.stringify(requestParameters),
+		data: JSON.stringify(requestParameters),
 		success: function (response) {
 			if (response.code == 200) {
-				console.log("数据添加成功");
 				callback(true);
-				getData( requestParameters.database+","+requestParameters.tableName);
+				getData(requestParameters.database + "," + requestParameters.tableName);
 				showSuccessInfo("数据添加成功");
 			} else {
-				console.log("数据添加失败");
 				showErrorInfo(response.msg)
 
 				callback(false);
@@ -449,7 +534,27 @@ function addTableData(deleteData, callback) {
 		}
 	});
 }
-
+function sp_addData(updatedData, callback) {
+	var requestParameters = {};
+	requestParameters.action = "addDataToSp"
+	requestParameters.spFileName = SPFileName;
+	requestParameters.RowDataRequests = updatedData;
+	$.ajax({
+		url: rootUrl,
+		type: 'POST',
+		data: JSON.stringify(requestParameters),
+		success: function (response) {
+			if (response.code == 200) {
+				callback(true);
+				showSuccessInfo("数据添加成功");
+				getData(requestParameters.spFileName, "", false);
+			} else {
+				showErrorInfo(response.msg)
+				callback(false);
+			}
+		}
+	})
+}
 function showSuccessInfo(message) {
 	var snackbarId = "snackbar";
 	var snackbarElement = $("#" + snackbarId);
