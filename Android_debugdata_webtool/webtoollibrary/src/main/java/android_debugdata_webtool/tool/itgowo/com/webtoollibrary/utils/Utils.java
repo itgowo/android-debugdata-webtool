@@ -204,7 +204,7 @@ public class Utils {
         } else {
             value = String.format("%.0f", result);
         }
-  
+
         return value + suffix;
     }
 }

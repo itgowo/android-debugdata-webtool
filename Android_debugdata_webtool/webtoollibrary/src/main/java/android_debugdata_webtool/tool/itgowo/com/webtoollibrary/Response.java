@@ -49,18 +49,28 @@ public class Response {
     }
 
     public static class FileData {
-        private boolean isDir = false;
+        private boolean IsDir = false;
         private String path;
+        private String rootPath;
         private String fileName;
         private String fileSize;
         private String fileTime;
 
-        public boolean isDir() {
-            return isDir;
+        public String getRootPath() {
+            return rootPath;
         }
 
-        public FileData setDir(boolean mDir) {
-            isDir = mDir;
+        public FileData setRootPath(String mRootPath) {
+            rootPath = mRootPath;
+            return this;
+        }
+
+        public boolean isDir() {
+            return IsDir;
+        }
+
+        public FileData setIsDir(boolean mDir) {
+            IsDir = mDir;
             return this;
         }
 
