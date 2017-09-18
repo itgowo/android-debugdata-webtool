@@ -11,14 +11,14 @@
 **参数：**
 
 
+
+
+ ```
+
  {
      action : getDataFromSpFile,
      spFileName : appinfo
  }
-
- ```
-
-
 
  ```
 
