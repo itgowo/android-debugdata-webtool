@@ -31,6 +31,8 @@ http://itgowo.com
 ###9.POST请求统一用action表示意向操作
 
 
+##API
 
+[getDbList](/API/getDbList.md)
 
 因为web功底薄弱，请大家耐心等待
