@@ -1,8 +1,9 @@
 var rootUrl = "";
 var dbFileName;
 var SPFileName;
-var downloadFilePath;
+var downloadFilePath1;
 var downloadFilePath2;
+var downloadFilePath3;
 $(document).ready(function () {
 	getDBList();
 	$("#query").keypress(function (e) {
@@ -18,19 +19,22 @@ $(document).ready(function () {
 		$("#dbwindow").show();
 		$("#spwindow").hide();
 		$("#fmwindow").hide();
-		getDBList();
 	});
 	$("#btnsp").click(function () {
 		$("#dbwindow").hide();
 		$("#spwindow").show();
 		$("#fmwindow").hide();
+		if(downloadFilePath2==null){
 		getSpList();
+		}
 	});
 	$("#btnfm").click(function () {
 		$("#dbwindow").hide();
 		$("#spwindow").hide();
 		$("#fmwindow").show();
-		getFileList();
+		if(downloadFilePath2==null){
+        	getFileList();
+        		}
 	});
 
 
@@ -196,17 +200,20 @@ function getFileList() {
 				var columnData = result.fileList;
 
 				var tableId = "#fm-data";
-				// if ($.fn.DataTable.isDataTable(tableId)) {
-				// 	$(tableId).DataTable().destroy();
-				// }
+				 if ($.fn.DataTable.isDataTable(tableId)) {
+				 	$(tableId).DataTable().destroy();
+				 }
 				$("#fm-data-div").remove();
 				var thead="<thead><tr><th>文件名</th><th>文件大小</th><th>最后编辑时间</th><th>是否是文件夹</th></tr></thead>"
 				$("#parent-data-divfm").append('<div id="fm-data-div"><table class="display nowrap" cellpadding="0" border="0" cellspacing="0" width="100%" class="table table-striped table-bordered display" id="fm-data">'+thead+'</table></div>');
 				$(tableId).dataTable(
 						{
 							columns: columnHeader,
-							data: columnData
-						}
+							data: columnData,
+							language: {
+                                                            url: '/language/Chinese.json'
+                                                        }
+						} 
 				)
 			} else {
 				showErrorInfo(result.msg);
@@ -216,7 +223,7 @@ function getFileList() {
 }
 function openDatabaseAndGetTableList(dbname, path) {
 	dbFileName = dbname;
-	downloadFilePath = path;
+	downloadFilePath1 = path;
 	if ("APP_SHARED_PREFERENCES" == dbname) {
 		$('#run-query').removeClass('active');
 		$('#run-query').addClass('disabled');
@@ -248,7 +255,7 @@ function openDatabaseAndGetTableList(dbname, path) {
 				var dbVersion = result.dbVersion;
 				$("#selected-db-info").text("点击数据库名称下载 : " + dbname + " Version : " + dbVersion);
 				$("#selected-db-info").click(function () {
-					downloadFile(downloadFilePath)
+					downloadFile(downloadFilePath1)
 				});
 				$('#table-list').empty()
 				for (var count = 0; count < tableList.length; count++) {
