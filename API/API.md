@@ -1,14 +1,22 @@
-#Android-Debugdata-Webtool API文档
+# Android-Debugdata-Webtool API文档
+
+## 数据库
+#### 1. [获取数据库列表](#getDbList)
+#### 2. [获取数据库表列表](#getTableList)
+
+
+
+
 
 [数据库](#db)
-[获取数据库列表](#getDbList)
-[获取数据库表列表](#getTableList)
-[数据库](#db)
-[数据库](#db)
+
 [数据库](#db)
 
-<span id="db">数据库</span>
-<span id="getDbList">获取数据库列表</span>
+[数据库](#db)
+
+
+<span id="db"></span>
+### ++<span id="getDbList">获取数据库列表</span>++
 
 
 **请求URL：**
@@ -66,7 +74,9 @@
 
 
 
-<span id="getTableList">获取数据库表列表</span>
+
+ 
+### ++<span id="getTableList">获取数据库表列表</span>++
 
 
 **请求URL：**
