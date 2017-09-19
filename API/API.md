@@ -8,8 +8,8 @@
 [数据库](#db)
 
 <span id="db">数据库</span>
-<span id="getDbList"></span>
-- 获取数据库列表
+<span id="getDbList">获取数据库列表</span>
+
 
 **请求URL：**
 - ` / `
@@ -59,8 +59,15 @@
 
 
 
-<span id="getTableList"></span>
-- 获取数据库表列表 
+
+
+
+
+
+
+
+<span id="getTableList">获取数据库表列表</span>
+
 
 **请求URL：**
 - ` / `
