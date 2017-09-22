@@ -213,7 +213,7 @@ function getFileList() {
 							language: {
                                                             url: '/language/Chinese.json'
                                                         }
-						} 
+						}
 				)
 			} else {
 				showErrorInfo(result.msg);
@@ -343,7 +343,10 @@ function inflateData(result, isDB) {
 			"dom": "Bfrtip",
 			select: 'single',
 			altEditor: true,     // Enable altEditor
-			buttons: availableButtons
+			buttons: availableButtons,
+			language: {
+                       url: '/language/Chinese.json'
+                      }
 		})
 
 		$(tableId).on('update-row.dt', function (e, updatedRowData, callback) {

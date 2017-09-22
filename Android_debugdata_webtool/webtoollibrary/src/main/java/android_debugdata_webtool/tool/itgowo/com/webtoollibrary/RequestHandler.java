@@ -108,7 +108,6 @@ public class RequestHandler {
             // Output stream that we send the response to
             output = new PrintStream(socket.getOutputStream());
             byte[] bytes = new byte[0];
-            String mAction = null;
             if (mHttpRequest.getMethod().equalsIgnoreCase("OPTIONS")) {
                 onRequestOptions(output);
 

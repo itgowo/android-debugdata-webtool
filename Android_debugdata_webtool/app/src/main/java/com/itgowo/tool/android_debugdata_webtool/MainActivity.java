@@ -42,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
 //        getSharedPreferences("appinfo", MODE_PRIVATE).edit().putLong("Long", 1232131231).commit();
 //        getSharedPreferences("appinfo", MODE_PRIVATE).edit().putString("String", "tadsfsadfest").commit();
 //        getSharedPreferences("appinfo", MODE_PRIVATE).edit().putInt("Int", 1234).commit();
-        DebugDataTool.initialize(this, 8088, true, new onDebugToolListener() {
+        DebugDataTool.initialize(this, 8088, false, new onDebugToolListener() {
 
 
             @Override
