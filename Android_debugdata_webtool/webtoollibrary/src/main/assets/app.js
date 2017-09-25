@@ -186,43 +186,68 @@ function getSpList() {
     });
 }
 
-function getFileList() {
+
+var FilecolumnHeader = [{"data": "fileName"}, {"data": "fileSize"}, {"data": "fileTime"}, {"data": "dir"}];
+var FilecolumnData;
+
+function getFileList(path) {
+    var tableId = "#fm-data";
+    var table;
+    if (FilecolumnData == null) {
+        $("#fm-data-div").remove();
+        var thead = "<thead><tr><th>文件名</th><th>文件大小</th><th>最后编辑时间</th><th>是否是文件夹</th></tr></thead>"
+        $("#parent-data-divfm").append('<div id="fm-data-div"><table class="display nowrap" cellpadding="0" border="0" cellspacing="0" width="100%" class="table table-striped table-bordered display" id="fm-data">' + thead + '</table></div>');
+        $(tableId).removeClass('display').addClass('table table-striped table-bordered');
+    }
     $.ajax({
         type: "POST",
         url: rootUrl,
         crossDomain: true,
-        data: JSON.stringify({action: "getFileList"}),
+        data: JSON.stringify(path == null ? {action: "getFileList"} : {
+            action: "getFileList",
+            "data": path
+        }),
         contentType: "application/json; charset=utf-8",
         dataType: "json",
-        success: function (result) {
-            if (result.code == 200) {
-                var fileList = result.fileList;
-                var columnHeader = [{"data": "fileName"}, {"data": "fileSize"}, {"data": "fileTime"}, {"data": "dir"}];
-                var columnData = result.fileList;
+        success:
+            function (result) {
+                if (result.code == 200) {
+                    FilecolumnData = result.fileList;
 
-                var tableId = "#fm-data";
-                if ($.fn.DataTable.isDataTable(tableId)) {
-                    $(tableId).DataTable().destroy();
-                }
-                $("#fm-data-div").remove();
-                var thead = "<thead><tr><th>文件名</th><th>文件大小</th><th>最后编辑时间</th><th>是否是文件夹</th></tr></thead>"
-                $("#parent-data-divfm").append('<div id="fm-data-div"><table class="display nowrap" cellpadding="0" border="0" cellspacing="0" width="100%" class="table table-striped table-bordered display" id="fm-data">' + thead + '</table></div>');
-                $(tableId).dataTable(
-                    {
-                        columns: columnHeader,
-                        data: columnData,
-                        language: {
-                            url: '/language/Chinese.json'
-                        }
+
+                    if ($.fn.DataTable.isDataTable(tableId)) {
+                        $(tableId).DataTable().destroy();
                     }
-                )
-                $(tableId).removeClass('display').addClass('table table-striped table-bordered');
-
-            } else {
-                showErrorInfo(result.msg);
+                    table=   $(tableId).DataTable(
+                        {
+                            columns: FilecolumnHeader,
+                            data: FilecolumnData,
+                            language: {
+                                url: '/language/Chinese.json'
+                            },
+                            select: 'single',
+                            altEditor: true,
+                            dom: 'Bfrtip',
+                            buttons: [
+                                {
+                                    text: '返回根目录',
+                                    action: function (e, dt, node, config) {
+                                        getFileList("/data/user/0/com.itgowo.tool.android_debugdata_webtool/databases");
+                                    }
+                                }
+                            ]
+                        }
+                    );
+                    table.on('click', 'tr', function () {
+                        var data =  table.row(this).data();
+                        alert('You clicked on ' + data.fileName + '\'s row');
+                    });
+                } else {
+                    showErrorInfo(result.msg);
+                }
             }
-        }
-    });
+    })
+    ;
 }
 
 function openDatabaseAndGetTableList(dbname, path) {
@@ -343,11 +368,12 @@ function inflateData(result, isDB) {
 
         $(tableId).on('update-row.dt', function (e, updatedRowData, callback) {
             var updatedRowDataArray = JSON.parse(updatedRowData);
+            console.info(updatedRowDataArray);
             if (isDB) {
                 var data = columnHeader;
                 for (var i = 0; i < data.length; i++) {
                     data[i].value = updatedRowDataArray[i].value;
-                    data[i].dataType = data[i].dataType;
+                    data[i].type = data[i].dataType;
                 }
                 db_update(data, callback);
             } else {
