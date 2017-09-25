@@ -3,7 +3,7 @@ var dbFileName;
 var SPFileName;
 var downloadFilePath1;
 var downloadFilePath2;
-var downloadFilePath3;
+var FilePath3;
 $(document).ready(function () {
     getDBList();
     $("#query").keypress(function (e) {
@@ -189,9 +189,8 @@ function getSpList() {
 
 var FilecolumnHeader = [{"data": "fileName"}, {"data": "fileSize"}, {"data": "fileTime"}, {"data": "dir"}];
 var FilecolumnData;
-function test() {
-    console.info("asdfsdfsdafsdfsd")
-}
+
+
 function getFileList(path) {
     var tableId = "#fm-data";
     var table;
@@ -216,8 +215,16 @@ function getFileList(path) {
                 if (result.code == 200) {
                     FilecolumnData = result.fileList;
                     for (i = 0; i < FilecolumnData.length; i++) {
-                        FilecolumnData[i].fileName = "<div  onClick='getFileList(\"" + FilecolumnData[i].path + "\")'> <button>" + FilecolumnData[i].fileName + "</button> <img src=\"images/folder.png\"/></div>";
+                        if(i==0){
+                            FilePath3=FilecolumnData[0].rootPath;
+                        }
+                        if (FilecolumnData[i].dir == true) {
+                            FilecolumnData[i].fileName = "<div  onClick='getFileList(\"" + FilecolumnData[i].path + "\")'> <button>" + FilecolumnData[i].fileName + "</button> <img src=\"images/folder.png\"/></div>";
+                        } else {
+                            FilecolumnData[i].fileName = "<div  onClick='downloadFile(\"" + FilecolumnData[i].path + "\")'> <button>" + FilecolumnData[i].fileName + "</button> <img src=\"images/file.png\"/></div>";
+                        }
                     }
+
 
                     if ($.fn.DataTable.isDataTable(tableId)) {
                         $(tableId).DataTable().destroy();
@@ -234,9 +241,9 @@ function getFileList(path) {
                             dom: 'Bfrtip',
                             buttons: [
                                 {
-                                    text: '返回根目录',
+                                    text: '返回上级目录',
                                     action: function (e, dt, node, config) {
-                                        getFileList(null);
+                                        getFileList(FilePath3);
                                     }
                                 }
                             ]
@@ -250,8 +257,7 @@ function getFileList(path) {
                     showErrorInfo(result.msg);
                 }
             }
-    })
-    ;
+    });
 }
 
 function openDatabaseAndGetTableList(dbname, path) {
@@ -375,7 +381,6 @@ function inflateData(result, isDB) {
 
         $(tableId).on('update-row.dt', function (e, updatedRowData, callback) {
             var updatedRowDataArray = JSON.parse(updatedRowData);
-            console.info(updatedRowDataArray);
             if (isDB) {
                 var data = columnHeader;
                 for (var i = 0; i < data.length; i++) {
@@ -405,7 +410,6 @@ function inflateData(result, isDB) {
         );
 
         $(tableId).on('add-row.dt', function (e, addRowData, callback) {
-            console.info(e, addRowData, callback);
             var addRowDataArray = JSON.parse(addRowData);
             if (isDB) {
                 var data = columnHeader;

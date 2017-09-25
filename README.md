@@ -21,7 +21,7 @@ http://itgowo.com
 
 ###5.增加文件管理功能（接口已完成）
 
-###6.更改布局和页面逻辑，数据库和共享参数分开，除数据库外不显示sql查询等模块（正在制作）
+###6.更改布局和页面逻辑，数据库和共享参数分开，文件管理功能目前简单实现了目录浏览和文件下载功能
 
 ###7.增加跨域请求Options处理，解决跨域问题
 
@@ -80,6 +80,8 @@ http://itgowo.com
 
 ![ image](https://github.com/hnsugar/android-debugdata-webtool/blob/master/img4.png)
 
+![ image](https://github.com/hnsugar/android-debugdata-webtool/blob/master/img5.png)
 
+![ image](https://github.com/hnsugar/android-debugdata-webtool/blob/master/img6.png)
 
 因为web功底薄弱，请大家耐心等待
