@@ -373,7 +373,7 @@ function inflateData(result, isDB) {
                 var data = columnHeader;
                 for (var i = 0; i < data.length; i++) {
                     data[i].value = updatedRowDataArray[i].value;
-                    data[i].type = data[i].dataType;
+                    data[i].type = updatedRowDataArray[i].dataType;
                 }
                 db_update(data, callback);
             } else {
@@ -477,6 +477,7 @@ function sp_update(updatedData, callback) {
         }
     })
 }
+
 
 function db_delete(deleteData, callback) {
     var selectedTableElement = $("#table-list .list-group-item.selected");
