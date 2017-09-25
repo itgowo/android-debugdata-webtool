@@ -19,15 +19,19 @@ import java.util.List;
 public class DBManager {
     private static Application sApp;
 
-    public static void init(Application mApplication) {
+    public static   String DBName = "appinfo.db";
+    public static   Class TableClass = HistoryCache.class;
+
+    public static void init(Application mApplication,String mDBName,Class mTableClass) {
+        DBName=mDBName;
         sApp = mApplication;
+        if (mTableClass!=null){
+            TableClass=mTableClass;
+        }
     }
 
-    private static final String CREATE_CacheTABLE = "create table historycache (id integer primary key autoincrement, key text, value text, lasttime long, bak text, flag text)";
-    private static final String CREATE_MsgListTABLE = "create table historycache (id integer primary key autoincrement, key text, value text, lasttime long, bak text, flag text)";
 
-
-    public static final String DBName = "appinfo.db";
+    private static final String CREATE_CacheTABLE = "create table "+TableClass.getSimpleName()+" (id integer primary key autoincrement, key text, value text, lasttime long, bak text, flag text)";
     /**
      * 更改类文件必须更改版本号，否则不会更新缓存结构
      */
@@ -138,12 +142,12 @@ public class DBManager {
         @Override
         public void onCreate(final SQLiteDatabase db) {
             db.execSQL(CREATE_CacheTABLE);
-            updatetable(db, HistoryCache.class);
+            updatetable(db, TableClass);
         }
 
         @Override
         public void onUpgrade(final SQLiteDatabase db, final int oldVersion, final int newVersion) {
-            updatetable(db, HistoryCache.class);
+            updatetable(db, TableClass);
         }
 
         /**

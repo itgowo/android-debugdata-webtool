@@ -237,6 +237,9 @@ public class DatabaseHelper {
             if (Constants.NULL.equals(rowDataRequest.value)) {
                 rowDataRequest.value = null;
             }
+            if (rowDataRequest.dataType == null) {
+                rowDataRequest.dataType = TEXT;
+            }
             switch (rowDataRequest.dataType) {
                 case INTEGER:
                     contentValues.put(rowDataRequest.title, Long.valueOf(rowDataRequest.value));
@@ -305,7 +308,7 @@ public class DatabaseHelper {
             return updateRowResponse.setCode(Response.code_Error).setMsg("没有主键信息，不建议更改，请为表添加主键后再操作");
         }
         String[] whereArgs = whereArgsList.toArray(new String[whereArgsList.size()]);
-       int num= db.update(tableName, contentValues, whereClause, whereArgs);
+        int num = db.update(tableName, contentValues, whereClause, whereArgs);
         if (num > 0) {
             return updateRowResponse;
         } else {

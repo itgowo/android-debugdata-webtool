@@ -76,7 +76,7 @@ public class RequestHandler {
         }).start();
     }
 
-    public void syncHandle(Socket socket) throws IOException {
+    public  void syncHandle(Socket socket) throws IOException {
         InputStream mInputStream = null;
         PrintStream output = null;
         if (mDatabaseFiles == null) {

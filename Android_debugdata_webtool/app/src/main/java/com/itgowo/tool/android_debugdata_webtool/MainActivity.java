@@ -32,16 +32,15 @@ public class MainActivity extends AppCompatActivity {
                 mTextView.setText("");
             }
         });
-        DBManager.init(getApplication());
-
-//        DBManager.addCache("" + System.currentTimeMillis(), "aaaaaaaaaaaaaaaa");
-//        DBManager.addCache("" + System.currentTimeMillis(), "bbbbbbbb");
-//        DBManager.updateCache(DBManager.HistoryCache.getSportItemListByParams, "234324");
-//        getSharedPreferences("appinfo", MODE_PRIVATE).edit().putBoolean("Booblean",true).commit();
-//        getSharedPreferences("appinfo", MODE_PRIVATE).edit().putFloat("Float", 1.5f).commit();
-//        getSharedPreferences("appinfo", MODE_PRIVATE).edit().putLong("Long", 1232131231).commit();
-//        getSharedPreferences("appinfo", MODE_PRIVATE).edit().putString("String", "tadsfsadfest").commit();
-//        getSharedPreferences("appinfo", MODE_PRIVATE).edit().putInt("Int", 1234).commit();
+        getSharedPreferences("appinfo", MODE_PRIVATE).edit().putBoolean("Booblean",true).commit();
+        getSharedPreferences("appinfo", MODE_PRIVATE).edit().putFloat("Float", 1.5f).commit();
+        getSharedPreferences("appinfo", MODE_PRIVATE).edit().putLong("Long", 1232131231).commit();
+        getSharedPreferences("appinfo", MODE_PRIVATE).edit().putString("String", "tadsfsadfest").commit();
+        getSharedPreferences("appinfo", MODE_PRIVATE).edit().putInt("Int", 1234).commit();
+        DBManager.init(getApplication(), "appinfo.db", null);
+        DBManager.updateCache("first","yes");
+        DBManager.updateCache("second","no");
+        DBManager.updateCache("haha","hehe");
         DebugDataTool.initialize(this, 8088, false, new onDebugToolListener() {
 
 
@@ -50,8 +49,8 @@ public class MainActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        SpannableStringBuilder mBuilder=new SpannableStringBuilder("onSystemMsg:" + mS + "\r\n\r\n");
-                        mBuilder.setSpan(new ForegroundColorSpan(Color.GREEN),0,mBuilder.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        SpannableStringBuilder mBuilder = new SpannableStringBuilder("onSystemMsg:" + mS + "\r\n\r\n");
+                        mBuilder.setSpan(new ForegroundColorSpan(Color.GREEN), 0, mBuilder.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                         mTextView.append(mBuilder);
                     }
                 });
@@ -72,8 +71,8 @@ public class MainActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        SpannableStringBuilder mBuilder=new SpannableStringBuilder("onGetRequest:" + mHttpRequest.toString() + "\r\n\r\n");
-                        mBuilder.setSpan(new ForegroundColorSpan(Color.BLUE),0,12, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        SpannableStringBuilder mBuilder = new SpannableStringBuilder("onGetRequest:" + mHttpRequest.toString() + "\r\n\r\n");
+                        mBuilder.setSpan(new ForegroundColorSpan(Color.BLUE), 0, 12, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                         mTextView.append(mBuilder);
                     }
                 });
@@ -86,8 +85,8 @@ public class MainActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        SpannableStringBuilder mBuilder=new SpannableStringBuilder("onResponse:" + mResponse + "\r\n\r\n");
-                        mBuilder.setSpan(new ForegroundColorSpan(Color.BLUE),0,10, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        SpannableStringBuilder mBuilder = new SpannableStringBuilder("onResponse:" + mResponse + "\r\n\r\n");
+                        mBuilder.setSpan(new ForegroundColorSpan(Color.BLUE), 0, 10, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                         mTextView.append(mBuilder);
                     }
                 });
@@ -99,17 +98,15 @@ public class MainActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        SpannableStringBuilder mBuilder=new SpannableStringBuilder("onError:" + mTip + "   "  + mThrowable.getMessage() + "\r\n\r\n");
-                        mBuilder.setSpan(new ForegroundColorSpan(Color.RED),0,7, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        SpannableStringBuilder mBuilder = new SpannableStringBuilder("onError:" + mTip + "   " + mThrowable.getMessage() + "\r\n\r\n");
+                        mBuilder.setSpan(new ForegroundColorSpan(Color.RED), 0, 7, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                         mTextView.append(mBuilder);
                     }
                 });
                 Log.e("DebugDataWebTool", mTip + "  " + mThrowable.getMessage());
+                mThrowable.printStackTrace();
             }
         });
     }
 
-    public void test() {
-
-    }
 }
