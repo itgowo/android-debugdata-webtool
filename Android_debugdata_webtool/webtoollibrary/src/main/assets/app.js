@@ -189,7 +189,9 @@ function getSpList() {
 
 var FilecolumnHeader = [{"data": "fileName"}, {"data": "fileSize"}, {"data": "fileTime"}, {"data": "dir"}];
 var FilecolumnData;
-
+function test() {
+    console.info("asdfsdfsdafsdfsd")
+}
 function getFileList(path) {
     var tableId = "#fm-data";
     var table;
@@ -213,12 +215,14 @@ function getFileList(path) {
             function (result) {
                 if (result.code == 200) {
                     FilecolumnData = result.fileList;
-
+                    for (i = 0; i < FilecolumnData.length; i++) {
+                        FilecolumnData[i].fileName = "<div  onClick='getFileList(\"" + FilecolumnData[i].path + "\")'> <button>" + FilecolumnData[i].fileName + "</button> <img src=\"images/folder.png\"/></div>";
+                    }
 
                     if ($.fn.DataTable.isDataTable(tableId)) {
                         $(tableId).DataTable().destroy();
                     }
-                    table=   $(tableId).DataTable(
+                    table = $(tableId).DataTable(
                         {
                             columns: FilecolumnHeader,
                             data: FilecolumnData,
@@ -232,16 +236,16 @@ function getFileList(path) {
                                 {
                                     text: '返回根目录',
                                     action: function (e, dt, node, config) {
-                                        getFileList("/data/user/0/com.itgowo.tool.android_debugdata_webtool/databases");
+                                        getFileList(null);
                                     }
                                 }
                             ]
                         }
                     );
-                    table.on('click', 'tr', function () {
-                        var data =  table.row(this).data();
-                        alert('You clicked on ' + data.fileName + '\'s row');
-                    });
+                    // table.on('click', 'tr', function () {
+                    //     var data = table.row(this).data();
+                    //     alert('You clicked on ' + data.fileName + '\'s row');
+                    // });
                 } else {
                     showErrorInfo(result.msg);
                 }
@@ -361,6 +365,9 @@ function inflateData(result, isDB) {
             "scrollX": true,
             "iDisplayLength": 10,
             "dom": "Bfrtip",
+            language: {
+                url: '/language/Chinese.json'
+            },
             select: 'single',
             altEditor: true,     // Enable altEditor
             buttons: availableButtons
@@ -373,7 +380,7 @@ function inflateData(result, isDB) {
                 var data = columnHeader;
                 for (var i = 0; i < data.length; i++) {
                     data[i].value = updatedRowDataArray[i].value;
-                    data[i].type = updatedRowDataArray[i].dataType;
+                    data[i].dataType = updatedRowDataArray[i].dataType;
                 }
                 db_update(data, callback);
             } else {

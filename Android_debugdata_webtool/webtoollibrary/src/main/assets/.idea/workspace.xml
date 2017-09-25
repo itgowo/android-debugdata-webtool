@@ -17,11 +17,21 @@
       <file leaf-file-name="app.js" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/app.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="95">
-              <caret line="480" column="0" lean-forward="true" selection-start-line="480" selection-start-column="0" selection-end-line="480" selection-end-column="0" />
+            <state relative-caret-position="231">
+              <caret line="218" column="83" lean-forward="false" selection-start-line="218" selection-start-column="83" selection-end-line="218" selection-end-column="83" />
               <folding>
                 <element signature="n#!!block;n#openDatabaseAndGetTableList#0" expanded="false" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="index.html" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/index.html">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-171">
+              <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -30,8 +40,8 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>console</find>
       <find>table-striped</find>
+      <find>console</find>
     </findStrings>
   </component>
   <component name="IdeDocumentHistory">
@@ -50,8 +60,8 @@
     <sorting>DEFINITION_ORDER</sorting>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="703" />
-    <option name="y" value="14" />
+    <option name="x" value="21" />
+    <option name="y" value="196" />
     <option name="width" value="1842" />
     <option name="height" value="1000" />
   </component>
@@ -87,6 +97,11 @@
             <path>
               <item name="assets" type="b2602c69:ProjectViewProjectNode" />
               <item name="assets" type="462c0819:PsiDirectoryNode" />
+              <item name="images" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="assets" type="b2602c69:ProjectViewProjectNode" />
+              <item name="assets" type="462c0819:PsiDirectoryNode" />
               <item name="js" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
@@ -104,6 +119,11 @@
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="D:/360安全浏览器下载/bootstrap-table-examples-master" />
     <property name="HbShouldOpenHtmlAsHb" value="" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\GitDir\android-debugdata-webtool\Android_debugdata_webtool\webtoollibrary\src\main\assets\images" />
+    </key>
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -128,15 +148,15 @@
       <option name="presentableId" value="Default" />
       <updated>1505785227597</updated>
       <workItem from="1505785229453" duration="601000" />
-      <workItem from="1506308004761" duration="14819000" />
+      <workItem from="1506308004761" duration="17716000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="15420000" />
+    <option name="totallyTimeSpent" value="18317000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="703" y="14" width="1842" height="1000" extended-state="0" />
+    <frame x="21" y="196" width="1842" height="1000" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.1894852" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
@@ -176,17 +196,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/index.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1084">
-          <caret line="139" column="0" lean-forward="false" selection-start-line="139" selection-start-column="0" selection-end-line="139" selection-end-column="0" />
-          <folding>
-            <element signature="n#style#0;n#div#0;n#div#1;n#body#0;n#html#0;n#!!top" expanded="false" />
-            <element signature="n#style#0;n#div#4;n#div#0;n#div#1;n#body#0;n#html#0;n#!!top" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/js/dataTables.bootstrap.min.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-1311">
@@ -205,10 +214,23 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/index.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-171">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/images/folder.png">
+      <provider selected="true" editor-type-id="images">
+        <state />
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/app.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="95">
-          <caret line="480" column="0" lean-forward="true" selection-start-line="480" selection-start-column="0" selection-end-line="480" selection-end-column="0" />
+        <state relative-caret-position="231">
+          <caret line="218" column="83" lean-forward="false" selection-start-line="218" selection-start-column="83" selection-end-line="218" selection-end-column="83" />
           <folding>
             <element signature="n#!!block;n#openDatabaseAndGetTableList#0" expanded="false" />
           </folding>
