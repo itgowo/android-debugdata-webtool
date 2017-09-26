@@ -1,4 +1,4 @@
-var rootUrl = "";
+var rootUrl = "http://192.168.1.15:8088";
 var dbFileName;
 var SPFileName;
 var downloadFilePath1;
@@ -183,17 +183,13 @@ function getSpList() {
 }
 
 
-var FilecolumnHeader = [{"data": "fileName"}, {"data": "fileSize"}, {"data": "fileTime"}, {"data": "dir"}];
 var FilecolumnData;
-
-
 function getFileList(path) {
     var tableId = "#fm-data";
     var table;
     if (FilecolumnData == null) {
         $("#fm-data-div").remove();
-        var thead = "<thead><tr><th>文件名</th><th>文件大小</th><th>最后编辑时间</th><th>是否是文件夹</th></tr></thead>"
-        $("#parent-data-divfm").append('<div id="fm-data-div"><table class="display nowrap" cellpadding="0" border="0" cellspacing="0" width="100%" class="table table-striped table-bordered display" id="fm-data">' + thead + '</table></div>');
+           $("#parent-data-divfm").append('<div id="fm-data-div"><table class="display nowrap" cellpadding="0" border="0" cellspacing="0" width="100%" class="table table-striped table-bordered display" id="fm-data">'   + '</table></div>');
         $(tableId).removeClass('display').addClass('table table-striped table-bordered');
     }
     $.ajax({
@@ -209,7 +205,7 @@ function getFileList(path) {
         success:
             function (result) {
                 if (result.code == 200) {
-                    FilecolumnData = result.fileList;
+                    FilecolumnData = result.fileList.fileList;
                     for (i = 0; i < FilecolumnData.length; i++) {
                         if (i == 0) {
                             FilePath3 = FilecolumnData[0].rootPath;
@@ -227,7 +223,7 @@ function getFileList(path) {
                     }
                     table = $(tableId).DataTable(
                         {
-                            columns: FilecolumnHeader,
+                            columns: result.fileList.fileColumns,
                             data: FilecolumnData,
                             language: {
                                 url: '/language/Chinese.json'

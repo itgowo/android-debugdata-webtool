@@ -237,7 +237,7 @@ public class RequestHandler {
     }
 
     private synchronized Response getFileList(Request mRequest) {
-        List<Response.FileData> mFileDatas = new ArrayList<>();
+
         File root = null;
         if (mRequest.getData() == null || mRequest.getData().length() < 5) {
             root = new File(mContext.getApplicationInfo().dataDir);
@@ -247,21 +247,31 @@ public class RequestHandler {
         if (root == null || !root.exists()) {
             return new Response().setCode(Response.code_FileNotFound).setMsg("请求的目录或文件不存在");
         }
+
+        List<Response.FileList.FileData> mFileDatas = new ArrayList<>();
+        List<Response.FileList.FileColumn> mFileColumns = new ArrayList<>();
+        mFileColumns.add(new Response.FileList.FileColumn().setTitle("文件名").setRootPath(root.getPath()).setData("fileName"));
+        mFileColumns.add(new Response.FileList.FileColumn().setTitle("文件大小").setRootPath(root.getPath()).setData("fileSize"));
+        mFileColumns.add(new Response.FileList.FileColumn().setTitle("最后编辑时间").setRootPath(root.getPath()).setData("fileTime"));
+        mFileColumns.add(new Response.FileList.FileColumn().setTitle("文件夹").setRootPath(root.getPath()).setData("dir"));
+        mFileColumns.add(new Response.FileList.FileColumn().setTitle("操作").setRootPath(root.getPath()).setData("delete"));
         File[] files = root.listFiles();
         if (files != null && files.length != 0) {
             for (File f : files) {
-                Response.FileData mFileData = new Response.FileData();
+                Response.FileList.FileData mFileData = new Response.FileList.FileData();
                 mFileData.setIsDir(f.isDirectory());
                 mFileData.setFileName(f.getName());
                 mFileData.setRootPath(root.getPath().equalsIgnoreCase(mContext.getApplicationInfo().dataDir) ? null : root.getParent());
-                mFileData.setFileSize(Utils.formatFileSize(mContext, f.length(), false));
+                mFileData.setFileSize(f.isDirectory()?"":Utils.formatFileSize(mContext, f.length(), false));
                 SimpleDateFormat mSimpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 mFileData.setFileTime(mSimpleDateFormat.format(f.lastModified()));
                 mFileData.setPath(f.getPath());
+                mFileData.setDelete(f.canExecute());
                 mFileDatas.add(mFileData);
             }
         }
-        return new Response().setFileList(mFileDatas);
+        Response mResponse=new Response().setFileList(new Response.FileList().setFileList(mFileDatas).setFileColumns(mFileColumns));
+        return mResponse;
     }
 
     /**
@@ -327,10 +337,10 @@ public class RequestHandler {
         getDatabaseFiles(mContext);
         Response response = new Response();
         if (mDatabaseFiles != null) {
-            List<Response.FileData> dblist = new ArrayList<>();
+            List<Response.FileList.FileData> dblist = new ArrayList<>();
             for (Map.Entry<String, File> mStringFileEntry : mDatabaseFiles.entrySet()) {
                 if (!mStringFileEntry.getKey().contains("-journal")) {
-                    dblist.add(new Response.FileData().setFileName(mStringFileEntry.getKey()).setPath(mStringFileEntry.getValue().getPath()));
+                    dblist.add(new Response.FileList.FileData().setFileName(mStringFileEntry.getKey()).setPath(mStringFileEntry.getValue().getPath()));
                 }
             }
             response.setDbList(dblist);

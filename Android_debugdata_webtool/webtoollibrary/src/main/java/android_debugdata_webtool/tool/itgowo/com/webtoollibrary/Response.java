@@ -22,11 +22,11 @@ public class Response {
     /**
      * 数据库列表
      */
-    private List<FileData> dbList;
+    private List<FileList.FileData> dbList;
     /**
      * 共享参数列表
      */
-    private List<FileData> spList;
+    private List<FileList.FileData> spList;
     /**
      * 数据库中所有表
      */
@@ -40,17 +40,71 @@ public class Response {
      * 是否可编辑数据
      */
     private Boolean isEditable;
+    private FileList fileList;
+
+    public FileList getFileList() {
+        return fileList;
+    }
+
+    public Response setFileList(FileList mFileList) {
+        fileList = mFileList;
+        return this;
+    }
+
+    public static class FileList{
     private List<FileData> fileList;
+    private List<FileColumn> mFileColumns;
 
     public List<FileData> getFileList() {
         return fileList;
     }
 
-    public Response setFileList(List<FileData> mFileList) {
+    public FileList setFileList(List<FileData> mFileList) {
         fileList = mFileList;
         return this;
     }
 
+        public List<FileColumn> getFileColumns() {
+            return mFileColumns;
+        }
+
+        public FileList setFileColumns(List<FileColumn> mFileColumns) {
+            this.mFileColumns = mFileColumns;
+            return this;
+        }
+
+        public static class FileColumn{
+        private String rootPath;
+        private String title;
+        private String data;
+
+        public String getRootPath() {
+            return rootPath;
+        }
+
+        public FileColumn setRootPath(String mRootPath) {
+            rootPath = mRootPath;
+            return this;
+        }
+
+        public String getTitle() {
+            return title;
+        }
+
+        public FileColumn setTitle(String mTitle) {
+            title = mTitle;
+            return this;
+        }
+
+        public String getData() {
+            return data;
+        }
+
+        public FileColumn setData(String mData) {
+            data = mData;
+            return this;
+        }
+    }
     public static class FileData implements Comparable<FileData> {
         private Boolean IsDir ;
         private String path;
@@ -58,6 +112,16 @@ public class Response {
         private String fileName;
         private String fileSize;
         private String fileTime;
+        private Boolean delete;
+
+        public Boolean getDelete() {
+            return delete;
+        }
+
+        public FileData setDelete(Boolean mDelete) {
+            delete = mDelete;
+            return this;
+        }
 
         public String getRootPath() {
             return rootPath;
@@ -117,6 +181,8 @@ public class Response {
             return this.getFileName().compareTo(o.getFileName());
         }
     }
+}
+
 
     public static class TableData {
         /**
@@ -282,20 +348,20 @@ public class Response {
         return this;
     }
 
-    public List<FileData> getDbList() {
+    public List<FileList.FileData> getDbList() {
         return dbList;
     }
 
-    public Response setDbList(List<FileData> mDbList) {
+    public Response setDbList(List<FileList.FileData> mDbList) {
         dbList = mDbList;
         return this;
     }
 
-    public List<FileData> getSpList() {
+    public List<FileList.FileData> getSpList() {
         return spList;
     }
 
-    public Response setSpList(List<FileData> mSpList) {
+    public Response setSpList(List<FileList.FileData> mSpList) {
         spList = mSpList;
         return this;
     }

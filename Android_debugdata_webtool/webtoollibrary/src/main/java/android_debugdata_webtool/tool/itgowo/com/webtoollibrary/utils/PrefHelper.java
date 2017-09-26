@@ -72,17 +72,15 @@ public class PrefHelper {
         return tags;
     }
 
-    public static List<Response.FileData> getSharedPreferenceTags(Context context) {
-
-        ArrayList<Response.FileData> tags = new ArrayList<>();
-
+    public static List<Response.FileList.FileData> getSharedPreferenceTags(Context context) {
+        ArrayList<Response.FileList.FileData> tags = new ArrayList<>();
         String rootPath = context.getApplicationInfo().dataDir + "/shared_prefs";
         File root = new File(rootPath);
         if (root.exists()) {
             for (File file : root.listFiles()) {
                 String fileName = file.getName();
                 if (fileName.endsWith(PREFS_SUFFIX)) {
-                    tags.add(new Response.FileData().setFileName(fileName.substring(0, fileName.length() - PREFS_SUFFIX.length())).setPath(file.getPath()));
+                    tags.add(new Response.FileList.FileData().setFileName(fileName.substring(0, fileName.length() - PREFS_SUFFIX.length())).setPath(file.getPath()));
                 }
             }
         }
