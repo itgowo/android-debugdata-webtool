@@ -1,4 +1,4 @@
-var rootUrl = "http://192.168.1.15:8088";
+var rootUrl = "";
 var dbFileName;
 var SPFileName;
 var downloadFilePath1;
