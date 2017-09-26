@@ -1,4 +1,4 @@
-var rootUrl = "";
+var rootUrl = "http://192.168.1.15:8088";
 var dbFileName;
 var SPFileName;
 var downloadFilePath1;
@@ -219,9 +219,9 @@ function getFileList(path) {
                             FilePath3=FilecolumnData[0].rootPath;
                         }
                         if (FilecolumnData[i].dir == true) {
-                            FilecolumnData[i].fileName = "<div  onClick='getFileList(\"" + FilecolumnData[i].path + "\")'> <button>" + FilecolumnData[i].fileName + "</button> <img src=\"images/folder.png\"/></div>";
+                            FilecolumnData[i].fileName = "<div onClick='getFileList(\"" + FilecolumnData[i].path + "\")'> <img src=\"images/folder.png\"/> <a>" + FilecolumnData[i].fileName + "</a></div>";
                         } else {
-                            FilecolumnData[i].fileName = "<div  onClick='downloadFile(\"" + FilecolumnData[i].path + "\")'> <button>" + FilecolumnData[i].fileName + "</button> <img src=\"images/file.png\"/></div>";
+                            FilecolumnData[i].fileName = "<div  onClick='downloadFile(\"" + FilecolumnData[i].path + "\")'> <img src=\"images/file.png\"/><a>" + FilecolumnData[i].fileName + "</a></div>";
                         }
                     }
 
