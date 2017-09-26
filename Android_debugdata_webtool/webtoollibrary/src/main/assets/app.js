@@ -1,4 +1,4 @@
-var rootUrl = "http://192.168.1.15:8088";
+var rootUrl = "";
 var dbFileName;
 var SPFileName;
 var downloadFilePath1;
@@ -24,17 +24,13 @@ $(document).ready(function () {
         $("#dbwindow").hide();
         $("#spwindow").show();
         $("#fmwindow").hide();
-        if (downloadFilePath2 == null) {
-            getSpList();
-        }
+        getSpList();
     });
     $("#btnfm").click(function () {
         $("#dbwindow").hide();
         $("#spwindow").hide();
         $("#fmwindow").show();
-        if (downloadFilePath2 == null) {
-            getFileList();
-        }
+        getFileList();
     });
 
 
@@ -215,8 +211,8 @@ function getFileList(path) {
                 if (result.code == 200) {
                     FilecolumnData = result.fileList;
                     for (i = 0; i < FilecolumnData.length; i++) {
-                        if(i==0){
-                            FilePath3=FilecolumnData[0].rootPath;
+                        if (i == 0) {
+                            FilePath3 = FilecolumnData[0].rootPath;
                         }
                         if (FilecolumnData[i].dir == true) {
                             FilecolumnData[i].fileName = "<div onClick='getFileList(\"" + FilecolumnData[i].path + "\")'> <img src=\"images/folder.png\"/> <a>" + FilecolumnData[i].fileName + "</a></div>";
