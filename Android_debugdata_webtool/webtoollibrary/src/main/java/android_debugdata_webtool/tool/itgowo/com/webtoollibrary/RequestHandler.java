@@ -18,7 +18,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.utils.Constants;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.utils.DatabaseHelper;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.utils.PrefHelper;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.utils.Utils;
@@ -76,7 +75,7 @@ public class RequestHandler {
         }).start();
     }
 
-    public  void syncHandle(Socket socket) throws IOException {
+    public void syncHandle(Socket socket) throws IOException {
         InputStream mInputStream = null;
         PrintStream output = null;
         if (mDatabaseFiles == null) {
@@ -232,8 +231,25 @@ public class RequestHandler {
                 return executeQuery(mRequest);
             case "getFileList":
                 return getFileList(mRequest);
+            case "deleteFile":
+                return deleteFile(mRequest);
         }
         return null;
+    }
+
+    private Response deleteFile(Request mRequest) {
+        if (mRequest.getData() == null || mRequest.getData().length() < 5) {
+            return new Response().setCode(Response.code_Error).setMsg("没有指定文件");
+        }
+        File mFile = new File(mRequest.getData());
+        if (mFile == null || !mFile.exists()) {
+            return new Response().setCode(Response.code_FileNotFound).setMsg("文件不存在");
+        }
+        if (mFile.delete()) {
+            return new Response();
+        } else {
+            return new Response().setCode(Response.code_Error).setMsg("文件删除失败");
+        }
     }
 
     private synchronized Response getFileList(Request mRequest) {
@@ -253,7 +269,7 @@ public class RequestHandler {
         mFileColumns.add(new Response.FileList.FileColumn().setTitle("文件名").setRootPath(root.getPath()).setData("fileName"));
         mFileColumns.add(new Response.FileList.FileColumn().setTitle("文件大小").setRootPath(root.getPath()).setData("fileSize"));
         mFileColumns.add(new Response.FileList.FileColumn().setTitle("最后编辑时间").setRootPath(root.getPath()).setData("fileTime"));
-        mFileColumns.add(new Response.FileList.FileColumn().setTitle("文件夹").setRootPath(root.getPath()).setData("dir"));
+//        mFileColumns.add(new Response.FileList.FileColumn().setTitle("文件夹").setRootPath(root.getPath()).setData("dir"));
         mFileColumns.add(new Response.FileList.FileColumn().setTitle("操作").setRootPath(root.getPath()).setData("delete"));
         File[] files = root.listFiles();
         if (files != null && files.length != 0) {
@@ -262,7 +278,7 @@ public class RequestHandler {
                 mFileData.setIsDir(f.isDirectory());
                 mFileData.setFileName(f.getName());
                 mFileData.setRootPath(root.getPath().equalsIgnoreCase(mContext.getApplicationInfo().dataDir) ? null : root.getParent());
-                mFileData.setFileSize(f.isDirectory()?"":Utils.formatFileSize(mContext, f.length(), false));
+                mFileData.setFileSize(f.isDirectory() ? "" : Utils.formatFileSize(mContext, f.length(), false));
                 SimpleDateFormat mSimpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 mFileData.setFileTime(mSimpleDateFormat.format(f.lastModified()));
                 mFileData.setPath(f.getPath());
@@ -270,7 +286,7 @@ public class RequestHandler {
                 mFileDatas.add(mFileData);
             }
         }
-        Response mResponse=new Response().setFileList(new Response.FileList().setFileList(mFileDatas).setFileColumns(mFileColumns));
+        Response mResponse = new Response().setFileList(new Response.FileList().setFileList(mFileDatas).setFileColumns(mFileColumns));
         return mResponse;
     }
 

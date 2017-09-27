@@ -24,13 +24,17 @@ $(document).ready(function () {
         $("#dbwindow").hide();
         $("#spwindow").show();
         $("#fmwindow").hide();
-        getSpList();
+        if (downloadFilePath2 == null) {
+            getSpList();
+        }
     });
     $("#btnfm").click(function () {
         $("#dbwindow").hide();
         $("#spwindow").hide();
         $("#fmwindow").show();
-        getFileList();
+        if (FilePath3 == null) {
+            getFileList();
+        }
     });
 
 
@@ -184,12 +188,13 @@ function getSpList() {
 
 
 var FilecolumnData;
+var table;
+
 function getFileList(path) {
     var tableId = "#fm-data";
-    var table;
     if (FilecolumnData == null) {
         $("#fm-data-div").remove();
-           $("#parent-data-divfm").append('<div id="fm-data-div"><table class="display nowrap" cellpadding="0" border="0" cellspacing="0" width="100%" class="table table-striped table-bordered display" id="fm-data">'   + '</table></div>');
+        $("#parent-data-divfm").append('<div id="fm-data-div"><table class="display nowrap" cellpadding="0" border="0" cellspacing="0" width="100%" class="table table-striped table-bordered display" id="fm-data">' + '</table></div>');
         $(tableId).removeClass('display').addClass('table table-striped table-bordered');
     }
     $.ajax({
@@ -212,8 +217,10 @@ function getFileList(path) {
                         }
                         if (FilecolumnData[i].dir == true) {
                             FilecolumnData[i].fileName = "<div onClick='getFileList(\"" + FilecolumnData[i].path + "\")'> <img src=\"images/folder.png\"/> <a>" + FilecolumnData[i].fileName + "</a></div>";
+                            FilecolumnData[i].delete = "";
                         } else {
                             FilecolumnData[i].fileName = "<div  onClick='downloadFile(\"" + FilecolumnData[i].path + "\")'> <img src=\"images/file.png\"/><a>" + FilecolumnData[i].fileName + "</a></div>";
+                            FilecolumnData[i].delete = "<div><button  onClick='file_delete(\"" + i + "\",\"" + FilecolumnData[i].path + "\")'>删除</button></div>";
                         }
                     }
 
@@ -245,6 +252,31 @@ function getFileList(path) {
                     //     var data = table.row(this).data();
                     //     alert('You clicked on ' + data.fileName + '\'s row');
                     // });
+                } else {
+                    showErrorInfo(result.msg);
+                }
+            }
+    });
+}
+
+function file_delete(position, path) {
+    $.ajax({
+        type: "POST",
+        url: rootUrl,
+        crossDomain: true,
+        data: JSON.stringify({
+            action: "deleteFile",
+            "data": path
+        }),
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success:
+            function (result) {
+                if (result.code == 200) {
+                    table.rows('.selected')
+                        .remove()
+                        .draw();
+                    showSuccessInfo(result.msg);
                 } else {
                     showErrorInfo(result.msg);
                 }
