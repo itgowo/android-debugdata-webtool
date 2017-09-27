@@ -17,7 +17,7 @@
       <file leaf-file-name="app.js" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/app.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="212">
+            <state relative-caret-position="228">
               <caret line="16" column="0" lean-forward="true" selection-start-line="16" selection-start-column="0" selection-end-line="16" selection-end-column="0" />
               <folding>
                 <element signature="e#198#283#0" expanded="false" />
@@ -187,7 +187,7 @@
     <detection-done>true</detection-done>
     <sorting>DEFINITION_ORDER</sorting>
   </component>
-  <component name="ProjectFrameBounds">
+  <component name="ProjectFrameBounds" extendedState="1">
     <option name="x" value="159" />
     <option name="width" value="1129" />
     <option name="height" value="1000" />
@@ -285,15 +285,15 @@
       <updated>1505785227597</updated>
       <workItem from="1505785229453" duration="601000" />
       <workItem from="1506308004761" duration="29550000" />
-      <workItem from="1506509546645" duration="3368000" />
+      <workItem from="1506509546645" duration="3964000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="33519000" />
+    <option name="totallyTimeSpent" value="34115000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="159" y="0" width="1129" height="1000" extended-state="0" />
+    <frame x="159" y="0" width="1129" height="1000" extended-state="1" />
     <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.3108715" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
@@ -528,7 +528,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/app.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="212">
+        <state relative-caret-position="228">
           <caret line="16" column="0" lean-forward="true" selection-start-line="16" selection-start-column="0" selection-end-line="16" selection-end-column="0" />
           <folding>
             <element signature="e#198#283#0" expanded="false" />
