@@ -50,6 +50,11 @@ Gradle依赖
 
 可以在App启动后任意需要时刻初始化
 
+第一个参数为context，第二个参数为端口，第三个参数为线程模式（是否是多线程），第四个为服务器状态监听。
+```
+public static void initialize(Context context, int mPortNumber, boolean isMultMode, onDebugToolListener mOnDebugToolListener) {
+```
+
 ```
   DebugDataTool.initialize(this, 8088, false, new onDebugToolListener() {
 
