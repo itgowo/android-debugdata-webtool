@@ -30,6 +30,7 @@ http://itgowo.com
 
 ### 9.POST请求统一用action表示意向操作
 
+### 10.本支持库为了尽量少的因为第三方，降低耦合性，由使用者定义json工具
 
 Server：android app(纯java和android原生代码实现http报文解析操作等）。
 
@@ -37,7 +38,68 @@ web：JQuery、BootStrap和DataTables框架，资源放到app内部，无需联�
 
 # 使用方法
 
-可以将webToolLibrary.aar文件放到工程lib库里直接依赖，亦可以下载工程单独把lib放到项目里（ compile project(':webtoollibrary')），app启动后日志会打印手机网路地址（请在wifi下测试，模拟器无效），用浏览器打开对应地址就可以正常使用了，如果偶尔数据请求不到刷新页面即可，可能是某个js文件加载失败造成的。也可以使用网络依赖库形式（稍后补上），demo的屏幕打印了部分日志，方便测试。
+#### 1:可以将webToolLibrary.aar文件放到工程lib库里直接依赖，亦可以下载工程单独把lib放到项目里（ compile project(':webtoollibrary')）
+
+#### 2.依赖
+
+maven依赖
+
+  <dependency>
+    <groupId>com.itgowo</groupId>
+    <artifactId>android-WebDebugTool</artifactId>
+    <version>1.0.0</version>
+    <type>pom</type>
+  </dependency>
+
+Gradle依赖
+
+  compile 'com.itgowo:android-WebDebugTool:1.0.0'
+
+#### 3.初始化
+
+可以在App启动后任意需要时刻初始化
+
+  DebugDataTool.initialize(this, 8088, false, new onDebugToolListener() {
+
+              @Override
+              public void onSystemMsg(final String mS) {
+                //系统信息，主要是一些提示性信息，例如服务器地址
+              }
+
+              @Override
+              public String onObjectToJson(Object mObject) {
+              //对象转换为json文本，本支持库为了尽量少的因为第三方，降低耦合性，由使用者定义json工具，可以用Gson或者fastjson等，demo使用的是fastjson。
+                  return JSON.toJSONString(mObject);
+              }
+
+              @Override
+              public <T> T onJsonStringToObject(String mJsonString, Class<T> mClass) {
+              //文本转换为Json对象，本支持库为了尽量少的因为第三方，降低耦合性，由使用者定义json工具，可以用Gson或者fastjson等，demo使用的是fastjson。
+                  return JSON.parseObject(mJsonString, mClass);
+              }
+
+              @Override
+              public void onGetRequest(String mRequest, final HttpRequest mHttpRequest) {
+              //服务器收到请求，文件请求只打印请求path，数据接口交互HTTPRequest包含报文全部信息
+              }
+
+
+              @Override
+              public void onResponse(final String mResponse) {
+              //服务器返回给页面的信息，只有跨域请求Options和POST数据交互时才会触发，文件下载不触发。
+              }
+
+              @Override
+              public void onError(final String mTip, final Throwable mThrowable) {
+              //捕捉到的服务器异常
+          });
+        
+        
+
+
+#### 4.说明
+
+app启动后日志会打印手机网路地址（请在wifi下测试，模拟器无效），用浏览器打开对应地址就可以正常使用了，如果偶尔数据请求不到刷新页面即可，可能是某个js文件加载失败造成的，demo的屏幕打印了部分日志，方便测试。
 
 ## API
 
