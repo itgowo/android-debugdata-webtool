@@ -30,6 +30,10 @@ http://itgowo.com
 ###9.POST请求统一用action表示意向操作
 
 
+Server：android app(纯java和android原生代码实现http报文解析操作等）。
+
+web：JQuery、BootStrap和DataTables框架，资源放到app内部，无需联网也可访问。
+
 ##API
 
 ###Database 数据库
@@ -68,6 +72,7 @@ http://itgowo.com
 
 [downloadFile](/API/downloadFile.md)
 
+[deleteFile](/API/deleteFile.md)
 
 
 ##图片示例（web界面功能开发中，样式有待调整）
