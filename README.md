@@ -9,6 +9,7 @@ http://itgowo.com
 因为一次使用中发现国外前辈写的服务和接口无法满足我的使用，主要是用的GET请求方式，再编码后url过于长，超出范围就会数据丢失，所以我改成了POST请求的，并且重写了Server逻辑，从Socket拿到流再解析http报文，再到业务处理，同时增加了文件管理功能。
 
 
+
 ## 优化与改进
 
 ### 1.增加多线程处理请求
@@ -33,6 +34,10 @@ http://itgowo.com
 Server：android app(纯java和android原生代码实现http报文解析操作等）。
 
 web：JQuery、BootStrap和DataTables框架，资源放到app内部，无需联网也可访问。
+
+# 使用方法
+
+可以将webToolLibrary.aar文件放到工程lib库里直接依赖，亦可以下载工程单独把lib放到项目里（ compile project(':webtoollibrary')），app启动后日志会打印手机网路地址（请在wifi下测试，模拟器无效），用浏览器打开对应地址就可以正常使用了，如果偶尔数据请求不到刷新页面即可，可能是某个js文件加载失败造成的。也可以使用网络依赖库形式（稍后补上），demo的屏幕打印了部分日志，方便测试。
 
 ## API
 
