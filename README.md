@@ -13,7 +13,7 @@ http://itgowo.com
 
 ### 1.增加多线程处理请求
 
-### .手动解析http报文数据，增加HttpRequest类
+### 2.手动解析http报文数据，增加HttpRequest类
 
 ### 3.web端get请求改成post请求，满足大数据量需求
 
@@ -23,11 +23,11 @@ http://itgowo.com
 
 ### 6.更改布局和页面逻辑，数据库和共享参数分开，文件管理功能目前简单实现了目录浏览和文件下载功能
 
-### .增加跨域请求Options处理，解决跨域问题
+### 7.增加跨域请求Options处理，解决跨域问题
 
 ### 8.统一规范：返回值Response类，请求Request类，接口规范GET请求为资源请求，options请求为跨域说明，POST请求为数据交互
 
-###9 .POST请求统一用action表示意向操作
+### 9.POST请求统一用action表示意向操作
 
 
 Server：android app(纯java和android原生代码实现http报文解析操作等）。
