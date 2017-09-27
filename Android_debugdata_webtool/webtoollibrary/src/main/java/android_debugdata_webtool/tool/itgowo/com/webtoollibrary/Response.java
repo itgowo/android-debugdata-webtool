@@ -1,6 +1,6 @@
 package android_debugdata_webtool.tool.itgowo.com.webtoollibrary;
 
-import android.support.annotation.NonNull;
+
 
 import java.util.Comparator;
 import java.util.List;
@@ -177,7 +177,7 @@ public class Response {
             return this;
         }
         @Override
-        public int compareTo(@NonNull FileData o) {
+        public int compareTo( FileData o) {
             return this.getFileName().compareTo(o.getFileName());
         }
     }
