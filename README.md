@@ -38,13 +38,13 @@ maven依赖
   <dependency>
     <groupId>com.itgowo</groupId>
     <artifactId>android-WebDebugTool</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <type>pom</type>
   </dependency>
 ```
 Gradle依赖
 ```
-  compile 'com.itgowo:android-WebDebugTool:1.0.0'
+  compile 'com.itgowo:android-WebDebugTool:1.0.1'
 ```
 #### 3.初始化
 

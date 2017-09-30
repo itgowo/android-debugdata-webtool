@@ -34,7 +34,7 @@ dependencies {
 //    userOrg = 'itgowo'
 //    groupId = 'com.itgowo'
 //    artifactId = 'android-WebDebugTool'
-//    publishVersion = '1.0.0'
+//    publishVersion = '1.0.1'
 //    desc = 'An Android Debug Tool(Database/SharedPreferences/FileManager)'
 //    website = 'https://github.com/hnsugar/android-debugdata-webtool'
 //}
