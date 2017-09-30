@@ -153,4 +153,6 @@ app启动后日志会打印手机网路地址（请在wifi下测试，模拟器�
 
 ![ image](https://github.com/hnsugar/android-debugdata-webtool/blob/master/img6.png)
 
-因为web功底薄弱，请大家耐心等待
+![ image](https://github.com/hnsugar/android-debugdata-webtool/blob/master/img7.png)
+
+
