@@ -17,6 +17,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.utils.DatabaseHelper;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.utils.PrefHelper;
@@ -33,9 +36,8 @@ public class RequestHandler {
     private boolean isDbOpened;
     private SQLiteDatabase mDatabase;
     private HashMap<String, File> mDatabaseFiles = new HashMap<>();
-    ;
     private HashMap<String, File> mCustomDatabaseFiles;
-
+    private ExecutorService mExecutorService= Executors.newFixedThreadPool(5);
     public RequestHandler(Context context) {
         mContext = context;
         mAssets = context.getResources().getAssets();
@@ -63,7 +65,7 @@ public class RequestHandler {
      * @param mSocket
      */
     public void asynHandle(final Socket mSocket) {
-        new Thread(new Runnable() {
+        mExecutorService.execute(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -72,7 +74,7 @@ public class RequestHandler {
                     DebugDataTool.onError("web server:received request error,分配并处理数据异常", mE);
                 }
             }
-        }).start();
+        });
     }
 
     public void syncHandle(Socket socket) throws IOException {

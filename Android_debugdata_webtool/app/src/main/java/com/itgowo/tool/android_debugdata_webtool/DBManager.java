@@ -216,6 +216,8 @@ public class DBManager {
          * 运动项目列表
          */
         public static String getSportItemListByParams = "getSportItemListByParams";
-
+        public static String TestA = "TestA";
+        public static String TestB = "TestB";
+        public static String TestC = "TestC";
     }
 }
