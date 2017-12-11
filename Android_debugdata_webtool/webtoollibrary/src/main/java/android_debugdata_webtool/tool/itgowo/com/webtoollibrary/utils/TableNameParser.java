@@ -99,6 +99,11 @@ public final class TableNameParser {
         }
     }
 
+    /**
+     *
+     * @param sql
+     * @return
+     */
     private String removeComments(final String sql) {
         StringBuilder sb = new StringBuilder(sql);
         int nextCommentPosition = sb.indexOf(TOKEN_SINGLE_LINE_COMMENT);
@@ -114,6 +119,12 @@ public final class TableNameParser {
         return sb.toString();
     }
 
+    /**
+     *
+     * @param regex
+     * @param string
+     * @return
+     */
     private int indexOfRegex(String regex, String string) {
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(string);

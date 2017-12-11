@@ -12,7 +12,6 @@ import android.view.View;
 import android.widget.TextView;
 
 
-import com.alibaba.fastjson.JSON;
 
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.DebugDataTool;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.HttpRequest;

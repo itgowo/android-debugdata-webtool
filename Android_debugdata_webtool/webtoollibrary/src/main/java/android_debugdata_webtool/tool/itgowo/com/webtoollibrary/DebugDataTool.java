@@ -37,7 +37,7 @@ import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.utils.NetworkUti
 public class DebugDataTool {
 
     private static final String TAG = DebugDataTool.class.getSimpleName();
-    public static final String WARNING_JSON = "如果使用debugCompile请使用fastjson或者Gson库，或者实现自定义Json方法，不然无法处理Json";
+    public static final String WARNING_JSON = "not found fastjson,not found Gson,onDebugToolListener is null,如果使用默认方式实现Json工具的方式，请在主工程中使用fastjson或者Gson库，或者实现自定义Json方法，不然无法处理Json，此工具内部不集成任何第三方，绿色无公害(ˇˍˇ) 想～";
     private static final int DEFAULT_PORT = 8080;
     private static ClientServer clientServer;
 

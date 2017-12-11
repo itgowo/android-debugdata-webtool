@@ -3,12 +3,19 @@ android debug database SharedPreference 查看并修改手机数据库和共享�
 
 http://itgowo.com
 
+QQ:1264957104
+
+Email:lujianchao@itgowo.com
+
 ## 前辈版本 Github：https://github.com/amitshekhariitbhu/Android-Debug-Database
 大家可以去膜拜一下前辈
 
 因为一次使用中发现国外前辈写的服务和接口无法满足我的使用，主要是用的GET请求方式，再编码后url过于长，超出范围就会数据丢失，所以我改成了POST请求的，并且重写了Server逻辑，从Socket拿到流再解析http报文，再到业务处理，同时增加了文件管理功能。
 
+相对来说bug少，功能强
 
+##1.0.4版只需要一行代码就可以了，compile就会自动延时1.2秒开启，也保留了旧版手动开启，第二次开启会自动关闭第一次服务；
+##同时用反射找Json工具类，一如既往不引入第三方，不管你用的是fastjson还是Gson,都能自动使用，目前只支持两个最常用的，优先使用fastjson。
 
 ## 优化与改进
 
@@ -33,22 +40,38 @@ http://itgowo.com
 
 #### 2.依赖
 
+```
+    buildscript {
+        repositories {
+            jcenter()
+            *****
+        }
+        *****
+    }
+```
+
 maven依赖
 ```
   <dependency>
     <groupId>com.itgowo</groupId>
     <artifactId>android-WebDebugTool</artifactId>
-    <version>1.0.2</version>
+    <version>1.0.4</version>
     <type>pom</type>
   </dependency>
 ```
 Gradle依赖
 ```
-  compile 'com.itgowo:android-WebDebugTool:1.0.2'
+  compile 'com.itgowo:android-WebDebugTool:1.0.4'
+  debugcompile 'com.itgowo:android-WebDebugTool:1.0.4'  //推荐
+  
+  Android Gradle plugin 3.0或更高
+      debugApi 'com.itgowo:android-WebDebugTool:1.0.4'  //推荐
+      api 'com.itgowo:android-WebDebugTool:1.0.4'
 ```
 #### 3.初始化
 
-可以在App启动后任意需要时刻初始化
+可以在App启动后任意需要时刻初始化，不手动或手动触发较晚，都会在2秒内自动自动初始化，如果开发者自己手动启动且在application的onCreat()中，自动启动将失效。
+###最简单的是，下面都不配置代码，是会自动启动服务器的。
 
 第一个参数为context，第二个参数为端口，第三个参数为线程模式（是否是多线程），第四个为服务器状态监听。
 ```
