@@ -6,6 +6,7 @@ package android_debugdata_webtool.tool.itgowo.com.webtoollibrary;
 
 public interface onDebugToolListener {
     void onSystemMsg(String mS);
+
     String onObjectToJson(Object mObject);
 
     <T> T onJsonStringToObject(String mJsonString, Class<T> mClass);
