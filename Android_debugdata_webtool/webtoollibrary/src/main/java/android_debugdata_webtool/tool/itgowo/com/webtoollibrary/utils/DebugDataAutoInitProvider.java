@@ -21,7 +21,20 @@ public class DebugDataAutoInitProvider extends ContentProvider {
 
     @Override
     public boolean onCreate() {
-        DebugDataTool.initialize(getContext(), 8088, false, null);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(1200);
+                } catch (InterruptedException mE) {
+                    mE.printStackTrace();
+                }
+                if (!DebugDataTool.isServerRunning()) {
+                    DebugDataTool.initialize(getContext(), 8088, false, null);
+                }
+            }
+        }).start();
+
         return true;
     }
 

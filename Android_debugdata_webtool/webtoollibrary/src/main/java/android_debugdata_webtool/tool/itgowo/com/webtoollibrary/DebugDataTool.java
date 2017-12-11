@@ -23,6 +23,7 @@ import android.content.Context;
 import android.util.Log;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -83,7 +84,7 @@ public class DebugDataTool {
             if (mToolListener == null) {
                 if (isFastJson) {
                     try {
-                        return (T) mJsonMethodToJsonObject.invoke(null, mJsonString,mClass);
+                        return (T) mJsonMethodToJsonObject.invoke(null, mJsonString, mClass);
                     } catch (IllegalAccessException mE) {
                         mE.printStackTrace();
                     } catch (InvocationTargetException mE) {
@@ -91,7 +92,7 @@ public class DebugDataTool {
                     }
                 } else {
                     try {
-                        return (T) mJsonMethodToJsonObject.invoke(mGsonJson, mJsonString,mClass);
+                        return (T) mJsonMethodToJsonObject.invoke(mGsonJson, mJsonString, mClass);
                     } catch (IllegalAccessException mE) {
                         mE.printStackTrace();
                     } catch (InvocationTargetException mE) {
@@ -109,7 +110,7 @@ public class DebugDataTool {
             return;
         }
         if (mToolListener == null) {
-            Log.d(TAG,mS+"\r\n"+mHttpRequest);
+            Log.d(TAG, mS + "\r\n" + mHttpRequest);
         } else {
             mToolListener.onGetRequest(mS, mHttpRequest);
         }
@@ -118,31 +119,42 @@ public class DebugDataTool {
 
     protected static void onResponse(String mS) {
         if (mToolListener == null) {
-            Log.d(TAG,mS);
+            Log.d(TAG, mS);
         } else {
             mToolListener.onResponse(mS);
         }
     }
 
-    public static void initialize(Context context, int mPortNumber, boolean isMultMode, onDebugToolListener mOnDebugToolListener) {
-        mToolListener = mOnDebugToolListener;
-        int portNumber;
-        if (mPortNumber < 10) {
-            portNumber = DEFAULT_PORT;
-        } else {
-            portNumber = mPortNumber;
-        }
-        if (mOnDebugToolListener == null) {
-            onSystemMsg("未设置onDebugToolListener，自动搜索当前APP内使用的Json工具，目前支持FastJson和Gson");
-            if (!searchJsonTool()) {
-                return;
+    public synchronized static void initialize(Context context, int mPortNumber, boolean isMultMode, onDebugToolListener mOnDebugToolListener) {
+        if (clientServer != null  ) {
+            try {
+                clientServer.resetServerPort(mPortNumber);
+            } catch (IOException mE) {
+                mE.printStackTrace();
+            } catch (InterruptedException mE) {
+                mE.printStackTrace();
             }
+        } else {
+            mToolListener = mOnDebugToolListener;
+            int portNumber;
+            if (mPortNumber < 10) {
+                portNumber = DEFAULT_PORT;
+            } else {
+                portNumber = mPortNumber;
+            }
+            if (mOnDebugToolListener == null) {
+                onSystemMsg("未设置onDebugToolListener，自动搜索当前APP内使用的Json工具，目前支持FastJson和Gson");
+                if (!searchJsonTool()) {
+                    return;
+                }
+            }
+            clientServer = new ClientServer(context, portNumber, isMultMode);
+            clientServer.start();
+            addressLog = NetworkUtils.getAddressLog(context, portNumber);
+            Log.d(TAG, "Open http://" + addressLog + " in your browser");
+            Log.d(TAG, "请用浏览器打开 http://" + addressLog);
+            DebugDataTool.onSystemMsg("请用浏览器打开 http://" + addressLog);
         }
-        clientServer = new ClientServer(context, portNumber, isMultMode);
-        clientServer.start();
-        addressLog = NetworkUtils.getAddressLog(context, portNumber);
-        Log.d(TAG, "Open http://" + addressLog + " in your browser");
-        DebugDataTool.onSystemMsg("请用浏览器打开 http://" + addressLog);
 //        System.out.println(TAG + "   请用浏览器打开 http://" + addressLog);
     }
 
@@ -167,8 +179,8 @@ public class DebugDataTool {
             try {
                 Class mGsonClass = Class.forName("com.google.gson.Gson");
                 mGsonJson = mGsonClass.newInstance();
-                mJsonMethodToJsonObject = mGsonClass.getDeclaredMethod("fromJson",String.class,Class.class);
-                mJsonMethodToJsonString = mGsonClass.getDeclaredMethod("toJson",Object.class);
+                mJsonMethodToJsonObject = mGsonClass.getDeclaredMethod("fromJson", String.class, Class.class);
+                mJsonMethodToJsonString = mGsonClass.getDeclaredMethod("toJson", Object.class);
             } catch (ClassNotFoundException mE) {
 
             } catch (NoSuchMethodException mE) {
@@ -190,7 +202,7 @@ public class DebugDataTool {
 
     protected static void onSystemMsg(String mS) {
         if (mToolListener == null) {
-            Log.i(TAG,mS);
+            Log.i(TAG, mS);
         } else {
             mToolListener.onSystemMsg(mS);
         }
@@ -198,7 +210,7 @@ public class DebugDataTool {
 
     protected static void onError(String mTip, Throwable mThrowable) {
         if (mToolListener == null) {
-            Log.e(TAG,mTip,mThrowable);
+            Log.e(TAG, mTip, mThrowable);
         } else {
             mToolListener.onError(mTip, mThrowable);
         }
