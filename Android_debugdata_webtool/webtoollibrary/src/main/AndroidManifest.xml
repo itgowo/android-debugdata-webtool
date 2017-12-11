@@ -7,8 +7,8 @@
         android:supportsRtl="true"
         >
         <provider
-            android:name=".utils.DebugDBInitProvider"
-            android:authorities="${applicationId}.DebugDBInitProvider"
+            android:name=".utils.DebugDataAutoInitProvider"
+            android:authorities="${applicationId}.DebugDataAutoInitProvider"
             android:enabled="true"
             android:exported="false"/>
     </application>

@@ -25,6 +25,10 @@ android {
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile 'com.android.support:appcompat-v7:25.+'
-//    compile 'com.itgowo:android-WebDebugTool:1.0.2'
+//    debugcompile 'com.itgowo:android-WebDebugTool:1.0.3'
+//    debugApi 'com.itgowo:android-WebDebugTool:1.0.3'
+//    api 'com.itgowo:android-WebDebugTool:1.0.3'
     compile project(':webtoollibrary')
+//    compile 'com.google.code.gson:gson:2.8.2'
+    compile 'com.alibaba:fastjson:1.1.67.android'
 }
