@@ -1,21 +1,10 @@
 package com.itgowo.tool.android_debugdata_webtool;
 
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.text.SpannableStringBuilder;
-import android.text.Spanned;
 import android.text.method.ScrollingMovementMethod;
-import android.text.style.ForegroundColorSpan;
-import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
-
-
-
-import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.DebugDataTool;
-import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.HttpRequest;
-import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.onDebugToolListener;
 
 public class MainActivity extends AppCompatActivity {
     private TextView mTextView;

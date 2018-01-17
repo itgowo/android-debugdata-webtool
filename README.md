@@ -53,18 +53,18 @@ maven依赖
   <dependency>
     <groupId>com.itgowo</groupId>
     <artifactId>android-WebDebugTool</artifactId>
-    <version>1.0.4</version>
+    <version>1.0.5</version>
     <type>pom</type>
   </dependency>
 ```
 Gradle依赖
 ```
-  compile 'com.itgowo:android-WebDebugTool:1.0.4'
-  debugcompile 'com.itgowo:android-WebDebugTool:1.0.4'  //推荐
+  compile 'com.itgowo:android-WebDebugTool:1.0.5'
+  debugcompile 'com.itgowo:android-WebDebugTool:1.0.5'  //推荐
   
   Android Gradle plugin 3.0或更高
-      debugApi 'com.itgowo:android-WebDebugTool:1.0.4'  //推荐
-      api 'com.itgowo:android-WebDebugTool:1.0.4'
+      debugApi 'com.itgowo:android-WebDebugTool:1.0.5'  //推荐
+      api 'com.itgowo:android-WebDebugTool:1.0.5'
 ```
 #### 3.初始化
 
