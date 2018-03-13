@@ -59,12 +59,12 @@ maven依赖
 ```
 Gradle依赖
 ```
-  compile 'com.itgowo:android-WebDebugTool:1.0.5'
-  debugcompile 'com.itgowo:android-WebDebugTool:1.0.5'  //推荐
+  compile 'com.itgowo:android-WebDebugTool:1.0.6'
+  debugcompile 'com.itgowo:android-WebDebugTool:1.0.6'  //推荐
   
   Android Gradle plugin 3.0或更高
-      debugApi 'com.itgowo:android-WebDebugTool:1.0.5'  //推荐
-      api 'com.itgowo:android-WebDebugTool:1.0.5'
+      debugApi 'com.itgowo:android-WebDebugTool:1.0.6'  //推荐
+      api 'com.itgowo:android-WebDebugTool:1.0.6'
 ```
 #### 3.初始化
 
