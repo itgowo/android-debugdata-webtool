@@ -241,11 +241,20 @@ public class DatabaseHelper {
                 rowDataRequest.dataType = TEXT;
             }
             switch (rowDataRequest.dataType) {
+                case BOOLEAN:
+                    contentValues.put(rowDataRequest.title, TextUtils.isEmpty(rowDataRequest.value) ? null : Boolean.valueOf(rowDataRequest.value));
+                    break;
                 case INTEGER:
-                    contentValues.put(rowDataRequest.title, Long.valueOf(rowDataRequest.value));
+                    contentValues.put(rowDataRequest.title, TextUtils.isEmpty(rowDataRequest.value) ? null : Integer.valueOf(rowDataRequest.value));
+                    break;
+                case LONG:
+                    contentValues.put(rowDataRequest.title, TextUtils.isEmpty(rowDataRequest.value) ? null : Long.valueOf(rowDataRequest.value));
+                    break;
+                case FLOAT:
+                    contentValues.put(rowDataRequest.title, TextUtils.isEmpty(rowDataRequest.value) ? null : Float.valueOf(rowDataRequest.value));
                     break;
                 case REAL:
-                    contentValues.put(rowDataRequest.title, Double.valueOf(rowDataRequest.value));
+                    contentValues.put(rowDataRequest.title, TextUtils.isEmpty(rowDataRequest.value) ? null : Double.valueOf(rowDataRequest.value));
                     break;
                 case TEXT:
                     contentValues.put(rowDataRequest.title, rowDataRequest.value);
@@ -291,16 +300,27 @@ public class DatabaseHelper {
                 whereArgsList.add(rowDataRequest.value);
             } else {
                 switch (rowDataRequest.dataType) {
+                    case BOOLEAN:
+                        contentValues.put(rowDataRequest.title, TextUtils.isEmpty(rowDataRequest.value) ? null : Boolean.valueOf(rowDataRequest.value));
+                        break;
                     case INTEGER:
-                        contentValues.put(rowDataRequest.title, Long.valueOf(rowDataRequest.value));
+                        contentValues.put(rowDataRequest.title, TextUtils.isEmpty(rowDataRequest.value) ? null : Integer.valueOf(rowDataRequest.value));
+                        break;
+                    case LONG:
+                        contentValues.put(rowDataRequest.title, TextUtils.isEmpty(rowDataRequest.value) ? null : Long.valueOf(rowDataRequest.value));
+                        break;
+                    case FLOAT:
+                        contentValues.put(rowDataRequest.title, TextUtils.isEmpty(rowDataRequest.value) ? null : Float.valueOf(rowDataRequest.value));
                         break;
                     case REAL:
-                        contentValues.put(rowDataRequest.title, Double.valueOf(rowDataRequest.value));
+                        contentValues.put(rowDataRequest.title, TextUtils.isEmpty(rowDataRequest.value) ? null : Double.valueOf(rowDataRequest.value));
                         break;
                     case TEXT:
                         contentValues.put(rowDataRequest.title, rowDataRequest.value);
                         break;
                     default:
+                        contentValues.put(rowDataRequest.title, rowDataRequest.value);
+                        break;
                 }
             }
         }
