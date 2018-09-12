@@ -8,7 +8,7 @@ $(document).ready(function () {
     getDBList();
     $("#query").keypress(function (e) {
         if (e.which == 13) {
-            queryFunction(dbFileName);
+            queryFunction();
         }
     });
     $("#dbwindow").show();
@@ -106,7 +106,7 @@ function getData(fileName, tableNameOrPath, isDB) {
 
 }
 
-function queryFunction(dbname) {
+function queryFunction() {
     var query = $('#query').val();
     $.ajax({
         type: "POST",
@@ -114,7 +114,7 @@ function queryFunction(dbname) {
         url: rootUrl,
         data: JSON.stringify({
             action: "query",
-            database: dbname,
+            database: dbFileName,
             data: query
         }),
         contentType: "application/json; charset=utf-8",
@@ -324,18 +324,15 @@ function openDatabaseAndGetTableList(dbname, path) {
 }
 
 function inflateData(result, isDB) {
-
     if (result.code == 200) {
         var columnHeader = result.tableData.tableColumns;
         var columnData = result.tableData.tableDatas;
-
         for (var i = 0; i < columnHeader.length; i++) {
             columnHeader[i]['targets'] = i;
             columnHeader[i]['data'] = function (data, type, val, meta) {
                 return data[meta.col].value;
             }
         }
-
         var tableId
         if (isDB) {
             tableId = "#db-data";

@@ -8,8 +8,6 @@ public final class Constants {
     private Constants() {
         // This class in not publicly instantiable
     }
-
-    public static final String APP_SHARED_PREFERENCES = "Shared_Preferences";
     /**
      * 数据库表结构常量, PRAGMA table_info(***)
      */

@@ -208,7 +208,7 @@ public class DebugDataTool {
         }
     }
 
-    protected static void onError(String mTip, Throwable mThrowable) {
+     protected static void onError(String mTip, Throwable mThrowable) {
         if (mToolListener == null) {
             Log.e(TAG, mTip, mThrowable);
         } else {

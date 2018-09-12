@@ -20,12 +20,11 @@
 package android_debugdata_webtool.tool.itgowo.com.webtoollibrary;
 
 /**
- * Created by amitshekhar on 15/11/16.
+ * Created by lujianchao on 17/8/16.
  */
 
 
 import android.content.Context;
-import android.util.Log;
 
 import java.io.File;
 import java.io.IOException;
@@ -104,7 +103,7 @@ public class ClientServer implements Runnable {
 
             }
             mServerSocket.close();
-            mServerSocket=null;
+            mServerSocket = null;
             DebugDataTool.onSystemMsg("服务器已关闭");
         } catch (Exception e) {
             DebugDataTool.onError("web server error", e);
@@ -112,7 +111,7 @@ public class ClientServer implements Runnable {
     }
 
     public void setCustomDatabaseFiles(HashMap<String, File> customDatabaseFiles) {
-        mRequestHandler.setCustomDatabaseFiles(customDatabaseFiles);
+        DatabaseManager.setCustomDatabaseFiles(customDatabaseFiles);
     }
 
     public boolean isRunning() {

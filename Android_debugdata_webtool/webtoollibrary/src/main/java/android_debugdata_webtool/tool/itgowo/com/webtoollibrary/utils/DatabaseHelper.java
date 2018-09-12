@@ -55,7 +55,6 @@ public class DatabaseHelper {
     }
 
     private DatabaseHelper() {
-        // This class in not publicly instantiable
     }
 
     public static Response getAllTableName(SQLiteDatabase database) {
