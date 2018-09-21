@@ -30,7 +30,9 @@ public class MainActivity extends AppCompatActivity {
         DBManager.updateCache("first", "yes");
         DBManager.updateCache("second", "no");
         DBManager.updateCache("haha", "hehe");
-
+        for (int i = 0; i < 50; i++) {
+            DBManager.addCache("haha"+i, "hehe");
+        }
 
 //        DebugDataTool.initialize(this, 8088, false, new onDebugToolListener() {
 //

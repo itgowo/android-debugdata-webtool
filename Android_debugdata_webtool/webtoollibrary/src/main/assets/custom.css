@@ -6,6 +6,13 @@
     padding-top: 20px;
 }
 
+
+.padding-five {
+    padding-top: 5px;
+}
+.padding-ten{
+    padding-top: 10px;
+}
 .display-none {
     display: none;
 }

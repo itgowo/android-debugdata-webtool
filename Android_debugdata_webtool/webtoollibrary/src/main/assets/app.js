@@ -1,4 +1,4 @@
-var rootUrl = "";
+var rootUrl = "http://10.1.101.241:8088";
 var dbFileName;
 var SPFileName;
 var downloadFilePath1;
@@ -384,19 +384,21 @@ function inflateData(result, isDB) {
         $(tableId).dataTable({
             "data": changecolumnData,
             "columnDefs": columnHeader,
-            'bPaginate': true,
+            "bPaginate": true, //翻页功能 
+            "bLengthChange": true, //改变每页显示数据数量 
+            "bFilter": true, //过滤功能 
+            "bSort": true, //排序功能 
+            "bInfo": true,//页脚信息 
+            "bAutoWidth": true,//自动宽度
             'searching': true,
-            'bFilter': true,
-            'bInfo': true,
-            "bSort": true,
             "scrollX": true,
             "iDisplayLength": 10,
-            "dom": "Bfrtip",
             language: {
                 url: '/language/Chinese.json'
             },
             select: 'single',
             altEditor: true,     // Enable altEditor
+            "dom": "Bfrtip",
             buttons: availableButtons
         })
 

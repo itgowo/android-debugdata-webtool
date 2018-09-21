@@ -26,9 +26,9 @@ dependencies {
     implementation 'com.android.support:appcompat-v7:25.+'
 
 //    debugcompile 'com.itgowo:android-WebDebugTool:1.0.6'
-    debugImplementation 'com.itgowo:android-WebDebugTool:1.0.7'
+//    debugImplementation 'com.itgowo:android-WebDebugTool:1.0.7'
 //    api 'com.itgowo:android-WebDebugTool:1.0.6'
-//    implementation project(':webtoollibrary')
+    implementation project(':webtoollibrary')
 //    compile 'com.google.code.gson:gson:2.8.2'
     implementation 'com.alibaba:fastjson:1.1.67.android'
 }
