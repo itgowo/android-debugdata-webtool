@@ -21,18 +21,18 @@ public class MainActivity extends AppCompatActivity {
                 mTextView.setText("");
             }
         });
-        getSharedPreferences("appinfo", MODE_PRIVATE).edit().putBoolean("Booblean", true).commit();
-        getSharedPreferences("appinfo", MODE_PRIVATE).edit().putFloat("Float", 1.5f).commit();
-        getSharedPreferences("appinfo", MODE_PRIVATE).edit().putLong("Long", 1232131231).commit();
-        getSharedPreferences("appinfo", MODE_PRIVATE).edit().putString("String", "tadsfsadfest").commit();
-        getSharedPreferences("appinfo", MODE_PRIVATE).edit().putInt("Int", 1234).commit();
-        DBManager.init(getApplication(), "appinfo.db", null);
-        DBManager.updateCache("first", "yes");
-        DBManager.updateCache("second", "no");
-        DBManager.updateCache("haha", "hehe");
-        for (int i = 0; i < 50; i++) {
-            DBManager.addCache("haha"+i, "hehe");
-        }
+//        getSharedPreferences("appinfo", MODE_PRIVATE).edit().putBoolean("Booblean", true).commit();
+//        getSharedPreferences("appinfo", MODE_PRIVATE).edit().putFloat("Float", 1.5f).commit();
+//        getSharedPreferences("appinfo", MODE_PRIVATE).edit().putLong("Long", 1232131231).commit();
+//        getSharedPreferences("appinfo", MODE_PRIVATE).edit().putString("String", "tadsfsadfest").commit();
+//        getSharedPreferences("appinfo", MODE_PRIVATE).edit().putInt("Int", 1234).commit();
+//        DBManager.init(getApplication(), "appinfo.db", null);
+//        DBManager.updateCache("first", "yes");
+//        DBManager.updateCache("second", "no");
+//        DBManager.updateCache("haha", "hehe");
+//        for (int i = 0; i < 50; i++) {
+//            DBManager.addCache("haha"+i, "hehe");
+//        }
 
 //        DebugDataTool.initialize(this, 8088, false, new onDebugToolListener() {
 //

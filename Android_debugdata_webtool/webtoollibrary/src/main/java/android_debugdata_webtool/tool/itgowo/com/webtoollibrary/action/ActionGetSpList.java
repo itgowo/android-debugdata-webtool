@@ -5,8 +5,10 @@ import android.content.Context;
 import java.io.File;
 import java.util.HashMap;
 
+import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.HttpRequest;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.Request;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.Response;
+import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.ResponseHandler;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.utils.PrefHelper;
 
 /**
@@ -17,9 +19,10 @@ public class ActionGetSpList implements Action {
     public static final String ACTION = "getSpList";
 
     @Override
-    public Response doAction(Context context, Request request) {
+    public Response doAction(Context context, Request request, HttpRequest httpRequest, ResponseHandler responseHandler) {
         Response response = new Response();
         response.setSpList(PrefHelper.getSharedPreferenceTags(context));
+        responseHandler.sendPost(response);
         return response;
     }
 }

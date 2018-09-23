@@ -4,8 +4,10 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.DatabaseManager;
+import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.HttpRequest;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.Request;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.Response;
+import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.ResponseHandler;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.utils.DatabaseHelper;
 
 /**
@@ -16,7 +18,7 @@ public class ActionGetDataFromDbTable implements Action {
     public static final String ACTION = "getDataFromDbTable";
 
     @Override
-    public Response doAction(Context context, Request request) {
+    public Response doAction(Context context, Request request, HttpRequest httpRequest, ResponseHandler responseHandler) {
         if (request.getTableName() == null || request.getTableName().length() < 1) {
             return null;
         }
@@ -33,6 +35,7 @@ public class ActionGetDataFromDbTable implements Action {
         } else {
             response = new Response().setCode(Response.code_FileNotFound).setMsg("数据库文件不存在，请检查是否做了删除操作");
         }
+        responseHandler.sendPost(response);
         return response;
     }
 }

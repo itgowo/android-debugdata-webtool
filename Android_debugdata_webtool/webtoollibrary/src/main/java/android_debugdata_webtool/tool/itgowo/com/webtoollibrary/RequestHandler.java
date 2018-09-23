@@ -73,14 +73,14 @@ public class RequestHandler {
             public void run() {
                 try {
                     syncHandle(socket);
-                } catch (IOException mE) {
+                } catch (Exception mE) {
                     DebugDataTool.onError("web server:received request error,分配并处理数据异常", mE);
                 }
             }
         });
     }
 
-    public void syncHandle(Socket socket) throws IOException {
+    public void syncHandle(Socket socket) throws Exception {
         InputStream inputStream = null;
         PrintStream printStream = null;
         try {
@@ -108,13 +108,14 @@ public class RequestHandler {
             }
             // Output stream that we send the response to
             printStream = new PrintStream(socket.getOutputStream());
-            if (httpRequest.getMethod().equalsIgnoreCase("OPTIONS")) {
-                onRequestOptions(printStream);
-            } else if (httpRequest.getMethod().equalsIgnoreCase("POST")) {
+            ResponseHandler responseHandler = new ResponseHandler(printStream);
+            if ("OPTIONS".equalsIgnoreCase(httpRequest.getMethod())) {
+                responseHandler.onRequestOptions();
+            } else if ("POST".equalsIgnoreCase(httpRequest.getMethod())) {
                 DebugDataTool.onRequest(stringBuilder.toString(), httpRequest);
-                onRequestPost(httpRequest, printStream);
-            } else if (httpRequest.getMethod().equalsIgnoreCase("GET")) {
-                onRequestGet(httpRequest, printStream);
+                onRequestPost(httpRequest, responseHandler);
+            } else if ("GET".equalsIgnoreCase(httpRequest.getMethod())) {
+                onRequestGet(httpRequest, responseHandler);
             }
             socket.close();
         } finally {
@@ -135,7 +136,7 @@ public class RequestHandler {
 
     }
 
-    private void onRequestGet(HttpRequest httpRequest, PrintStream printStream) throws IOException {
+    private void onRequestGet(HttpRequest httpRequest, ResponseHandler responseHandler) throws IOException {
         byte[] bytes = null;
         if (TextUtils.isEmpty(httpRequest.getPath())) {//index.html
             httpRequest.setPath("index.html");
@@ -153,32 +154,13 @@ public class RequestHandler {
         }
         DebugDataTool.onRequest(httpRequest.getPath(), httpRequest);
         if (null == bytes) {
-            printStream.println("HTTP/1.1 404 Not Found");
-            printStream.println("Content-Type: application/json");
-            printStream.println("access-control-allow-origin: *");
-            printStream.println();
-            printStream.println(new Response().setCode(Response.code_FileNotFound).setMsg("请求的资源不存在").toJson());
-            printStream.println();
-
+            responseHandler.onServerNotFound("请求的资源不存在");
         } else {
-            printStream.println("HTTP/1.1 200 OK");
-            printStream.println("Content-Type: " + Utils.detectMimeType(file.getName()));
-            printStream.println("access-control-allow-origin: *");
-            if (!httpRequest.getPath().equals("index.html")) {
-                printStream.println("Content-Disposition: attachment; filename = " + file.getName());
-            } else {
-                printStream.println("Content-Disposition: filename = " + file.getName());
-            }
-            printStream.println("Content-Length: " + bytes.length);
-            printStream.println();
-            printStream.write(bytes);
-            printStream.println();
+            responseHandler.onServerGetFile(!httpRequest.getPath().equals("index.html"), httpRequest.getPath(), Utils.detectMimeType(httpRequest.getPath()), bytes);
         }
-        printStream.flush();
-        printStream.close();
     }
 
-    private void onRequestPost(HttpRequest httpRequest, PrintStream printStream) throws IOException {
+    private void onRequestPost(HttpRequest httpRequest, ResponseHandler responseHandler) throws Exception {
         Response response = null;
         //post请求数据
         Request request = null;
@@ -200,59 +182,15 @@ public class RequestHandler {
             try {
                 Action action = dispatcher.get(request.getAction());
                 if (action != null) {
-                    response = action.doAction(context, request);
+                    action.doAction(context, request, httpRequest, responseHandler);
                 }
             } catch (Exception e) {
                 String msg = "web server:action error(" + request.getAction() + "),参数处理异常";
                 DebugDataTool.onError(msg, e);
-                response = new Response().setCode(Response.code_Error).setMsg(msg + e.getMessage());
+                responseHandler.onServerPostError(msg + e.getLocalizedMessage());
             }
         }
-        byte[] bytes = new byte[0];
-        if (response != null) {
-            bytes = DebugDataTool.ObjectToJson(response).getBytes();
-            DebugDataTool.onResponse(new String(bytes));
-            onServerPostOK(printStream, Utils.detectMimeType(httpRequest.getPath()), bytes);
-        }else {
-            onServerError(printStream,"not found action");
-        }
-
     }
 
-    /**
-     * 响应跨域请求
-     *
-     * @param output
-     */
-    private void onRequestOptions(PrintStream output) {
-        output.println("HTTP/1.0 200 OK");
-        output.println("Access-Control-Allow-Methods: *");
-        output.println("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept");
-        output.println("Access-Control-Max-Age: Origin, 3600");
-        output.println("access-control-allow-origin: *");
-        output.println("Content-Length: " + 0);
-        output.println();
-        output.flush();
-        output.close();
-    }
 
-    private void onServerPostOK(PrintStream printStream, String contentType, byte[] bytes) throws IOException {
-        printStream.println("HTTP/1.1 200 OK");
-        printStream.println("Content-Type: " + contentType);
-        printStream.println("access-control-allow-origin: *");
-        printStream.println("Content-Length: " + bytes.length);
-        printStream.println();
-        printStream.write(bytes);
-        printStream.flush();
-        printStream.close();
-    }
-
-    private void onServerError(PrintStream output, String msg) {
-        output.println("HTTP/1.0 500 Internal Server Error");
-        output.println("Content-Type: application/json");
-        output.println("access-control-allow-origin: *");
-        output.println();
-        output.println(new Response().setCode(Response.code_Error).setMsg("服务器异常  " + msg).toJson());
-        output.println();
-    }
 }

@@ -37,7 +37,6 @@ public class Request {
      * 非必须
      */
     private Integer pageSize;
-
     public String getSpFileName() {
         return spFileName;
     }

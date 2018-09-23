@@ -7,8 +7,10 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
+import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.HttpRequest;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.Request;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.Response;
+import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.ResponseHandler;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.utils.Utils;
 
 /**
@@ -19,7 +21,7 @@ public class ActionGetFileList implements Action {
     public static final String ACTION = "getFileList";
 
     @Override
-    public Response doAction(Context context, Request request) {
+    public Response doAction(Context context, Request request, HttpRequest httpRequest, ResponseHandler responseHandler) {
         File root = null;
         if (request.getData() == null || request.getData().length() < 5) {
             root = new File(context.getApplicationInfo().dataDir);
@@ -51,7 +53,8 @@ public class ActionGetFileList implements Action {
                 mFileDatas.add(mFileData);
             }
         }
-        Response mResponse = new Response().setFileList(new Response.FileList().setFileList(mFileDatas).setFileColumns(mFileColumns));
-        return mResponse;
+        Response response = new Response().setFileList(new Response.FileList().setFileList(mFileDatas).setFileColumns(mFileColumns));
+        responseHandler.sendPost(response);
+        return response;
     }
 }

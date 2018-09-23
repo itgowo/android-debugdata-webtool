@@ -1,5 +1,6 @@
-var rootUrl = "http://10.1.101.241:8088";
+var rootUrl = "http://192.168.0.106:8088";
 var dbFileName;
+var currentTableName;
 var SPFileName;
 var downloadFilePath1;
 var downloadFilePath2;
@@ -76,33 +77,370 @@ $(document).ready(function () {
 var isDatabaseSelected = true;
 
 function getData(fileName, tableNameOrPath, isDB) {
-    var getData
     if (isDB == "true") {
+    	getDataFromDb(fileName,tableNameOrPath);
+    } else {
+    	getDataFromSp(fileName,tableNameOrPath);
+    }
+}
+
+function getDataFromDb(fileName, dbtableName) {
+    var getData
+    	currentTableName=dbtableName;
         getData = {
             action: "getDataFromDbTable",
             database: fileName,
-            tableName: tableNameOrPath,
+            tableName: dbtableName,
+            pageIndex: 1,
+            pageSize:10
         }
-    } else {
-        SPFileName = fileName;
-        downloadFilePath2 = tableNameOrPath;
-        getData = {
-            action: "getDataFromSpFile",
-            SPFileName: fileName
-        }
-    }
-
     $.ajax({
         type: "POST",
-        url: rootUrl,
+        url: rootUrl, 
         crossDomain: true,
         data: JSON.stringify(getData),
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function (result) {
-            inflateData(result, isDB == "true");
+            inflateDataFromDb(result);
         }
     });
+}
+
+function getDataFromSp(fileName, tableNameOrPath) {
+    var getData
+	SPFileName = fileName;
+	downloadFilePath2 = tableNameOrPath;
+	getData = {
+		action: "getDataFromSpFile",
+		SPFileName: fileName
+	}
+
+    $.ajax({
+        type: "POST",
+        url: rootUrl, 
+        crossDomain: true,
+        data: JSON.stringify(getData),
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function (result) {
+            inflateDataFromSp(result);
+        }
+    });
+}
+
+
+function inflateDataFromDb(result) {
+    if (result.code == 200) {
+        var columnHeader = result.tableData.tableColumns;
+        var columnData = result.tableData.tableDatas;
+        for (var i = 0; i < columnHeader.length; i++) {
+            columnHeader[i]['targets'] = i;
+            columnHeader[i]['data'] = function (data, type, val, meta) {
+                return data[meta.col].value;
+            }
+        }
+        var tableId = "#db-data";
+		if ($.fn.DataTable.isDataTable(tableId)) {
+			$(tableId).DataTable().destroy();
+        }
+
+		$("#db-data-div").remove();
+		$("#parent-data-divdb").append('<div id="db-data-div"><table class="display nowrap" cellpadding="0" border="0" cellspacing="0" width="100%" class="table table-striped table-bordered display" id="db-data"></table></div>');
+
+        var availableButtons = [];
+        if (result.editable) {
+            availableButtons = [
+                {
+                    text: '添加',
+                    name: 'add' // don not change name
+                },
+                {
+                    extend: 'selected', // Bind to Selected row
+                    text: '编辑',
+                    name: 'edit'        // do not change name
+                },
+                {
+                    extend: 'selected',
+                    text: '删除',
+                    name: 'delete'
+                }
+            ];
+        }
+        
+        // console.info(columnHeader);
+        $(tableId).dataTable({
+        	"columnDefs": columnHeader,
+        	"processing": true,
+        	"serverSide": true,
+        	ajax: function (data, callback, settings) {
+				 //封装请求参数
+				var param = {};
+				param.pageSize = data.length;//页面显示记录条数，在页面显示每页显示多少项的时候
+				param.pageIndex = (data.start / data.length)+1;//开始的记录序号
+				param.database = dbFileName;
+				param.tableName = currentTableName;
+				param.action = "getDataFromDbTable";
+				param.draw = data.draw;
+				 //console.log(param);
+				 //ajax请求数据
+				 $.ajax({
+					type: "POST",
+					url: rootUrl,
+					data: JSON.stringify(param), //传入组装的参数
+					dataType: "json",
+					contentType: 'application/json; charset=utf-8',
+					success: function (result) {
+					  // console.log(result);
+						  //封装返回数据
+						var returnData = {};
+						returnData.draw = param.draw;//这里直接自行返回了draw计数器,应该由后台返回
+						returnData.recordsTotal = result.tableData.dataCount;//返回数据全部记录
+						returnData.recordsFiltered = result.tableData.dataCount;//后台不实现过滤功能，每次查询均视作全部结果
+						returnData.data = result.tableData.tableDatas;//返回的数据列表
+						for (var i = 0; i < result.tableData.tableDatas.length; i++) {
+							returnData.data[i] = result.tableData.tableDatas[i].map(function (item, index) {
+								return item = {value: item, dataType: columnHeader[index].dataType}
+							})
+						}
+						  // console.log(returnData);
+						  //调用DataTables提供的callback方法，代表数据已封装完成并传回DataTables进行渲染
+						  //此时的数据需确保正确无误，异常判断应在执行此回调前自行处理完毕
+						callback(returnData);
+					}
+				});
+			},
+            language: {
+                url: rootUrl+'/language/Chinese.json'
+            },
+            select: 'single',
+            altEditor: true,     // Enable altEditor
+            "dom": "Bfrtip",
+            buttons: availableButtons,
+        })
+
+        $(tableId).on('update-row.dt', function (e, updatedRowData, callback) {
+			var updatedRowDataArray = JSON.parse(updatedRowData);
+			var data = columnHeader;
+			for (var i = 0; i < data.length; i++) {
+				data[i].value = updatedRowDataArray[i].value;
+				data[i].dataType = updatedRowDataArray[i].dataType;
+			}
+			db_update(data, callback);
+        });
+
+        $(tableId).on('delete-row.dt', function (e, deleteRowData, callback) {
+			var deleteRowDataArray = JSON.parse(deleteRowData);
+			var data = columnHeader;
+			for (var i = 0; i < data.length; i++) {
+				data[i].value = deleteRowDataArray[i].value;
+				data[i].dataType = deleteRowDataArray[i].dataType;
+			}
+			db_delete(data, callback);
+		});
+
+        $(tableId).on('add-row.dt', function (e, addRowData, callback) {
+			var addRowDataArray = JSON.parse(addRowData);
+			var data = columnHeader;
+			for (var i = 0; i < data.length; i++) {
+				data[i].value = addRowDataArray[i].value;
+				data[i].dataType = addRowDataArray[i].dataType;
+			}
+			db_addData(data, callback);
+		});
+
+        // hack to fix alignment issue when scrollX is enabled
+        $(".dataTables_scrollHeadInner").css({"width": "100%"});
+        $(".table ").css({"width": "100%"});
+    } else {
+        showErrorInfo(result.msg);
+    }
+
+}
+// 读取共享参数文件数据不分页，相对数据库来说，存储量级低很多
+function inflateDataFromSp(result) {
+    if (result.code == 200) {
+        var columnHeader = result.tableData.tableColumns;
+        var columnData = result.tableData.tableDatas;
+        for (var i = 0; i < columnHeader.length; i++) {
+            columnHeader[i]['targets'] = i;
+            columnHeader[i]['data'] = function (data, type, val, meta) {
+                return data[meta.col].value;
+            }
+        }
+
+        var tableId = "#sp-data";
+		$("#selected-sp-info").text("点击文件名称下载 : " + SPFileName);
+		$("#selected-sp-info").click(function () {
+			downloadFile(downloadFilePath2)
+		});
+		if(document.getElementById("id")){
+			if ($.fn.DataTable.isDataTable(tableId)) {
+				$(tableId).DataTable().destroy();
+			}
+		}
+
+		$("#sp-data-div").remove();
+		$("#parent-data-divsp").append('<div id="sp-data-div"><table class="display nowrap" cellpadding="0" border="0" cellspacing="0" width="100%" class="table table-striped table-bordered display" id="sp-data"></table></div>');
+
+        var availableButtons = [];
+        if (result.editable) {
+            availableButtons = [
+                {
+                    text: '添加',
+                    name: 'add' // don not change name
+                },
+                {
+                    extend: 'selected', // Bind to Selected row
+                    text: '编辑',
+                    name: 'edit'        // do not change name
+                },
+                {
+                    extend: 'selected',
+                    text: '删除',
+                    name: 'delete'
+                }
+            ];
+        }
+		var changecolumnData = []
+		for (var i = 0; i < columnData.length; i++) {
+			changecolumnData[i] = columnData[i].map(function (item, index) {
+				return item = {value: item, dataType: columnHeader[index].dataType}
+			})
+        }
+        $(tableId).dataTable({
+        	"columnDefs": columnHeader,
+			"data": changecolumnData,
+            language: {
+                url: rootUrl+'/language/Chinese.json'
+            },
+            select: 'single',
+            altEditor: true,     // Enable altEditor
+            "dom": "Bfrtip",
+            buttons: availableButtons,
+        })
+
+        $(tableId).on('update-row.dt', function (e, updatedRowData, callback) {
+			var updatedRowDataArray = JSON.parse(updatedRowData);
+			sp_update(updatedRowDataArray, callback)
+
+        });
+
+		$(tableId).on('delete-row.dt', function (e, deleteRowData, callback) {
+			var deleteRowDataArray = JSON.parse(deleteRowData);
+			sp_delete(deleteRowDataArray, callback);
+			}
+		);
+
+		$(tableId).on('add-row.dt', function (e, addRowData, callback) {
+			var addRowDataArray = JSON.parse(addRowData);
+			sp_addData(addRowDataArray, callback);
+		});
+
+        // hack to fix alignment issue when scrollX is enabled
+        $(".dataTables_scrollHeadInner").css({"width": "100%"});
+        $(".table ").css({"width": "100%"});
+    }
+
+    else {
+        showErrorInfo(result.msg);
+    }
+
+}
+// 从数据库拿数据局，不分页
+function inflateDataFromDb2(result) {
+    if (result.code == 200) {
+        var columnHeader = result.tableData.tableColumns;
+        var columnData = result.tableData.tableDatas;
+        for (var i = 0; i < columnHeader.length; i++) {
+            columnHeader[i]['targets'] = i;
+            columnHeader[i]['data'] = function (data, type, val, meta) {
+                return data[meta.col].value;
+            }
+        }
+        var tableId = "#db-data";
+		if ($.fn.DataTable.isDataTable(tableId)) {
+			$(tableId).DataTable().destroy();
+        }
+
+		$("#db-data-div").remove();
+		$("#parent-data-divdb").append('<div id="db-data-div"><table class="display nowrap" cellpadding="0" border="0" cellspacing="0" width="100%" class="table table-striped table-bordered display" id="db-data"></table></div>');
+
+        var availableButtons = [];
+        if (result.editable) {
+            availableButtons = [
+                {
+                    text: '添加',
+                    name: 'add' // don not change name
+                },
+                {
+                    extend: 'selected', // Bind to Selected row
+                    text: '编辑',
+                    name: 'edit'        // do not change name
+                },
+                {
+                    extend: 'selected',
+                    text: '删除',
+                    name: 'delete'
+                }
+            ];
+        }
+        
+        var changecolumnData = []
+		for (var i = 0; i < columnData.length; i++) {
+			changecolumnData[i] = columnData[i].map(function (item, index) {
+				return item = {value: item, dataType: columnHeader[index].dataType}
+			})
+        }
+        $(tableId).dataTable({
+        	"columnDefs": columnHeader,
+			"data": changecolumnData,
+            language: {
+                url: rootUrl+'/language/Chinese.json'
+            },
+            select: 'single',
+            altEditor: true,     // Enable altEditor
+            "dom": "Bfrtip",
+            buttons: availableButtons,
+        })
+
+        $(tableId).on('update-row.dt', function (e, updatedRowData, callback) {
+			var updatedRowDataArray = JSON.parse(updatedRowData);
+			var data = columnHeader;
+			for (var i = 0; i < data.length; i++) {
+				data[i].value = updatedRowDataArray[i].value;
+				data[i].dataType = updatedRowDataArray[i].dataType;
+			}
+			db_update(data, callback);
+        });
+
+        $(tableId).on('delete-row.dt', function (e, deleteRowData, callback) {
+			var deleteRowDataArray = JSON.parse(deleteRowData);
+			var data = columnHeader;
+			for (var i = 0; i < data.length; i++) {
+				data[i].value = deleteRowDataArray[i].value;
+				data[i].dataType = deleteRowDataArray[i].dataType;
+			}
+			db_delete(data, callback);
+		});
+
+        $(tableId).on('add-row.dt', function (e, addRowData, callback) {
+			var addRowDataArray = JSON.parse(addRowData);
+			var data = columnHeader;
+			for (var i = 0; i < data.length; i++) {
+				console.info(addRowDataArray[i])
+				data[i].value = addRowDataArray[i].value;
+				data[i].dataType = addRowDataArray[i].dataType;
+			}
+			db_addData(data, callback);
+		});
+
+        // hack to fix alignment issue when scrollX is enabled
+        $(".dataTables_scrollHeadInner").css({"width": "100%"});
+        $(".table ").css({"width": "100%"});
+    } else {
+        showErrorInfo(result.msg);
+    }
 
 }
 
@@ -120,7 +458,7 @@ function queryFunction() {
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function (result) {
-            inflateData(result, true);
+            inflateDataFromDb2(result);
         }
     });
 }
@@ -320,140 +658,6 @@ function openDatabaseAndGetTableList(dbname, path) {
             }
         }
     });
-
-}
-
-function inflateData(result, isDB) {
-    if (result.code == 200) {
-        var columnHeader = result.tableData.tableColumns;
-        var columnData = result.tableData.tableDatas;
-        for (var i = 0; i < columnHeader.length; i++) {
-            columnHeader[i]['targets'] = i;
-            columnHeader[i]['data'] = function (data, type, val, meta) {
-                return data[meta.col].value;
-            }
-        }
-        var tableId
-        if (isDB) {
-            tableId = "#db-data";
-        } else {
-            tableId = "#sp-data";
-            $("#selected-sp-info").text("点击文件名称下载 : " + SPFileName);
-            $("#selected-sp-info").click(function () {
-                downloadFile(downloadFilePath2)
-            });
-        }
-        if ($.fn.DataTable.isDataTable(tableId)) {
-            $(tableId).DataTable().destroy();
-        }
-
-        if (isDB) {
-            $("#db-data-div").remove();
-            $("#parent-data-div").append('<div id="db-data-div"><table class="display nowrap" cellpadding="0" border="0" cellspacing="0" width="100%" class="table table-striped table-bordered display" id="db-data"></table></div>');
-        } else {
-            $("#sp-data-div").remove();
-            $("#parent-data-divsp").append('<div id="sp-data-div"><table class="display nowrap" cellpadding="0" border="0" cellspacing="0" width="100%" class="table table-striped table-bordered display" id="sp-data"></table></div>');
-        }
-
-        var availableButtons = [];
-        if (result.editable) {
-            availableButtons = [
-                {
-                    text: '添加',
-                    name: 'add' // don not change name
-                },
-                {
-                    extend: 'selected', // Bind to Selected row
-                    text: '编辑',
-                    name: 'edit'        // do not change name
-                },
-                {
-                    extend: 'selected',
-                    text: '删除',
-                    name: 'delete'
-                }
-            ];
-        }
-        var changecolumnData = []
-        for (var i = 0; i < columnData.length; i++) {
-            changecolumnData[i] = columnData[i].map(function (item, index) {
-                return item = {value: item, dataType: columnHeader[index].dataType}
-            })
-        }
-
-        $(tableId).dataTable({
-            "data": changecolumnData,
-            "columnDefs": columnHeader,
-            "bPaginate": true, //翻页功能 
-            "bLengthChange": true, //改变每页显示数据数量 
-            "bFilter": true, //过滤功能 
-            "bSort": true, //排序功能 
-            "bInfo": true,//页脚信息 
-            "bAutoWidth": true,//自动宽度
-            'searching': true,
-            "scrollX": true,
-            "iDisplayLength": 10,
-            language: {
-                url: '/language/Chinese.json'
-            },
-            select: 'single',
-            altEditor: true,     // Enable altEditor
-            "dom": "Bfrtip",
-            buttons: availableButtons
-        })
-
-        $(tableId).on('update-row.dt', function (e, updatedRowData, callback) {
-            var updatedRowDataArray = JSON.parse(updatedRowData);
-            if (isDB) {
-                var data = columnHeader;
-                for (var i = 0; i < data.length; i++) {
-                    data[i].value = updatedRowDataArray[i].value;
-                    data[i].dataType = updatedRowDataArray[i].dataType;
-                }
-                db_update(data, callback);
-            } else {
-                sp_update(updatedRowDataArray, callback)
-            }
-
-        });
-
-        $(tableId).on('delete-row.dt', function (e, deleteRowData, callback) {
-                var deleteRowDataArray = JSON.parse(deleteRowData);
-                if (isDB) {
-                    var data = columnHeader;
-                    for (var i = 0; i < data.length; i++) {
-                        data[i].value = deleteRowDataArray[i].value;
-                        data[i].dataType = deleteRowDataArray[i].dataType;
-                    }
-                    db_delete(data, callback);
-                } else {
-                    sp_delete(deleteRowDataArray, callback);
-                }
-            }
-        );
-
-        $(tableId).on('add-row.dt', function (e, addRowData, callback) {
-            var addRowDataArray = JSON.parse(addRowData);
-            if (isDB) {
-                var data = columnHeader;
-                for (var i = 0; i < data.length; i++) {
-                    data[i].value = addRowDataArray[i].value;
-                    data[i].dataType = addRowDataArray[i].dataType;
-                }
-                db_addData(data, callback);
-            } else {
-                sp_addData(addRowDataArray, callback);
-            }
-        });
-
-        // hack to fix alignment issue when scrollX is enabled
-        $(".dataTables_scrollHeadInner").css({"width": "100%"});
-        $(".table ").css({"width": "100%"});
-    }
-
-    else {
-        showErrorInfo(result.msg);
-    }
 
 }
 

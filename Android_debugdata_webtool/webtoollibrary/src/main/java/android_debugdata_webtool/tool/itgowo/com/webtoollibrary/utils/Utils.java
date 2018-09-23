@@ -34,12 +34,17 @@ import java.util.HashMap;
 import java.util.TreeMap;
 
 /**
- * Created by amitshekhar on 06/02/17.
+ * Created by lujianchao on 2017.8.22.
  */
 
 public class Utils {
 
     private static final String TAG = "Utils";
+    public static final String JSON = "application/json;charset=utf-8";
+    public static final String HTML = "text/html";
+    public static final String JS = "application/javascript";
+    public static final String CSS = "text/css";
+    public static final String OBJECT = "application/octet-stream";
 
     private Utils() {
         // This class in not publicly instantiable
@@ -47,15 +52,15 @@ public class Utils {
 
     public static String detectMimeType(String fileName) {
         if (TextUtils.isEmpty(fileName)) {
-            return "application/json;charset=utf-8";
+            return JSON;
         } else if (fileName.endsWith(".html")) {
-            return "text/html";
+            return HTML;
         } else if (fileName.endsWith(".js")) {
-            return "application/javascript";
+            return JS;
         } else if (fileName.endsWith(".css")) {
-            return "text/css";
+            return CSS;
         } else {
-            return "application/octet-stream";
+            return OBJECT;
         }
     }
 

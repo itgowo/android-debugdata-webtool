@@ -4,8 +4,10 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.DatabaseManager;
+import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.HttpRequest;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.Request;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.Response;
+import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.ResponseHandler;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.utils.DatabaseHelper;
 
 /**
@@ -16,7 +18,7 @@ public class ActionQuery implements Action {
     public static final String ACTION = "query";
 
     @Override
-    public Response doAction(Context context, Request request) {
+    public Response doAction(Context context, Request request, HttpRequest httpRequest, ResponseHandler responseHandler) {
         Response response = null;
         String first;
         try {
@@ -38,6 +40,7 @@ public class ActionQuery implements Action {
         if (response == null) {
             response = new Response().setCode(Response.code_SQLNODATA).setMsg("找不到数据或者SQL语句错误");
         }
+        responseHandler.sendPost(response);
         return response;
     }
 }

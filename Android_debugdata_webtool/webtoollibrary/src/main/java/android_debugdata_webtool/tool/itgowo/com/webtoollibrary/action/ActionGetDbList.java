@@ -9,8 +9,10 @@ import java.util.List;
 import java.util.Map;
 
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.DatabaseManager;
+import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.HttpRequest;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.Request;
 import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.Response;
+import android_debugdata_webtool.tool.itgowo.com.webtoollibrary.ResponseHandler;
 
 /**
  * @author lujianchao
@@ -20,7 +22,7 @@ public class ActionGetDbList implements Action {
     public static final String ACTION = "getDbList";
 
     @Override
-    public Response doAction(Context context, Request request) {
+    public Response doAction(Context context, Request request, HttpRequest httpRequest, ResponseHandler responseHandler) {
         HashMap<String, File> databaseFiles = DatabaseManager.getDatabaseFiles(context);
         Response response = new Response();
         if (databaseFiles != null) {
@@ -32,6 +34,7 @@ public class ActionGetDbList implements Action {
             }
             response.setDbList(dblist);
         }
+        responseHandler.sendPost(response);
         return response;
     }
 }
