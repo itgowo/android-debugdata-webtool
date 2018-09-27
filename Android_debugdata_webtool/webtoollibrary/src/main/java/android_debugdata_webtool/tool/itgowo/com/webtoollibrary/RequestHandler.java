@@ -87,13 +87,13 @@ public class RequestHandler {
             int count = 0;
             StringBuilder stringBuilder = new StringBuilder();
             inputStream = socket.getInputStream();
-            byte[] bytes1 = new byte[4096];
+            byte[] bytes1 = new byte[1024];
             while (true) {
                 count = inputStream.read(bytes1);
                 if (count > 0) {
-                    stringBuilder.append(new String(bytes1, 0, count)).append("\r\n");
+                    stringBuilder.append(new String(bytes1, 0, count));
                 }
-                if (count < 4096) {
+                if (count < 1024) {
                     break;
                 }
             }
