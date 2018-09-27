@@ -17,45 +17,45 @@ public class ClientServer implements Runnable {
 
     private static final String TAG = "ClientServer";
 
-    private int mPort;
+    private int port;
 
-    private boolean mIsRunning;
+    private boolean inRunning;
     /**
      * 是否使用多线程模式
      */
     private boolean isMultMode;
 
-    private ServerSocket mServerSocket;
+    private ServerSocket serverSocket;
 
-    private final RequestHandler mRequestHandler;
+    private final RequestHandler requestHandler;
 
     public ClientServer(Context context, int port, boolean isMultMode) {
         this.isMultMode = isMultMode;
-        mRequestHandler = new RequestHandler(context);
-        mPort = port;
+        requestHandler = new RequestHandler(context);
+        this.port = port;
     }
 
     public void start() {
-        mIsRunning = true;
+        inRunning = true;
         new Thread(this).start();
     }
 
     public void resetServerPort(int newport) throws IOException, InterruptedException {
         stop();
         Thread.sleep(1000);
-        mPort = newport;
+        port = newport;
         start();
     }
 
     public void stop() {
         try {
-            mIsRunning = false;
-            if (null != mServerSocket) {
+            inRunning = false;
+            if (null != serverSocket) {
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
                         try {
-                            new Socket("localhost", mPort).close();
+                            new Socket("localhost", port).close();
                         } catch (IOException mE) {
                             mE.printStackTrace();
                         }
@@ -70,21 +70,21 @@ public class ClientServer implements Runnable {
     @Override
     public void run() {
         try {
-            mServerSocket = new ServerSocket(mPort);
+            serverSocket = new ServerSocket(port);
             DebugDataTool.onSystemMsg("服务器已启动");
-            while (mIsRunning) {
-                Socket socket = mServerSocket.accept();
-                if (mIsRunning) {
+            while (inRunning) {
+                Socket socket = serverSocket.accept();
+                if (inRunning) {
                     if (isMultMode) {
-                        mRequestHandler.asynHandle(socket);
+                        requestHandler.asynHandle(socket);
                     } else {
-                        mRequestHandler.syncHandle(socket);
+                        requestHandler.syncHandle(socket);
                     }
                 }
 
             }
-            mServerSocket.close();
-            mServerSocket = null;
+            serverSocket.close();
+            serverSocket = null;
             DebugDataTool.onSystemMsg("服务器已关闭");
         } catch (Exception e) {
             DebugDataTool.onError("web server error", e);
@@ -96,6 +96,6 @@ public class ClientServer implements Runnable {
     }
 
     public boolean isRunning() {
-        return mIsRunning;
+        return inRunning;
     }
 }

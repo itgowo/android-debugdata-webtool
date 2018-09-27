@@ -1,4 +1,4 @@
-var rootUrl = "http://192.168.0.106:8088";
+var rootUrl = "";
 var dbFileName;
 var currentTableName;
 var SPFileName;
