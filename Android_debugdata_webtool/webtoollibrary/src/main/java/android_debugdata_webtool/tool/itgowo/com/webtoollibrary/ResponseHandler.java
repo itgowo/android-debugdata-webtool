@@ -77,6 +77,7 @@ public class ResponseHandler {
     public void onServerGetFile(boolean isAttachment,String fileName,String contentType,byte[] bytes) throws IOException {
         printStream.println("HTTP/1.1 200 OK");
         printStream.println("Content-Type: " + contentType);
+        printStream.println("Cache-Control: max-age=3600");
         printStream.println("access-control-allow-origin: *");
         if (isAttachment) {
             printStream.println("Content-Disposition: attachment; filename = " + fileName);

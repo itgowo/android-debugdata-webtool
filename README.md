@@ -1,6 +1,9 @@
 # android_debugdata_webtool
 android debug database SharedPreference 查看并修改手机数据库和共享参数的工具，优化了amitshekhar工程的好多细节功能和代码
 
+
+支持云端远程控制版本:https://github.com/itgowo/RemoteDataControllerForAndroid
+
 http://itgowo.com
 
 QQ:1264957104
@@ -53,18 +56,18 @@ maven依赖
   <dependency>
     <groupId>com.itgowo</groupId>
     <artifactId>android-WebDebugTool</artifactId>
-    <version>1.0.8</version>
+    <version>1.0.10</version>
     <type>pom</type>
   </dependency>
 ```
 Gradle依赖
 ```
-  compile 'com.itgowo:android-WebDebugTool:1.0.8'
-  debugCompile 'com.itgowo:android-WebDebugTool:1.0.8'  //推荐
+  compile 'com.itgowo:android-WebDebugTool:1.0.10'
+  debugCompile 'com.itgowo:android-WebDebugTool:1.0.10'  //推荐
   
   Android Gradle plugin 3.0或更高
-      debugApi 'com.itgowo:android-WebDebugTool:1.0.8'  //推荐
-      api 'com.itgowo:android-WebDebugTool:1.0.7'
+      debugApi 'com.itgowo:android-WebDebugTool:1.0.10'  //推荐
+      api 'com.itgowo:android-WebDebugTool:1.0.10'
 ```
 #### 3.初始化
 

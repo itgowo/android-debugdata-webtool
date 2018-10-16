@@ -32,7 +32,7 @@ publish {
     userOrg = 'itgowo'
     groupId = 'com.itgowo'
     artifactId = 'android-WebDebugTool'
-    publishVersion = '1.0.8'
+    publishVersion = '1.0.10'
     desc = 'An Android Debug Tool(Database/SharedPreferences/FileManager)'
     website = 'https://github.com/hnsugar/android-debugdata-webtool'
 }
