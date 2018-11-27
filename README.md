@@ -11,7 +11,7 @@ QQ:1264957104
 Email:lujianchao@itgowo.com
 # 这个版本不再更新，遗留了一些bug，请用[新版](https://github.com/itgowo/RemoteDataControllerForAndroid)
 
-## 前辈版本 Github：https://github.com/amitshekhariitbhu/Android-Debug-Database
+前辈版本 Github：https://github.com/amitshekhariitbhu/Android-Debug-Database
 大家可以去膜拜一下前辈
 
 因为一次使用中发现国外前辈写的服务和接口无法满足我的使用，主要是用的GET请求方式，再编码后url过于长，超出范围就会数据丢失，所以我改成了POST请求的，并且重写了Server逻辑，从Socket拿到流再解析http报文，再到业务处理，同时增加了文件管理功能，相对前辈作品来说这个bug少，功能强，有问题欢迎提问，最好放到issues里，直接问也会回答但是issues也是人气的表现，谢谢各位啦！
