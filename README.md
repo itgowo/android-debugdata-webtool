@@ -9,6 +9,7 @@ http://itgowo.com
 QQ:1264957104
 
 Email:lujianchao@itgowo.com
+# 这个版本不再更新，遗留了一些bug，请用[新版](https://github.com/itgowo/RemoteDataControllerForAndroid)
 
 ## 前辈版本 Github：https://github.com/amitshekhariitbhu/Android-Debug-Database
 大家可以去膜拜一下前辈
